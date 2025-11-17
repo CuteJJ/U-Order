@@ -1,0 +1,6 @@
+# Ignore SQL
+*.sql
+
+# Ignore temporary files
+*.log
+*.tmp
