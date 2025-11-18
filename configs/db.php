@@ -2,7 +2,7 @@
 $host = 'localhost';
 $username = 'root';
 $password = '';
-$database = 'U-Order'; // Change to your database name
+$database = 'canteen'; // Change to your database name
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $database);
