@@ -4,27 +4,31 @@ include 'configs/db.php';
 
 // Fetch data from users table
 $sql = "SELECT * FROM users ORDER BY CreatedAt DESC";
-$result = $conn->query($sql);
+$stmt = $db->prepare($sql);
+$stmt->execute();
+$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Big Users Database</title>
     <link rel="stylesheet" href="assets/css/app.css">
 </head>
+
 <body>
     <div class="container">
         <h1>Users Database</h1>
         <div class="stats">
             <?php
-            $totalUsers = $result->num_rows;
+            $totalUsers = count($result);
             echo "Total Users: " . $totalUsers;
             ?>
-        </div> 
-        <?php if ($result->num_rows > 0): ?>
+        </div>
+        <?php if (count($result) > 0): ?>
             <table>
                 <thead>
                     <tr>
@@ -37,18 +41,19 @@ $result = $conn->query($sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo $row['UserId']; ?></td>
-                        <td><strong><?php echo htmlspecialchars($row['Name']); ?></strong></td>
-                        <td><?php echo htmlspecialchars($row['Email']); ?></td>
-                        <td><?php echo $row['Role']; ?></td>
-                        <td><?php echo date('M j, Y g:i A', strtotime($row['CreatedAt'])); ?></td>
-                        <td>
-                            <span class="status status-active">Active</span>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
+                    <?php foreach ($result as $row): ?>
+                        <tr>
+                            <td><?= $row['UserId']; ?></td>
+                            <td><strong><?= htmlspecialchars($row['Name']); ?></strong></td>
+                            <td><?= htmlspecialchars($row['Email']); ?></td>
+                            <td><?= $row['Role']; ?></td>
+                            <td><?= date('M j, Y g:i A', strtotime($row['CreatedAt'])); ?></td>
+                            <td>
+                                <span class="status status-active">Active</span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
                 </tbody>
             </table>
         <?php else: ?>
@@ -56,10 +61,7 @@ $result = $conn->query($sql);
                 <h3>You got issue / No data found in the database.</h3>
             </div>
         <?php endif; ?>
-        <?php
-        // Close connection
-        $conn->close();
-        ?>
     </div>
 </body>
+
 </html>
