@@ -1,4 +1,9 @@
 <?php
+// Added error reporting for easier debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 date_default_timezone_set('Asia/Kuala_Lumpur');
 
 $db = new PDO('mysql:host=localhost;dbname=canteen;charset=utf8', 'root', '', [
@@ -10,5 +15,4 @@ $db = new PDO('mysql:host=localhost;dbname=canteen;charset=utf8', 'root', '', [
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-
 ?>

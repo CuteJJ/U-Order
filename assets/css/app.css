@@ -1,50 +1,261 @@
+:root {
+    /* POLAR NIGHT (Dark) */
+    --nord0: #2E3440; 
+    --nord1: #3B4252;
+    --nord2: #434C5E;
+    --nord3: #4C566A;
+    
+    /* SNOW STORM (Light) */
+    --nord4: #D8DEE9;
+    --nord5: #E5E9F0;
+    --nord6: #ECEFF4; 
+    
+    /* FROST (Blue/Teal) */
+    --nord7: #8FBCBB; /* Teal */
+    --nord8: #88C0D0; /* Cyan */
+    --nord9: #81A1C1; /* Light Blue */
+    --nord10: #5E81AC; /* Dark Blue */
+    
+    /* AURORA (Accents) */
+    --nord11: #BF616A; /* Red */
+    --nord12: #D08770; /* Orange */
+    --nord13: #EBCB8B; /* Yellow */
+    --nord14: #A3BE8C; /* Green */
+    --nord15: #B48EAD; /* Purple */
+}
+
+/* Reset & Basics */
+* {
+    box-sizing: border-box;
+}
+
 body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #f8f8f8;
-        }
-        .status {
-            padding: 5px 10px;
-            border-radius: 4px;
-            color: #fff;
-        }
-        .status-active {
-            background-color: #28a745;
-        }
-        .no-data {
-            text-align: center;
-            margin-top: 50px;
-            color: #777;
-        }
-        .stats {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #555;
-        }
+    background-color: var(--nord6);
+    color: var(--nord0);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(46, 52, 64, 0.15);
+    width: 100%;
+    max-width: 420px;
+    border: 2px solid var(--nord4);
+}
+
+h2 {
+    color: var(--nord10);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--nord2);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.85rem;
+    border: 2px solid var(--nord4);
+    border-radius: 6px;
+    background-color: var(--nord6);
+    color: var(--nord0);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--nord9);
+    background-color: #fff;
+}
+
+/* Buttons */
+.btn {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--nord10);
+    color: var(--nord6);
+}
+
+.btn-primary:hover {
+    background-color: var(--nord9);
+}
+
+.btn-secondary {
+    background-color: var(--nord3);
+    color: var(--nord6);
+    margin-top: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--nord2);
+}
+
+.links {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.links a {
+    color: var(--nord10);
+    text-decoration: none;
+    font-weight: 600;
+    margin: 0 8px;
+}
+
+.links a:hover {
+    text-decoration: underline;
+    color: var(--nord9);
+}
+
+hr {
+    border: 0;
+    border-top: 2px solid var(--nord4);
+    margin: 20px 0;
+}
+
+/* ---------------------------------------------------
+   TOAST NOTIFICATION STYLES
+--------------------------------------------------- */
+
+.flash-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 400px;
+    background-color: #fff;
+    border-left: 6px solid;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden; /* Clips the progress bar */
+    opacity: 0;
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+.flash-content {
+    padding: 1rem 2.5rem 1rem 1rem; /* Extra right padding for close btn */
+    position: relative;
+    color: var(--nord0);
+    font-weight: 500;
+}
+
+/* Close Button (x) */
+.flash-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--nord3);
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.flash-close:hover {
+    opacity: 1;
+    color: var(--nord0);
+}
+
+/* Progress Bar Container */
+.flash-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* Progress Bar Fill Animation */
+.flash-progress-bar {
+    height: 100%;
+    width: 100%;
+    /* Animation duration matches the 5s timeout */
+    animation: progress 5s linear forwards; 
+}
+
+/* Specific Color Schemes */
+.flash-error { border-color: var(--nord11); }
+.flash-error .flash-progress-bar { background-color: var(--nord11); }
+.flash-error .flash-content { color: var(--nord11); }
+
+.flash-notice { border-color: var(--nord9); }
+.flash-notice .flash-progress-bar { background-color: var(--nord9); }
+.flash-notice .flash-content { color: var(--nord10); }
+
+.flash-success { border-color: var(--nord14); }
+.flash-success .flash-progress-bar { background-color: var(--nord14); }
+.flash-success .flash-content { color: var(--nord0); /* Dark text for better contrast on success */ }
+/* Optional: small icon color override for success */
+
+.flash-warning { border-color: var(--nord13); }
+.flash-warning .flash-progress-bar { background-color: var(--nord13); }
+.flash-warning .flash-content { color: var(--nord12); }
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
