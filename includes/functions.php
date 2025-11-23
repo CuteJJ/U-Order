@@ -4,6 +4,37 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load .env file
+function loadEnv($path) {
+    if (!is_file($path)) return;
+
+    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+
+        // Skip comments
+        if ($line === '' || str_starts_with($line, '#')) continue;
+
+        // Parse KEY=VALUE
+        [$key, $value] = array_map('trim', explode('=', $line, 2));
+
+        // Remove surrounding quotes if any
+        $value = trim($value, "'\"");
+
+        // Set environment variables
+        putenv("$key=$value");
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+    }
+}
+
+// Load .env from root
+loadEnv(__DIR__ . '/../.env');
+
+// Helper to get env variable
+function env($key, $default = null) {
+    return $_ENV[$key] ?? $default;
+}
+
 /**
  * Flash Message Function
  * Outputs a toaster-style notification with progress bar and close button.
@@ -119,5 +150,27 @@ function checkRememberMe($db) {
         }
     }
     return false;
+}
+
+function get_mail() {   
+    // Load PHPMailer classes
+    require_once __DIR__ . '/../lib/PHPMailer.php';
+    require_once __DIR__ . '/../lib/SMTP.php';
+
+    // Create PHPMailer instance
+    $m = new PHPMailer(true);
+    $m->isSMTP();
+    $m->SMTPAuth   = true;
+    $m->Host       = env('SMTP_HOST');
+    $m->Port       = env('SMTP_PORT');
+    $m->Username   = env('SMTP_USER');
+    $m->Password   = env('SMTP_PASS');
+    $m->CharSet    = 'utf-8';
+    $m->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+
+    // Set Sender
+    $m->setFrom($m->Username, env('SMTP_NAME'));
+
+    return $m;
 }
 ?>

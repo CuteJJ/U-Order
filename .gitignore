@@ -4,3 +4,6 @@
 # Ignore temporary files
 *.log
 *.tmp
+
+# Ignore environment configuration
+.env

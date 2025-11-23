@@ -16,6 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $token = bin2hex(random_bytes(32));
         $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
         
+        // Delete any previous reset requests for this user
+        $delSql = "DELETE FROM passwordresets WHERE UserId = :uid";
+        $delStmt = $db->prepare($delSql);
+        $delStmt->execute([':uid' => $user['UserId']]);
+
         // Insert into passwordresets table
         $sql = "INSERT INTO passwordresets (UserId, Token, ExpiresAt) VALUES (:uid, :token, :expiry)";
         $stmt = $db->prepare($sql);
@@ -25,9 +30,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':expiry' => $expiry
         ]);
         
-        // I will do the mail sending part later. For now, just flash the link for testing.
-        $link = "reset_password.php?token=" . $token;
-        flash('notice', "Simulation: Reset link sent. <a href='$link'>[Click Here]</a>");
+        $resetLink = "http://localhost/U-Order/pages/reset_password.php?token=" . $token;
+        $m = get_mail();
+        $m->addAddress($email, $user['Name']);
+        $m->isHTML(true);
+        $m->Subject = "Reset Your Password - Canteen App";
+        $m->Body = "
+        <h3>Password Reset Request</h3>
+        <p>Hi " . htmlspecialchars($user['Name']) . ",</p>
+        <p>We received a request to reset your password. Click the link below to proceed:</p>
+        <p><a href='$resetLink' style='background: #5E81AC; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset Password</a></p>
+        <p>If you did not request this, please ignore this email.</p>
+        <p>Link expires in 1 hour.</p>
+        ";
+        $sent = $m->send();
+        if ($sent === true) {
+            flash('success', 'Reset link sent to your email.');
+        } else {
+            flash('error', 'Failed to send email. Server said: ' . $sent);
+        }
     } else {
         // Security: Don't reveal if email exists or not, but for this UI we'll show generic success
         flash('notice', 'If that email exists, we have sent a reset link.');
