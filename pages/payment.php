@@ -32,7 +32,7 @@ if ($totalAmount == 0) {
 <head>
     <meta charset="UTF-8">
     <title>Secure Payment</title>
-    <link rel="stylesheet" href="../assets/css/app.css">
+    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
     <!-- Stripe JS Library -->
     <script src="https://js.stripe.com/v3/"></script>
     

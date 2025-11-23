@@ -1,0 +1,286 @@
+/* Aurora Theme - Custom Design 
+   Based on Nord Aurora Palette
+*/
+
+:root {
+    /* Aurora Palette */
+    --aurora-red: #BF616A;
+    --aurora-orange: #D08770;
+    --aurora-yellow: #EBCB8B;
+    --aurora-green: #A3BE8C;
+    --aurora-purple: #B48EAD;
+
+    /* Base Colors (Nord Snow Storm & Polar Night) */
+    --bg-body: #ECEFF4;
+    --bg-card: #FFFFFF;
+    --text-main: #2E3440;
+    --text-muted: #4C566A;
+    --border-color: #D8DEE9;
+    
+    /* UI Variables */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-soft: 0 10px 30px rgba(46, 52, 64, 0.08);
+    --shadow-hover: 0 20px 40px rgba(46, 52, 64, 0.12);
+}
+
+body {
+    background-color: var(--bg-body);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+h2, h3, h4 {
+    color: var(--text-main);
+    font-weight: 700;
+    margin-top: 0;
+}
+
+a {
+    color: var(--aurora-orange);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: var(--aurora-red);
+}
+
+/* --- Cards --- */
+.card, .payment-container, .stat-card, .table-container, form {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid white; /* Subtle highlight */
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- Buttons --- */
+.btn, .btn-primary, .btn-pay, .btn-admin {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Specific Button Colors */
+.btn-primary, .btn-admin.primary {
+    background: linear-gradient(135deg, var(--aurora-orange), #c57660);
+    color: white;
+    box-shadow: 0 4px 15px rgba(208, 135, 112, 0.3);
+}
+
+.btn-primary:hover, .btn-admin.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(208, 135, 112, 0.4);
+}
+
+.btn-secondary, .btn-admin {
+    background: #E5E9F0;
+    color: var(--text-main);
+}
+
+.btn-secondary:hover, .btn-admin:hover {
+    background: #D8DEE9;
+}
+
+/* --- Form Elements --- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea,
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    background: #FAFAFA;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--aurora-purple);
+    background: white;
+}
+
+/* --- Payment Page Specifics --- */
+.payment-container {
+    max-width: 550px;
+    margin: 60px auto;
+}
+
+.payment-header {
+    background: linear-gradient(135deg, var(--aurora-purple), var(--aurora-red));
+    padding: 30px;
+    text-align: center;
+    color: white;
+}
+
+.payment-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.amount-display {
+    color: var(--aurora-green);
+    font-weight: 800 !important;
+}
+
+/* Payment Methods Tabs */
+.payment-methods {
+    background: #F4F6F8;
+    padding: 5px;
+    border-radius: var(--radius-sm);
+}
+
+.method-card {
+    border: none !important;
+    background: transparent;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-muted) !important;
+}
+
+.method-card.active {
+    background: white !important;
+    color: var(--aurora-purple) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* --- Admin Dashboard Specifics --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    padding: 25px;
+    text-align: left;
+    position: relative;
+    border-left: 5px solid transparent;
+}
+
+/* Stat Card Color Accents */
+.stat-card:nth-child(1) { border-left-color: var(--aurora-green); }
+.stat-card:nth-child(2) { border-left-color: var(--aurora-orange); }
+.stat-card:nth-child(3) { border-left-color: var(--aurora-purple); }
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+/* --- Tables --- */
+.table-container {
+    padding: 0 !important; /* Reset padding for full width table */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #F4F6F8;
+    border-bottom: 2px solid var(--border-color);
+}
+
+th {
+    padding: 15px 20px;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+td {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background-color: #FAFAFA;
+}
+
+/* --- Flash Messages --- */
+.flash-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    z-index: 9999;
+    border-left: 5px solid;
+    animation: slideIn 0.3s ease-out;
+}
+
+.flash-success { border-left-color: var(--aurora-green); }
+.flash-error { border-left-color: var(--aurora-red); }
+.flash-warning { border-left-color: var(--aurora-yellow); }
+.flash-notice { border-left-color: var(--aurora-orange); }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- Report Filters --- */
+.filter-bar {
+    background: white !important;
+    border: none !important;
+    box-shadow: var(--shadow-soft);
+    padding: 25px !important;
+}
