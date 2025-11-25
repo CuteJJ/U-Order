@@ -1,0 +1,161 @@
+/* --- AUTH PAGES STYLING --- */
+
+/* Force hide Navigation & Cart on Auth Pages */
+.bottom-nav, .floating-cart-btn, .cart-sidebar {
+    display: none !important;
+}
+
+/* --- TOAST NOTIFICATIONS (REQUIRED FOR AUTH PAGES) --- */
+.flash-toast {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    min-width: 300px; max-width: 400px;
+    background-color: #fff; border-left: 6px solid; border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden; opacity: 0;
+    animation: slideIn 0.5s ease-out forwards;
+}
+.flash-content { padding: 1rem 2.5rem 1rem 1rem; position: relative; color: var(--nord0); font-weight: 500; }
+.flash-close { position: absolute; top: 5px; right: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: var(--nord3); opacity: 0.6; }
+.flash-close:hover { opacity: 1; color: var(--nord0); }
+.flash-progress { position: absolute; bottom: 0; left: 0; height: 4px; width: 100%; background-color: rgba(0,0,0,0.1); }
+.flash-progress-bar { height: 100%; width: 100%; animation: progress 5s linear forwards; }
+
+.flash-error { border-color: var(--nord11); }
+.flash-error .flash-progress-bar { background-color: var(--nord11); }
+.flash-error .flash-content { color: var(--nord11); }
+
+.flash-notice { border-color: var(--nord9); }
+.flash-notice .flash-progress-bar { background-color: var(--nord9); }
+.flash-notice .flash-content { color: var(--nord10); }
+
+.flash-success { border-color: var(--nord14); }
+.flash-success .flash-progress-bar { background-color: var(--nord14); }
+.flash-success .flash-content { color: var(--nord0); }
+
+.flash-warning { border-color: var(--nord13); }
+.flash-warning .flash-progress-bar { background-color: var(--nord13); }
+.flash-warning .flash-content { color: var(--nord12); }
+
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+@keyframes progress { from { width: 100%; } to { width: 0%; } }
+
+/* 1. MAIN CONTAINER (Mobile Default - Floating) */
+.auth-container {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--nord6);
+    padding: 20px;
+}
+
+/* 2. THE CARD (Mobile Default) */
+.auth-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(46, 52, 64, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: auto; 
+}
+
+.auth-image-side { display: none; }
+
+/* Form Side - Scrollable if needed on small screens */
+.auth-form-side { 
+    padding: 2.5rem; 
+    width: 100%;
+    overflow-y: auto;
+    max-height: 90vh; /* Prevent overflow on very small screens */
+}
+
+/* 3. DESKTOP MODE (Split Screen) */
+@media (min-width: 1024px) {
+    .auth-container {
+        padding: 0;
+        height: 100vh;
+        align-items: stretch;
+    }
+
+    .auth-card {
+        max-width: 100%;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        flex-direction: row;
+        margin: 0;
+    }
+
+    .auth-image-side {
+        display: block;
+        width: 50%;
+        position: relative;
+        background-color: var(--nord10);
+        background-size: cover;
+        background-position: center;
+    }
+
+    .auth-image-side::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(to bottom, rgba(46, 52, 64, 0.3), rgba(46, 52, 64, 0.8));
+    }
+
+    .auth-image-text {
+        position: absolute;
+        bottom: 60px;
+        left: 60px;
+        z-index: 2;
+        color: #fff;
+        max-width: 80%;
+    }
+
+    .auth-image-text h1 {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        line-height: 1.1;
+        color: #fff;
+    }
+    
+    .auth-image-text p { color: #f0f0f0; font-size: 1.1rem; }
+
+    .auth-form-side {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 8rem;
+        height: 100vh;
+        max-height: none;
+    }
+}
+
+/* --- FORM ELEMENTS --- */
+h2 { color: var(--nord10); font-size: 2rem; margin-bottom: 1.5rem; font-weight: 700; }
+.form-group { margin-bottom: 1.25rem; }
+label { display: block; margin-bottom: 0.6rem; color: var(--nord2); font-weight: 600; font-size: 0.95rem; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
+    width: 100%; padding: 14px; border: 2px solid var(--nord4);
+    border-radius: 10px; background-color: var(--nord6); color: var(--nord0);
+    font-size: 1rem; transition: all 0.2s;
+}
+input:focus { outline: none; border-color: var(--nord9); background-color: #fff; }
+
+.btn {
+    width: 100%; padding: 14px; border: none; border-radius: 10px;
+    font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px;
+    text-align: center; display: inline-block;
+}
+.btn-primary { background-color: var(--nord10); color: #fff; }
+.btn-primary:hover { background-color: var(--nord9); }
+
+.links { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: var(--nord3); }
+.links a { color: var(--nord10); font-weight: 600; margin: 0 5px; }

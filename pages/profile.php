@@ -10,7 +10,6 @@ if (!isLoggedIn()) {
 
 $userId = $_SESSION['user_id'];
 
-// Handle Profile Updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_phone'])) {
         $newPhone = $_POST['phone_number'];
@@ -23,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $currentPass = $_POST['current_password'];
         $newPass = $_POST['new_password'];
         
-        // Verify current
         $sql = "SELECT HashedPassword FROM users WHERE UserId = :id";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id' => $userId]);
@@ -39,66 +37,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('error', 'Current password incorrect.');
         }
     }
-    // Refresh to prevent resubmission
     header("Location: profile.php");
     exit;
 }
 
-// Fetch data from users table for display
 $sql = "SELECT * FROM users WHERE UserId = :id";
 $stmt = $db->prepare($sql);
 $stmt->execute([':id' => $userId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Profile</title>
-    <link rel="stylesheet" href="../assets/css/app.css">
-</head>
-<body>
-    <div class="container">
-        <h2>User Profile</h2>
-        <?php flash(); ?>
-        
-        <div class="form-group">
-            <p><strong>Name:</strong> <?php echo htmlspecialchars($user['Name']); ?></p>
-            <p><strong>Email:</strong> <?php echo htmlspecialchars($user['Email']); ?></p>
-            <p><strong>Role:</strong> <?php echo htmlspecialchars($user['Role']); ?></p>
-            <p><strong>Joined:</strong> <?php echo htmlspecialchars($user['CreatedAt']); ?></p>
+<!-- Link to the new Profile CSS -->
+<link rel="stylesheet" href="/U-Order/assets/css/profile.css">
+
+<div class="profile-wrapper">
+    
+    <div class="profile-card">
+        <!-- Full width column for Back button & Title -->
+        <div style="grid-column: span 2; margin:none; padding:none;">
+             <a href="../index.php" class="back-btn-desktop">&larr; Back to Menu</a>
+             <h2 class="profile-section-title" style="border:none; margin-bottom:0; text-align:center;">My Profile</h2>
+             <?php flash(); ?>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #D8DEE9; margin: 20px 0;">
-
-        <!-- Update Phone -->
-        <form method="POST" action="">
-            <h3>Update Contact</h3>
+        <!-- Left Column (Desktop): Info & Contact -->
+        <div>
+            <h3 class="profile-section-title">Personal Details</h3>
             <div class="form-group">
-                <label>Phone Number</label>
-                <input type="text" name="phone_number" value="<?php echo htmlspecialchars($user['PhoneNumber']); ?>">
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value"><?php echo htmlspecialchars($user['Name']); ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value"><?php echo htmlspecialchars($user['Email']); ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Role</span>
+                    <span class="info-value"><?php echo htmlspecialchars($user['Role']); ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Joined</span>
+                    <span class="info-value"><?php echo date('d M Y', strtotime($user['CreatedAt'])); ?></span>
+                </div>
             </div>
-            <button type="submit" name="update_phone" class="btn btn-primary">Update Phone</button>
-        </form>
 
-        <hr style="border: 0; border-top: 1px solid #D8DEE9; margin: 20px 0;">
+            <form method="POST" action="" style="margin-top: 30px;">
+                <h3 class="profile-section-title">Contact Info</h3>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone_number" class="form-input" value="<?php echo htmlspecialchars($user['PhoneNumber']); ?>">
+                </div>
+                <button type="submit" name="update_phone" class="btn-action btn-update">Update Phone</button>
+            </form>
+        </div>
 
-        <!-- Change Password -->
-        <form method="POST" action="">
-            <h3>Change Password</h3>
-            <div class="form-group">
-                <label>Current Password</label>
-                <input type="password" name="current_password" required>
-            </div>
-            <div class="form-group">
-                <label>New Password</label>
-                <input type="password" name="new_password" required>
-            </div>
-            <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
-        </form>
+        <!-- Right Column (Desktop): Security -->
+        <div>
+            <form method="POST" action="">
+                <h3 class="profile-section-title">Security</h3>
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" name="current_password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" name="new_password" class="form-input" required>
+                </div>
+                <button type="submit" name="change_password" class="btn-action btn-update">Change Password</button>
+            </form>
 
-        <a href="../pages/logout.php" class="btn btn-secondary">Logout</a>
+            <a href="logout.php" class="btn-action btn-logout">Logout</a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<?php include '../includes/footer.php'; ?>
