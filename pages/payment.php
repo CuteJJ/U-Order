@@ -91,7 +91,6 @@ if ($totalAmount == 0) {
         <div class="amount-display">
             <small style="font-size: 0.4em; vertical-align: middle;">RM</small> <?php echo number_format($totalAmount, 2); ?>
         </div>
-
         <form id="paymentForm" action="process_payment.php" method="POST">
             <label style="font-weight:bold; display:block; margin-bottom:10px;">Select Payment Method</label>
             

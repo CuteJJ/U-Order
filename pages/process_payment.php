@@ -151,9 +151,7 @@ try {
 
 } catch (Exception $e) {
     $db->rollBack();
-    error_log("Payment Error: " . $e->getMessage()); 
-    // Show specific Stripe error if possible, or generic
-    flash('error', 'Payment Failed: ' . $e->getMessage());
+    error_log("Payment Error: " . $e->getMessage());
     header("Location: payment.php");
     exit;
 }
