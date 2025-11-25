@@ -1,0 +1,135 @@
+/* --- PROFILE PAGE STYLING --- */
+
+.profile-wrapper {
+    width: 100%;
+    min-height: calc(100vh - 80px); /* Adjust for header/nav */
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    /* Default to column for mobile */
+    flex-direction: column; 
+}
+
+.profile-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px; /* Mobile/Tablet max width */
+    margin: 0 auto;
+}
+
+/* Desktop Adjustments */
+@media (min-width: 1024px) {
+    .profile-wrapper {
+        padding: 40px;
+        align-items: flex-start; /* Align to top */
+    }
+
+    .profile-card {
+        max-width: 100%; /* Use full width of container */
+        padding: 4rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Split layout if desired, or keep single column */
+        gap: 40px;
+    }
+}
+
+/* Section Headers */
+.profile-section-title {
+    color: var(--nord10);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border-bottom: 2px solid var(--nord4);
+    padding-bottom: 10px;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--nord2);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--nord4);
+    border-radius: 8px;
+    background-color: var(--nord6);
+    color: var(--nord0);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--nord9);
+    background-color: #fff;
+}
+
+/* Info Display */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--nord6);
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--nord3);
+}
+
+.info-value {
+    color: var(--nord0);
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn-action {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-update {
+    background-color: var(--nord10);
+    color: #fff;
+}
+.btn-update:hover { background-color: var(--nord9); }
+
+.btn-logout {
+    background-color: var(--nord11); /* Red for logout */
+    color: #fff;
+    margin-top: 20px;
+}
+.btn-logout:hover { background-color: #bf616a; }
+
+/* Back Button (Desktop Only) */
+.back-btn-desktop {
+    display: none;
+    margin-bottom: 20px;
+    color: var(--nord3);
+    font-weight: 600;
+    cursor: pointer;
+}
+.back-btn-desktop:hover { color: var(--nord10); }
+
+@media (min-width: 1024px) {
+    .back-btn-desktop { display: inline-block; }
+}
