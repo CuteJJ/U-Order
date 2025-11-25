@@ -85,7 +85,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($orders as $order): 
                 // Fetch Items for this specific order
                 $sqlItems = "SELECT ol.Quantity, ol.Subtotal, pr.ProductName 
-                             FROM orderlists ol
+                             FROM orderitems ol
                              JOIN products pr ON ol.ProductId = pr.ProductId
                              WHERE ol.OrderId = :oid";
                 $stmtItem = $db->prepare($sqlItems);

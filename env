@@ -1,0 +1,8 @@
+## SMTP Configuration
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=uorder.noreply@gmail.com
+SMTP_PASS=rwev ktyf ovyw vgvo
+SMTP_FROM=uorder.noreply@gmail.com
+SMTP_NAME="🍔 U-Order Support"

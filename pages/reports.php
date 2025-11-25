@@ -40,7 +40,7 @@ if (isset($_GET['print_view'])) {
     // Query ALL data without LIMIT
     $sql = "SELECT o.OrderId, o.CreatedAt, s.StallName, c.CategoryName, p.ProductName, ol.Quantity, ol.Subtotal, u.Name as CustomerName
             FROM orders o
-            JOIN orderlists ol ON o.OrderId = ol.OrderId
+            JOIN orderitems ol ON o.OrderId = ol.OrderId
             JOIN products p ON ol.ProductId = p.ProductId
             JOIN stalls s ON o.StallId = s.StallId
             JOIN users u ON o.UserId = u.UserId
@@ -116,7 +116,7 @@ if (isset($_GET['print_view'])) {
 // --- NORMAL PAGINATION LOGIC (For Web View) ---
 $countSql = "SELECT COUNT(*) as total_records, SUM(ol.Subtotal) as grand_total
              FROM orders o
-             JOIN orderlists ol ON o.OrderId = ol.OrderId
+             JOIN orderitems ol ON o.OrderId = ol.OrderId
              JOIN products p ON ol.ProductId = p.ProductId
              JOIN stalls s ON o.StallId = s.StallId
              JOIN users u ON o.UserId = u.UserId
@@ -137,7 +137,7 @@ $offset = ($page - 1) * $limit;
 
 $sql = "SELECT o.OrderId, o.CreatedAt, s.StallName, c.CategoryName, p.ProductName, ol.Quantity, ol.Subtotal, u.Name as CustomerName
         FROM orders o
-        JOIN orderlists ol ON o.OrderId = ol.OrderId
+        JOIN orderitems ol ON o.OrderId = ol.OrderId
         JOIN products p ON ol.ProductId = p.ProductId
         JOIN stalls s ON o.StallId = s.StallId
         JOIN users u ON o.UserId = u.UserId

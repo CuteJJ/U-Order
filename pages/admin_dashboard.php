@@ -20,7 +20,7 @@ $recentUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // --- NEW QUERY FOR PIE CHART (Sales by Stall) ---
 $chartSql = "SELECT s.StallName, SUM(ol.Subtotal) as StallTotal
-             FROM orderlists ol
+             FROM orderitems ol
              JOIN orders o ON ol.OrderId = o.OrderId
              JOIN stalls s ON o.StallId = s.StallId
              JOIN payments p ON o.PaymentId = p.PaymentId
