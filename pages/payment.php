@@ -156,7 +156,7 @@ if ($totalAmount == 0) {
     // 1. Initialize Stripe
     // Replace this with your own Publishable Key if you have one. 
     // This is a generic test key provided by Stripe docs for testing.
-    var stripe = Stripe('pk_test_TYooMQauvdEDq54NiTphI7jx'); 
+    var stripe = Stripe('pk_test_51SX1myLUKR77BP7mQd7X6amafGv985Qn9UGbOcA0RVRSbE2cIfCiTXkDbfXifnKfJRYs2IvkBWrZF6Smi1LRMS2l00bfmNBJee'); 
     var elements = stripe.elements();
 
     // Style the Stripe Element
