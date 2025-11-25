@@ -235,7 +235,7 @@ section { padding: 1.5rem; }
     transition: transform 0.2s;
 }
 .floating-cart-btn:hover { transform: scale(1.1); }
-@media (min-width: 1024px) { .floating-cart-btn { bottom: 40px; right: 40px; width: 150px; height: 150px; } }
+@media (min-width: 1024px) { .floating-cart-btn { bottom: 40px; right: 40px;} }
 
 /* --- MOBILE BOTTOM NAV --- */
 .bottom-nav {

@@ -65,7 +65,7 @@ function refreshProceedButtonState() {
 // ==================== Sync Qty to server ====================
 async function syncToServer(cartItemId, newQty) {
     try {
-        await fetch("/cart/cartquant.php", {
+        await fetch("../cart/cartquant.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: `cartItemId=${cartItemId}&newQty=${newQty}`
@@ -80,7 +80,7 @@ async function removeItem(cartItemId, domItem, options = {}) {
     const silent = options.silent || false;
 
     try {
-        const res = await fetch("/cart/remove_item.php", {
+        const res = await fetch("../cart/remove_item.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: `cartItemId=${cartItemId}`
@@ -154,7 +154,7 @@ function initCartItems() {
             if (item.dataset.unavailable === "1") return;
 
             window.location.href =
-                `/pages/product_details.php?product_id=${productId}&cart_item_id=${cartItemId}`;
+                `../pages/product_details.php?product_id=${productId}&cart_item_id=${cartItemId}`;
         });
 
         // Remove
@@ -177,7 +177,7 @@ async function pollCartStatus() {
     if (idList.length === 0) return;
 
     try {
-        const res = await fetch("/cart/cart_polling.php", {
+        const res = await fetch("../cart/cart_polling.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ items: idList })

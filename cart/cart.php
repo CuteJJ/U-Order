@@ -120,7 +120,7 @@ foreach ($rows as $r) {
     <meta charset="UTF-8">
     <title>Your Order</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/assets/css/cart.css">
+    <link rel="stylesheet" href="../assets/css/cart.css">
 
     <style>
 
@@ -426,7 +426,6 @@ foreach ($rows as $r) {
         </aside>
     </div>
 </div>
-
-<script src="/assets/js/cart.js"></script>
+<script src="../assets/js/cart.js"></script>
 </body>
 </html>
