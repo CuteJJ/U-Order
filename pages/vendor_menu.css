@@ -1,0 +1,266 @@
+:root{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+}
+
+/* 整体背景可以在 body 或 page-content 那里用 var(--bg) */
+
+/* 工具栏 */
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:18px 0 16px 0;
+}
+
+.input, .select{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:8px 14px;
+  min-width:180px;
+  font-size:14px;
+  outline:none;
+}
+
+.input:focus,
+.select:focus-within{
+  border-color:#4f46e5;
+  box-shadow:0 0 0 1px rgba(79,70,229,.15);
+}
+
+/* 菜单网格 */
+.menu-grid{
+  display:grid;
+  gap:14px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+}
+
+@media (max-width:1199px){
+  .menu-grid{grid-template-columns:1fr;}
+}
+
+/* 单个产品卡片 */
+.item{
+  background:var(--card);
+  border-radius:18px;
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:14px;
+  padding:12px 14px;
+  border:1px solid #000000;
+  box-shadow:0 8px 16px rgba(15,23,42,0.04);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.item:hover{
+  transform:translateY(-2px);
+  border-color:#000;  /* 保持黑色 */
+  box-shadow:0 12px 24px rgba(0,0,0,0.10);
+}
+
+
+.item__img{
+  width:120px;
+  height:100px;
+  border-radius:12px;
+  object-fit:cover;
+  border:1px solid var(--border);
+  background:#f3f4f6;
+}
+
+.item h4{
+  margin:0 0 6px 0;
+  font-size:15px;
+  font-weight:600;
+  color:var(--text);
+}
+
+.price{
+  font-weight:700;
+  margin-bottom:8px;
+  font-size:14px;
+  color:#16a34a;
+}
+
+/* 状态标签区域 */
+.status-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:6px;
+}
+
+.tag{
+  font-size:11px;
+  padding:3px 9px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#f9fafb;
+  color:#374151;
+}
+
+.tag--available{
+  background:#ecfdf5;
+  border-color:#bbf7d0;
+  color:#065f46;
+}
+
+.tag--unavailable{
+  background:#fef2f2;
+  border-color:#fecaca;
+  color:#991b1b;
+}
+
+.tag--limited{
+  background:#fffbeb;
+  border-color:#fde68a;
+  color:#92400e;
+}
+
+.tag--unlimited{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  color:#3730a3;
+}
+
+/* 控制区域（按钮+输入） */
+.controls{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.ctrl{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:13px;
+  cursor:pointer;
+  text-decoration:none;
+  color:#111827;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  transition:background .12s ease, border-color .12s ease, transform .08s ease;
+}
+
+.ctrl:hover{
+  background:#f3f4ff;
+  border-color:#c7d2fe;
+  transform:translateY(-1px);
+}
+
+.ctrl[disabled]{
+  opacity:0.55;
+  cursor:not-allowed;
+  background:#f9fafb;
+}
+
+.ctrl--toggle{
+  font-weight:500;
+}
+
+.stock{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.stock input{
+  width:80px;
+  padding:6px 8px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:13px;
+  outline:none;
+}
+
+.stock input:focus{
+  border-color:#4f46e5;
+  box-shadow:0 0 0 1px rgba(79,70,229,.15);
+}
+
+.small{
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* 分页 */
+.pagination{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:18px;
+  flex-wrap:wrap;
+}
+
+.pagination a{
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#fff;
+  font-size:13px;
+  text-decoration:none;
+  color:#111827;
+  min-width:32px;
+  text-align:center;
+  transition:background .12s ease, border-color .12s ease, transform .08s ease;
+}
+
+.pagination a:hover{
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  transform:translateY(-1px);
+}
+
+.page-info{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ============================
+   Toast 提示（右上角）
+   ============================ */
+#toast{
+  position:fixed;
+  top:16px;
+  right:16px;
+  z-index:9999;
+  min-width:220px;
+  max-width:320px;
+  padding:10px 14px;
+  border-radius:999px;
+  font-size:13px;
+  line-height:1.4;
+  color:#fff;
+  background:rgba(15,23,42,0.9);
+  box-shadow:0 10px 25px rgba(15,23,42,0.25);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(-10px);
+  transition:opacity .2s ease, transform .2s ease;
+}
+
+/* 出现时加上的 class：show */
+#toast.show{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+/* 成功（绿色） */
+#toast.success{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+}
+
+/* 失败 / 错误（红色） */
+#toast.error{
+  background:linear-gradient(135deg,#dc2626,#ef4444);
+}

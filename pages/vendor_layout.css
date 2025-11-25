@@ -1,0 +1,75 @@
+/* 整体布局 */
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f7f8fa;
+    display: flex;
+}
+
+/* 左侧 Sidebar */
+.sidebar {
+    width: 240px;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    height: 100vh;
+    position: fixed;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 顶部 Logo+名字 */
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar-logo {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+.sidebar-header h3 {
+    margin: 10px 0 0;
+    font-size: 16px;
+    color: #111827;
+}
+
+/* 菜单 */
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 10px;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+}
+
+.sidebar-menu a:hover {
+    background: #eef2ff;
+    color: #1d4ed8;
+}
+
+/* 右侧内容区 */
+.main-area {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.page-content {
+    margin-top: 20px;
+}
