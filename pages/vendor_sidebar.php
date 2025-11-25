@@ -1,6 +1,6 @@
 <?php
 // vendor_sidebar.php
-require_once 'db.php';
+require_once '../configs/db.php';
 
 if (!isset($_SESSION['user_id'])) {
     die("Not logged in");

@@ -1,6 +1,6 @@
 <?php
 // update_stall_status.php
-require_once "db.php"; // 包含 $db 和 session_start()
+require_once '../configs/db.php';
 
 if (!isset($_SESSION['user_id'])) {
     die("Not logged in");

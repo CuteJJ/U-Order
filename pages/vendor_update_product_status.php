@@ -1,5 +1,5 @@
 <?php
-require_once "db.php";
+require_once '../configs/db.php';
 header("Content-Type: application/json");
 
 // 必须 vendor 登录

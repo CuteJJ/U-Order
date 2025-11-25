@@ -1,5 +1,5 @@
 <?php
-require_once 'db.php';
+require_once '../configs/db.php';
 
 // 必须 vendor 登录
 if (!isset($_SESSION['user_id'])) {
