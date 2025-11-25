@@ -1,15 +1,15 @@
 <?php
-require_once "base.php";
+require_once "db.php";
 
 header("Content-Type: application/json");
 
 // 必须 vendor 登录
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     echo json_encode(["error" => "Not logged in"]);
     exit;
 }
 
-$userId = (int)$_SESSION['UserId'];
+$userId = (int)$_SESSION['user_id'];
 
 /* ===========================
    找到 vendor 的 stallId

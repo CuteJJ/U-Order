@@ -1,12 +1,12 @@
 <?php
-require_once "base.php";
+require_once "db.php";
 
 // --- 必须已登录 vendor ---
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     die("Not logged in");
 }
 
-$vendorId = (int)$_SESSION['UserId'];
+$vendorId = (int)$_SESSION['user_id'];
 
 // --- 取出 vendor 负责的 stall ---
 $sql = "

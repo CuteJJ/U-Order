@@ -1,12 +1,12 @@
 <?php
 // update_stall_status.php
-require_once "base.php"; // 包含 $db 和 session_start()
+require_once "db.php"; // 包含 $db 和 session_start()
 
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     die("Not logged in");
 }
 
-$vendorId = (int)$_SESSION['UserId'];
+$vendorId = (int)$_SESSION['user_id'];
 $status   = isset($_POST['status']) ? (int)$_POST['status'] : null;
 
 if ($status !== 0 && $status !== 1) {

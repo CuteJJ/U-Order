@@ -1,15 +1,15 @@
 <?php
-require_once "base.php";
+require_once "db.php";
 
 header("Content-Type: application/json");
 
 // 必须已登录 vendor
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     echo json_encode(["error" => "Not logged in"]);
     exit;
 }
 
-$vendorId = (int)$_SESSION['UserId'];
+$vendorId = (int)$_SESSION['user_id'];
 
 // 找到 vendor 的 stall
 $sql = "SELECT StallId, IsAvailable FROM stalls WHERE StaffId = ? LIMIT 1";

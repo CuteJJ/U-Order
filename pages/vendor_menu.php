@@ -1,8 +1,8 @@
 <?php
-require_once 'base.php';
+require_once 'db.php';
 
 // 必须 vendor 登录
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     die("Not logged in");
 }
 

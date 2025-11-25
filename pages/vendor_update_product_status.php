@@ -1,9 +1,9 @@
 <?php
-require_once "base.php";
+require_once "db.php";
 header("Content-Type: application/json");
 
 // 必须 vendor 登录
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     echo json_encode(["success" => false, "message" => "Not logged in"]);
     exit;
 }

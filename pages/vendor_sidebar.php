@@ -1,12 +1,12 @@
 <?php
 // vendor_sidebar.php
-require_once 'base.php';
+require_once 'db.php';
 
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     die("Not logged in");
 }
 
-$userId = (int)$_SESSION['UserId'];
+$userId = (int)$_SESSION['user_id'];
 
 // 找到 vendor 的 stall
 $sql = "SELECT StallName, LogoUrl FROM stalls WHERE StaffId = ? LIMIT 1";
