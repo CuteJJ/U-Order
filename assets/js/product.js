@@ -1,54 +1,108 @@
-$(document).ready(function() {
+document.addEventListener("DOMContentLoaded", () => {
+    // --- Elements ---
+    const qtyDisplays = document.querySelectorAll(".qty-display");
+    const qtyInputs = document.querySelectorAll("#final-qty");
+    const displayTotals = document.querySelectorAll(".display-total");
+    const timePills = document.querySelectorAll(".time-pill");
+    const noteInputs = document.querySelectorAll(".note-input");
     
-    let unitPrice = parseFloat($('#unit-price').val());
-    let quantity = 1;
-    let selectedTime = "ASAP"; // Default to ASAP
+    // Hidden Form Inputs
+    const hiddenQty = document.getElementById("final-qty");
+    const hiddenTime = document.getElementById("final-time");
+    const hiddenNote = document.getElementById("final-note");
+    const unitPrice = parseFloat(document.getElementById("unit-price").value);
 
-    function updateState() {
-        $('.qty-display, .sheet-qty-val').text(quantity);
+    // Mobile Sheet Elements
+    const sheetOverlay = document.querySelector(".sheet-overlay");
+    const bottomSheet = document.querySelector(".bottom-sheet");
+    const closeSheetBtn = document.querySelector(".close-sheet");
+    const triggerSheetBtn = document.getElementById("trigger-sheet-btn");
+    
+    // --- State ---
+    let currentQty = parseInt(hiddenQty.value) || 1;
+
+    // --- 1. Quantity Logic ---
+    function updateQuantity(change) {
+        const newQty = currentQty + change;
+        if (newQty < 1) return;
         
-        let total = (unitPrice * quantity).toFixed(2);
-        $('.display-total').text(total);
-
-        $('#final-qty').val(quantity);
-        $('#final-time').val(selectedTime);
+        currentQty = newQty;
+        
+        // Update all visual displays (desktop & mobile)
+        qtyDisplays.forEach(el => el.textContent = currentQty);
+        
+        // Update hidden input
+        hiddenQty.value = currentQty;
+        
+        // Update Total Price
+        const total = (currentQty * unitPrice).toFixed(2);
+        displayTotals.forEach(el => el.textContent = total);
     }
 
-    $('.qty-plus').click(function() {
-        if (quantity < 20) {
-            quantity++;
-            updateState();
-        }
+    document.querySelectorAll(".qty-minus").forEach(btn => {
+        btn.addEventListener("click", () => updateQuantity(-1));
     });
 
-    $('.qty-minus').click(function() {
-        if (quantity > 1) {
-            quantity--;
-            updateState();
-        }
+    document.querySelectorAll(".qty-plus").forEach(btn => {
+        btn.addEventListener("click", () => updateQuantity(1));
     });
 
-    $('.time-pill').click(function() {
-        $('.time-pill').removeClass('selected');
-        let time = $(this).data('time');
-        selectedTime = time;
-        
-        // Select match on both desktop & mobile
-        $(`.time-pill[data-time="${time}"]`).addClass('selected');
-        updateState();
+    // --- 2. Time Selection Logic ---
+    timePills.forEach(pill => {
+        pill.addEventListener("click", function() {
+            // Remove active class from all pills
+            timePills.forEach(p => p.classList.remove("selected"));
+            
+            // Add to clicked pill (and matching pills in other view)
+            const timeValue = this.dataset.time;
+            
+            // Sync Desktop & Mobile selections
+            document.querySelectorAll(`.time-pill[data-time="${timeValue}"]`)
+                .forEach(p => p.classList.add("selected"));
+
+            // Update hidden input
+            hiddenTime.value = timeValue;
+        });
     });
 
-    $('#trigger-sheet-btn').click(function() {
-        $('.sheet-overlay').fadeIn(200);
-        $('.bottom-sheet').addClass('active');
+    // --- 3. Note Sync Logic ---
+    // Syncs what you type in desktop to mobile and vice versa
+    noteInputs.forEach(input => {
+        input.addEventListener("input", (e) => {
+            const val = e.target.value;
+            noteInputs.forEach(el => el.value = val);
+            hiddenNote.value = val;
+        });
     });
 
-    $('.close-sheet, .sheet-overlay').click(function() {
-        $('.bottom-sheet').removeClass('active');
-        $('.sheet-overlay').fadeOut(200);
-    });
+    // --- 4. Mobile Bottom Sheet Logic ---
+    function openSheet() {
+        sheetOverlay.classList.add("active");
+        bottomSheet.classList.add("active");
+        document.body.style.overflow = "hidden"; // Prevent background scroll
+    }
 
-    $('.submit-order-btn').click(function() {
-        $('#order-form').submit();
+    function closeSheet() {
+        sheetOverlay.classList.remove("active");
+        bottomSheet.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+
+    if (triggerSheetBtn) triggerSheetBtn.addEventListener("click", openSheet);
+    if (closeSheetBtn) closeSheetBtn.addEventListener("click", closeSheet);
+    if (sheetOverlay) sheetOverlay.addEventListener("click", closeSheet);
+
+    // --- 5. Form Submission ---
+    // Handle both Desktop and Mobile submit buttons
+    document.querySelectorAll(".submit-order-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            // Optional: Validation
+            if (!hiddenTime.value) {
+                alert("Please select a pickup time");
+                return;
+            }
+            document.getElementById("order-form").submit();
+        });
     });
 });

@@ -7,8 +7,13 @@
 }
 
 @media (min-width: 1024px) {
+    .app-wrapper {
+        padding: 0%;
+        min-height: auto;
+    }
+    
     .product-page-wrapper {
-        max-width: 1000px; /* Constrain width */
+        max-width: 2000px; /* Constrain width */
         margin: auto; /* Center horizontally */
         padding: 40px;
         background: #fff;
@@ -21,7 +26,6 @@
         align-items: start; /* Align top */
         min-height: auto;
         /* Ensure z-index allows shadow to be seen over background */
-        top: 150px;
         position: relative;
         z-index: 1;
     }
@@ -140,10 +144,42 @@
 }
 .bottom-sheet.active { bottom: 0; }
 
-.sheet-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(46, 52, 64, 0.6); z-index: 999; display: none; backdrop-filter: blur(2px); 
+.sheet-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(10, 12, 14, 0.6); /* Nord Polar Night Dark */
+    backdrop-filter: blur(4px); /* This adds the blur effect */
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
+.sheet-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--nord6); padding-bottom: 15px; }
 .sheet-title { font-size: 1.2rem; font-weight: 700; }
 .close-sheet { font-size: 1.5rem; cursor: pointer; color: var(--nord3); }
+
+.note-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--nord4);
+    border-radius: 12px;
+    background-color: var(--nord6);
+    color: var(--nord0);
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s;
+}
+
+.note-input:focus {
+    outline: none;
+    border-color: var(--nord9);
+    background-color: #fff;
+}

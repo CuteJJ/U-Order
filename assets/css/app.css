@@ -251,12 +251,27 @@ section { padding: 1.5rem; }
 
 /* Toast (Copy from Auth) */
 .flash-toast { position: fixed; top: 20px; right: 20px; z-index: 10000; background: #fff; width: 350px; border-left: 5px solid; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; animation: slideIn 0.5s forwards; }
-.flash-content { padding: 15px; color: var(--nord0); position: relative; }
-.flash-close { position: absolute; top: 5px; right: 10px; cursor: pointer; opacity: 0.5; }
-.flash-progress { height: 4px; background: rgba(0,0,0,0.1); width: 100%; }
+.flash-content { padding: 1rem 2.5rem 1rem 1rem; position: relative; color: var(--nord0); font-weight: 500; }
+.flash-close { position: absolute; top: 5px; right: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: var(--nord3); opacity: 0.6; }
+.flash-close:hover { opacity: 1; color: var(--nord0); }
+.flash-progress { position: absolute; bottom: 0; left: 0; height: 4px; width: 100%; background-color: rgba(0,0,0,0.1); }
 .flash-progress-bar { height: 100%; width: 100%; animation: progress 5s linear forwards; }
-.flash-success { border-color: var(--nord14); } .flash-success .flash-progress-bar { background: var(--nord14); }
-.flash-error { border-color: var(--nord11); } .flash-error .flash-progress-bar { background: var(--nord11); }
+
+.flash-error { border-color: var(--nord11); }
+.flash-error .flash-progress-bar { background-color: var(--nord11); }
+.flash-error .flash-content { color: var(--nord11); }
+
+.flash-notice { border-color: var(--nord9); }
+.flash-notice .flash-progress-bar { background-color: var(--nord9); }
+.flash-notice .flash-content { color: var(--nord10); }
+
+.flash-success { border-color: var(--nord14); }
+.flash-success .flash-progress-bar { background-color: var(--nord14); }
+.flash-success .flash-content { color: var(--nord0); }
+
+.flash-warning { border-color: var(--nord13); }
+.flash-warning .flash-progress-bar { background-color: var(--nord13); }
+.flash-warning .flash-content { color: var(--nord12); }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes progress { from { width: 100%; } to { width: 0%; } }
 
