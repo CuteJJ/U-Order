@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label>Password</label>
                             <div style="position: relative;">
-                                <input type="password" name="vendor_password" id="vendor_password" required placeholder="Min 6 characters" style="padding-right: 40px;">
+                                <input type="password" name="vendor_password" id="vendor_password" required placeholder="Min 8-16 characters" style="padding-right: 40px;">
                                 <span onclick="togglePassword('vendor_password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
                             </div>
                         </div>
