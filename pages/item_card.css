@@ -1,0 +1,208 @@
+/* =========================================
+   Item Card Component (完整版)
+   ========================================= */
+
+/* 1. 基础卡片容器 */
+.item-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    border: 1px solid transparent; /* 预留边框位 */
+    
+    /* 弥散阴影：干净、高级 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.02);
+    
+    /* 动画 */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+/* Hover 悬停效果：轻微上浮 */
+.item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* 选中状态：绿色光晕 + 浅绿背景 */
+.item-card.selected {
+    background: #f0fdf4; /* Green-50 */
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+/* =========================================
+   2. 头部区域 (Header)
+   ========================================= */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.item-title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 订单编号 #123 */
+.order-id-tag {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+/* 菜品名称 */
+.item-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.35;
+}
+
+/* 数量胶囊 x1 */
+.item-qty {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4b5563;
+    background: #f3f4f6;
+    padding: 4px 9px;
+    border-radius: 6px;
+    white-space: nowrap;
+    margin-left: 10px;
+    height: fit-content;
+}
+
+/* =========================================
+   3. 信息区域 (Meta)
+   ========================================= */
+.item-meta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* 图标统一颜色 */
+.item-meta svg {
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.meta-label {
+    margin-right: 4px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.meta-value {
+    color: #374151;
+    font-weight: 500;
+}
+
+/* =========================================
+   4. 备注区域 (Note - 单行紧凑版)
+   ========================================= */
+.item-note {
+    font-size: 0.85rem;
+    background: #fffbeb; /* 浅琥珀色 */
+    color: #92400e;      /* 深琥珀色文字 */
+    border-left: 3px solid #f59e0b;
+    
+    /* Flex布局：强制同一行 */
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.note-label {
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.note-text {
+    word-break: break-word;
+}
+
+/* =========================================
+   5. 底部整合区域 (Footer)
+   ========================================= */
+/* 现在包含了 Pickup 时间 和 按钮 */
+.item-footer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb; /* 虚线分割线 */
+    
+    display: flex;
+    justify-content: space-between; /* 左右两端对齐 */
+    align-items: center;            /* 垂直居中 */
+}
+
+/* 左侧：时间 */
+.footer-info {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+}
+
+.pickup-time {
+    font-weight: 700;
+    color: #111827;
+    margin-left: 4px;
+}
+
+/* 右侧：按钮容器 */
+.footer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 通用按钮样式 */
+.card-btn {
+    padding: 6px 14px;  /* 稍微改小，适应单行 */
+    height: 32px;       /* 固定高度 */
+    border-radius: 6px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.card-btn:active {
+    transform: scale(0.96);
+}
+
+/* 蓝色 Start 按钮 */
+.btn-start {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+.btn-start:hover {
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    filter: brightness(1.05);
+}
+
+/* 绿色 Ready 按钮 */
+.btn-ready {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.btn-ready:hover {
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+    filter: brightness(1.05);
+}

@@ -1,0 +1,231 @@
+.main-area {
+    /* 改动：背景由纯白改为极淡的冷灰 (Slate-50)，减少刺眼，增加层次 */
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* 参考 menu 的 page-content */
+.page-content {
+    /* 顺序是：上 右 下 左 */
+    /* 把第一个数字 24px 改成 8px，就能明显拉上去了 */
+    padding: 2px 32px 24px 32px;
+
+    font-family: "Inter", sans-serif;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+.orders-title {
+    font-size: 1.8rem;
+    font-weight: 800; /* 改动：更粗一点 */
+    margin-bottom: 24px;
+    color: #111827;
+    letter-spacing: -0.02em; /* 新增：字间距稍微收紧，更现代 */
+}
+
+/* FILTER BAR */
+.filter-bar {
+    display: flex;
+    gap: 16px; /* 改动：调整间距 */
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center; /* 新增：垂直居中 */
+}
+
+.filter-bar label {
+    font-size: 0.85rem;
+    font-weight: 500; /* 新增：加粗标签 */
+    margin-right: 6px;
+    color: #4b5563; /* 改动：颜色稍微柔和一点 */
+}
+
+.filter-bar select {
+    padding: 8px 12px; /* 改动：按钮做大一点，好点 */
+    border-radius: 8px; /* 改动：圆角加大 */
+    border: 1px solid #d1d5db;
+    font-size: 0.85rem;
+    background-color: #ffffff;
+    cursor: pointer;
+    outline: none; /* 新增：去掉默认黑框 */
+    transition: all 0.2s;
+}
+
+/* 新增：鼠标悬停或点击时的效果 */
+.filter-bar select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* THREE COLUMN LAYOUT */
+.orders-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px; /* 改动：列之间的间距加大 */
+    align-items: start; /* 新增：防止列被强制拉伸 */
+}
+
+.orders-column {
+    /* 核心改动：背景改为浅灰 (Slate-100)，形成“轨道” */
+    background: #ffbdaf;
+    
+    /* 改动：去掉了原来的 border，因为背景色已经区分了区域，不要边框更干净 */
+    border: none;
+    
+    border-radius: 16px; /* 改动：更大的圆角 */
+    padding: 16px;
+    
+    /* 改动：去掉外阴影，因为它是凹槽背景，不需要浮起 */
+    box-shadow: none; 
+    
+    min-height: 75vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px; /* 改动：标题离卡片远一点 */
+    padding: 0 4px;      /* 新增：视觉上对齐下方的卡片 */
+}
+
+.column-title {
+    font-size: 0.95rem; /* 改动：稍微调小一点，更精致 */
+    font-weight: 700;
+    color: #475569;     /* 改动：用深灰代替纯黑 (Slate-600) */
+    text-transform: uppercase; /* 新增：大写字母，更有标题感 */
+    letter-spacing: 0.04em;
+}
+
+.column-count {
+    /* 改动：背景色配合 Column 的背景加深一点 */
+    background: #e2e8f0; 
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.column-body {
+    flex-grow: 1;
+}
+
+/* =========================================
+   4. 筛选栏 & 顶部工具条 (Filter Bar & Actions)
+   ========================================= */
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* 元素之间的间距 */
+    margin-bottom: 24px;
+    padding: 8px 4px; /* 给 focus 状态留点余地 */
+    flex-wrap: wrap;
+}
+
+/* 每一个筛选组 (Label + Select) */
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 标签和下拉框的距离 */
+}
+
+/* 标签样式 */
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4b5563; /* Gray-600 */
+}
+
+/* 下拉选择框美化 */
+.filter-bar select {
+    appearance: none; /* 去掉默认丑陋的系统样式 */
+    background-color: #ffffff;
+    border: 1px solid #d1d5db; /* Gray-300 */
+    border-radius: 8px;
+    padding: 8px 32px 8px 12px; /* 右边留空给箭头 */
+    font-size: 0.9rem;
+    color: #111827;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    
+    /* 自定义下拉箭头 (使用 SVG Data URI) */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    min-width: 140px; /* 保证最小宽度，整齐 */
+}
+
+/* 鼠标悬停 */
+.filter-bar select:hover {
+    border-color: #9ca3af; /* Gray-400 */
+}
+
+/* 选中聚焦状态 */
+.filter-bar select:focus {
+    border-color: #3b82f6; /* Blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* 漂亮的蓝色光晕 */
+}
+
+/* --- 批量操作按钮 --- */
+
+/* 这是一个技巧：把按钮挤到最右边去 */
+#batchPrepare {
+    margin-left: auto; /* 只要父容器是 flex，这行代码会让按钮靠右对齐 */
+}
+
+/* 按钮通用基础样式 */
+.batch-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 按钮 - 禁用状态 (默认状态) */
+.batch-btn:disabled {
+    background-color: #e5e7eb; /* Gray-200 */
+    color: #9ca3af; /* Gray-400 */
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none !important;
+}
+
+/* 按钮 - Start Preparing (蓝色) */
+/* 只有当没有 disabled 属性时才生效 */
+#batchPrepare:not(:disabled) {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+#batchPrepare:not(:disabled):hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+#batchPrepare:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* 按钮 - Mark Ready (绿色) */
+#batchReady:not(:disabled) {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    margin-left: 10px; /* 和左边的按钮拉开点距离 */
+}
+#batchReady:not(:disabled):hover {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+#batchReady:not(:disabled):active {
+    transform: translateY(0);
+}
