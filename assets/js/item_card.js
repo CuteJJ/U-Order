@@ -61,7 +61,7 @@ function updateItemStatusSingle(itemId, newStatus, event) {
     formData.append("order_item_id", itemId);
     formData.append("status", newStatus);
 
-    fetch("vendor_update_orderitem_status.php", {
+    fetch("../pages/vendor_update_orderitem_status.php", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
@@ -87,7 +87,7 @@ function ajaxBatchUpdate(itemIds, newStatus, onSuccess) {
     formData.append("status", newStatus);
     itemIds.forEach(id => formData.append("item_ids[]", id));
 
-    fetch("vendor_batch_update_items.php", {
+    fetch("../pages/vendor_batch_update_items.php", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"

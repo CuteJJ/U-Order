@@ -1,10 +1,10 @@
 <?php
-require_once "base.php";
+require_once '../configs/db.php';
 
 header("Content-Type: application/json");
 
 // 登录检查
-if (!isset($_SESSION["UserId"])) {
+if (!isset($_SESSION["user_id"])) {
     echo json_encode(["success" => false, "message" => "Not logged in"]);
     exit;
 }

@@ -18,7 +18,7 @@ $logo = $stall->LogoUrl ?? "/images/default-stall.png";
 $stallName = $stall->StallName ?? "My Stall";
 ?>
 
-<link rel="stylesheet" href="vendor_layout.css">
+<link rel="stylesheet" href="../assets/css/vendor_layout.css">
 
 <div class="sidebar">
 
@@ -28,10 +28,9 @@ $stallName = $stall->StallName ?? "My Stall";
     </div>
 
     <ul class="sidebar-menu">
-        <li><a href="vendor_orders.php">Orders</a></li>
-        <li><a href="vendor_sales_summary.php">Sales Summary</a></li>
         <li><a href="vendor_menu.php">Menu</a></li>
-        <li><a href="vendor_add_product.php">Add Product</a></li>
+        <li><a href="vendor_orders.php">Orders</a></li>
+        <li><a href="vendor_dashboard.php">Sales Summary</a></li>
         <li><a href="vendor_profile.php">Profile</a></li>
         <li><a href="vendor_logout.php">Logout</a></li>
     </ul>

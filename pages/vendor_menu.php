@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 
     <div class="page-content">
 
-        <link rel="stylesheet" href="vendor_menu.css">
+        <link rel="stylesheet" href="../assets/css/vendor_menu.css">
 
         <!-- 工具栏（不会 reload，全 AJAX） -->
         <div class="toolbar">
@@ -62,6 +62,6 @@ if (!isset($_SESSION['user_id'])) {
 
 
 
-<script src="vendor_menu.js"></script>
-<script src="vendor_menu_filter.js"></script>
+<script src="../assets/js/vendor_menu.js"></script>
+<script src="../assets/js/vendor_menu_filter.js"></script>
 

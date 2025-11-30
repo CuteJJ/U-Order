@@ -1,13 +1,13 @@
 <?php
-require_once "base.php";
+require_once '../configs/db.php';
 
 // 必须 vendor 登录
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$vendorId = (int)$_SESSION['UserId'];
+$vendorId = (int)$_SESSION['user_id'];
 
 /* 拿 StallId */
 $stmt = $db->prepare("SELECT StallId FROM stalls WHERE StaffId = ? LIMIT 1");
@@ -78,8 +78,8 @@ foreach ($allItems as $item) {
     <div class="page-content">
 
         <!-- CSS 文件 -->
-        <link rel="stylesheet" href="vendor_orders.css">
-        <link rel="stylesheet" href="item_card.css">
+        <link rel="stylesheet" href="../assets/css/vendor_orders.css">
+        <link rel="stylesheet" href="../assets/css/item_card.css">
 
         <!-- FILTER BAR（重做 UI） -->
         <div class="filter-bar">
@@ -192,5 +192,5 @@ foreach ($allItems as $item) {
 </div><!-- /.main-area -->
 
 <!-- JS -->
-<script src="item_card.js"></script>
-<script src="vendor_orders.js"></script>
+<script src="../assets/js/item_card.js"></script>
+<script src="../assets/js/vendor_orders.js"></script>

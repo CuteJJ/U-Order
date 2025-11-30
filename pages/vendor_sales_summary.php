@@ -1,14 +1,14 @@
 <?php
-require_once "base.php";
+require_once '../configs/db.php';
 include 'vendor_sidebar.php';
 
 // Vendor login check
-if (!isset($_SESSION['UserId'])) {
+if (!isset($_SESSION['user_id'])) {
     echo "Please login.";
     exit;
 }
 
-$vendorId = $_SESSION['UserId'];
+$vendorId = $_SESSION['user_id'];
 
 $sql = "SELECT StallId FROM stalls WHERE StaffId = ? LIMIT 1";
 $stmt = $db->prepare($sql);

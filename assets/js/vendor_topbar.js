@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             form.append("status", status);
 
             // 写入数据库
-            await fetch("update_stall_status.php", {
+            await fetch("../pages/update_stall_status.php", {
                 method: "POST",
                 body: form
             });
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================================================================
     async function updateTopbar() {
         try {
-            const res = await fetch("vendor_topbar_data.php");
+            const res = await fetch("../pages/vendor_topbar_data.php");
             const data = await res.json();
 
             if (!data) return;

@@ -60,7 +60,7 @@ $done = (int)($stmtDone->fetchColumn() ?: 0);
 
 ?>
 
-<link rel="stylesheet" href="vendor_topbar.css">
+<link rel="stylesheet" href="../assets/css/vendor_topbar.css">
 
 <div class="topbar">
 
@@ -115,4 +115,4 @@ $done = (int)($stmtDone->fetchColumn() ?: 0);
 
 </div>
 
-<script src="vendor_topbar.js"></script>
+<script src="../assets/js/vendor_topbar.js"></script>

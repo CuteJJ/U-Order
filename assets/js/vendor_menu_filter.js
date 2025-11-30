@@ -16,7 +16,7 @@ let filterState = {
    ⭐ 初次加载分类 (非常重要)
    ========================================================= */
 function loadCategories() {
-    fetch("vendor_menu_data.php?page=1")
+    fetch("../pages/vendor_menu_data.php?page=1")
         .then(res => res.json())
         .then(data => {
             const categories = data.categories || [];
@@ -52,7 +52,7 @@ function reloadMenuWithFilters(page = 1) {
     if (filterState.unavailable)   params.append("unavailable", 1);
     if (filterState.low_stock)     params.append("low_stock", 1);
 
-    const finalURL = "vendor_menu_data.php?" + params.toString();
+    const finalURL = "../pages/vendor_menu_data.php?" + params.toString();
 
     console.log("Filter 请求 URL:", finalURL);
 

@@ -1,5 +1,5 @@
 <?php
-require_once "base.php";
+require_once '../configs/db.php';
 
 header('Content-Type: application/json');
 
@@ -12,7 +12,7 @@ if (!isset($_SESSION['UserId'])) {
     exit;
 }
 
-$vendorId = (int)$_SESSION['UserId'];
+$vendorId = (int)$_SESSION['user_id'];
 
 // 只允许 POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -50,7 +50,7 @@ function loadMenu(page = 1) {
 
     // 之前：fetch("vendor_menu_data.php?page=" + page)
     // 现在：把所有过滤参数带上
-    fetch("vendor_menu_data.php?" + params.toString())
+    fetch("../pages/vendor_menu_data.php?" + params.toString())
         .then(res => res.json())
         .then(data => {
             renderProducts(data.products || []);
@@ -184,7 +184,7 @@ function toggleProductStatus(productId, newStatus) {
     formData.append("product_id", productId);
     formData.append("status", newStatus);
 
-    fetch("vendor_update_product_status.php", {
+    fetch("../pages/vendor_update_product_status.php", {
         method: "POST",
         body: formData
     })
@@ -209,7 +209,7 @@ function updateProductStock(productId, newStock, inputElement) {
     formData.append("product_id", productId);
     formData.append("stock", newStock);
 
-    fetch("vendor_update_product_stock.php", {
+    fetch("../pages/vendor_update_product_stock.php", {
         method: "POST",
         body: formData
     })
