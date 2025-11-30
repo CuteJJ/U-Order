@@ -32,7 +32,7 @@ $stallName = $stall->StallName ?? "My Stall";
         <li><a href="vendor_orders.php">Orders</a></li>
         <li><a href="vendor_dashboard.php">Sales Summary</a></li>
         <li><a href="vendor_profile.php">Profile</a></li>
-        <li><a href="vendor_logout.php">Logout</a></li>
+        <li><a href="logout.php">Logout</a></li>
     </ul>
 
 </div>
