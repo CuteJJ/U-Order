@@ -1,0 +1,354 @@
+/* ===== 色彩配置 ===== */
+
+:root {
+    --vp-bg: #f5f7fb;          /* 整体页面背景：浅灰接近白 */
+    --vp-panel: #111827;       /* 卡片深色背景 */
+    --vp-panel-soft: #020617;  /* 卡片渐层第二色 */
+    --vp-border: #1f2937;
+    --vp-border-soft: #111827;
+    --vp-text: #e5e7eb;        /* 卡片中文字颜色 */
+    --vp-text-muted: #9ca3af;
+    --vp-accent: #3b82f6;
+    --vp-danger: #f97373;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+    background-color: var(--vp-bg); /* 页面整体背景 = 白色系 */
+}
+
+/* ===== 右侧主区域（sidebar 右边全部） ===== */
+
+.vp-main {
+    margin-left: 240px;           /* 左边留给你的 sidebar */
+    min-height: 100vh;
+    background-color: var(--vp-bg);
+    color: #111827;               /* 右侧普通文字用深灰 */
+}
+
+/* 内层容器：占满右侧宽度，只留一点内距 */
+
+.vp-inner {
+    width: 100%;
+    max-width: none;
+    margin: 24px 24px 40px 24px;  /* 上右下左 */
+    padding: 0;
+}
+
+/* 页面标题 */
+
+.vp-page-title {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: left;
+    color: #1f2937;
+    margin-bottom: 16px;
+}
+
+/* 全局提示（成功/错误） */
+
+.vp-global-notif {
+    min-height: 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.vp-global-notif-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+}
+
+.vp-global-notif-success {
+    border-color: rgba(34, 197, 94, 0.6);
+    background: #ecfdf3;
+    color: #166534;
+}
+
+.vp-global-notif-error {
+    border-color: rgba(248, 113, 113, 0.7);
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+/* ===== 布局：两栏，吃满右侧宽度 ===== */
+
+.vp-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;  /* 左大右小，两栏全宽 */
+    gap: 24px;
+    width: 100%;
+}
+
+/* 通用列容器（方便 RWD 用） */
+.vp-column {
+    width: 100%;
+}
+
+/* ===== 卡片（深色） ===== */
+
+.vp-card {
+    background: linear-gradient(135deg, var(--vp-panel) 0, var(--vp-panel-soft) 100%);
+    border-radius: 16px;
+    border: 1px solid var(--vp-border-soft);
+    padding: 16px 18px 14px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    margin-bottom: 18px;
+    color: var(--vp-text);  /* 卡片内容用浅色字 */
+}
+
+/* 卡片头部 */
+
+.vp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.vp-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+.vp-card-subtitle {
+    font-size: 13px;
+    color: var(--vp-text-muted);
+}
+
+/* ===== Personal Details 的静态行 ===== */
+
+.vp-field-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.vp-field-label {
+    color: var(--vp-text-muted);
+}
+
+.vp-field-static {
+    color: var(--vp-text);
+}
+
+/* ===== 可编辑字段（Contact / Description / Password） ===== */
+
+.vp-field-body {
+    margin-top: 4px;
+    font-size: 13px;
+}
+
+.vp-field-label-inline {
+    color: var(--vp-text-muted);
+    margin-bottom: 4px;
+}
+
+.vp-display-value {
+    color: var(--vp-text);
+}
+
+.vp-display-multiline {
+    white-space: pre-wrap;
+}
+
+.vp-muted {
+    color: #6b7280;
+}
+
+/* 编辑区域：默认隐藏，editing 状态才显示 */
+
+.vp-edit-area {
+    display: none;
+    margin-top: 8px;
+}
+
+.vp-field.editing .vp-display-value {
+    display: none;
+}
+
+.vp-field.editing .vp-edit-area {
+    display: block;
+}
+
+/* ===== Edit 按钮（🖊 EDIT） ===== */
+
+.vp-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    color: var(--vp-text-muted);
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, transform 0.08s;
+}
+
+.vp-icon-btn:hover {
+    background: rgba(148, 163, 184, 0.16);
+    color: #f9fafb;
+}
+
+.vp-icon-btn:active {
+    transform: translateY(1px);
+}
+
+.vp-edit-text {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+/* 小笔 icon（CSS 画） */
+
+.vp-icon-pencil {
+    width: 13px;
+    height: 13px;
+    position: relative;
+    display: inline-block;
+}
+
+.vp-icon-pencil::before,
+.vp-icon-pencil::after {
+    content: "";
+    position: absolute;
+    border-radius: 2px;
+}
+
+.vp-icon-pencil::before {
+    width: 9px;
+    height: 2px;
+    background: currentColor;
+    transform: rotate(-45deg);
+    top: 5px;
+    left: 1px;
+}
+
+.vp-icon-pencil::after {
+    width: 3px;
+    height: 3px;
+    border: 2px solid currentColor;
+    border-left: none;
+    border-bottom: none;
+    transform: rotate(-45deg);
+    top: 2px;
+    right: 0;
+}
+
+/* ===== 输入框 / 文本域 ===== */
+
+.vp-input,
+.vp-textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background: #020617;
+    padding: 7px 9px;
+    font-size: 13px;
+    color: var(--vp-text);
+    box-sizing: border-box;
+}
+
+.vp-textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.vp-input:focus,
+.vp-textarea:focus {
+    outline: none;
+    border-color: var(--vp-accent);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+}
+
+.vp-field-group {
+    margin-bottom: 10px;
+}
+
+.vp-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--vp-text-muted);
+    margin-bottom: 3px;
+}
+
+.vp-hint {
+    font-size: 11px;
+    color: var(--vp-text-muted);
+    margin-top: 3px;
+}
+
+/* ===== 按钮 ===== */
+
+.vp-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.vp-btn {
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+}
+
+.vp-btn-primary {
+    background: var(--vp-accent);
+    color: #f9fafb;
+}
+
+.vp-btn-primary:hover {
+    background: #2563eb;
+}
+
+.vp-btn-secondary {
+    background: #111827;
+    color: var(--vp-text-muted);
+    border: 1px solid #4b5563;
+}
+
+.vp-btn-secondary:hover {
+    background: #020617;
+}
+
+/* ===== 错误提示 ===== */
+
+.vp-error {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--vp-danger);
+}
+
+/* ===== RWD：窄屏改成一栏 ===== */
+
+@media (max-width: 992px) {
+    .vp-main {
+        margin-left: 0;
+    }
+
+    .vp-inner {
+        margin: 20px 16px 32px 16px;
+    }
+
+    .vp-layout {
+        grid-template-columns: 1fr; /* 變一欄 */
+    }
+}
