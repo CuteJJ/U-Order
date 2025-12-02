@@ -18,8 +18,8 @@ function asset_url($path)
 {
     if (!$path) return "https://via.placeholder.com/100?text=No+Image";
     if (strpos($path, "http") === 0) return $path;
-    // Fix for potential double slashes or missing assets folder
     $cleanPath = ltrim($path, '/');
+    if (strpos($cleanPath, "images/") === 0) return "/U-Order/assets/" . $cleanPath;
     if (strpos($cleanPath, "assets/") === 0) return "/U-Order/" . $cleanPath;
     return "/U-Order/assets/" . $cleanPath;
 }
@@ -559,14 +559,17 @@ foreach ($rows as $r) {
             <?php else: ?>
                 <?php foreach ($stalls as $stall): ?>
                     <article class="stall-panel">
-                        <header class="stall-panel-header">
-                            <div class="stall-panel-info">
-                                <img src="<?= htmlspecialchars($stall['logoUrl']) ?>" class="stall-panel-logo" alt="Stall Logo">
-                                <div>
-                                    <h2><?= htmlspecialchars($stall['stallName']) ?></h2>
-                                </div>
-                            </div>
-                        </header>
+                      <header class="stall-panel-header">
+    <a href="../pages/menu.php?stallid=<?= $stall['stallId'] ?>" 
+       style="text-decoration: none; color: inherit; display: flex; align-items: center; width: 100%; transition: opacity 0.2s;">
+        <div class="stall-panel-info">
+            <img src="<?= htmlspecialchars($stall['logoUrl']) ?>" class="stall-panel-logo" alt="Stall Logo">
+            <div>
+                <h2><?= htmlspecialchars($stall['stallName']) ?></h2>
+            </div>
+        </div>
+    </a>
+</header>
 
                         <div class="stall-items">
                             <?php foreach ($stall['items'] as $item): ?>
@@ -674,13 +677,41 @@ foreach ($rows as $r) {
                     Review your order carefully. Pickup times are estimates.
                 </p>
 
-                <div class="summary-actions">
-                    <a href="../index.php" class="btn-secondary">Add more items</a>
-                    <a href="../pages/payment.php" 
-                    <button id="btnProceed" class="btn-primary" type="button">Checkout</button></a>
-                </div>
+               <div class="summary-actions">
+    <a href="../index.php" class="btn-secondary">Add more items</a>
+
+    <!-- Checkout button should NOT be inside <a> -->
+    <button id="btnProceed" class="btn-primary" type="button">
+        Checkout
+    </button>
+</div>
+
             </div>
         </aside>
+    </div>
+</div>
+<div id="confirmModal" class="modal-overlay" style="
+    display:none;
+    position:fixed; inset:0; 
+    background:rgba(0,0,0,.45);
+    align-items:center; justify-content:center;
+    z-index:9999;">
+    
+    <div class="modal-box" style="
+        background:#fff; 
+        width:85%; max-width:380px;
+        padding:20px; border-radius:12px;
+        text-align:center;
+        transform:scale(.9);
+        transition:.25s;">
+        
+        <h3 style="margin:0 0 10px; font-size:1.25rem;">Confirm</h3>
+        <p id="confirmMsg" style="margin-bottom:20px; color:#444;"></p>
+        
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button id="confirmCancel" style="padding:8px 14px; border:1px solid #aaa; border-radius:8px; background:#fff;">Cancel</button>
+            <button id="confirmOk" style="padding:8px 14px; border:none; border-radius:8px; background:#2563eb; color:#fff;">OK</button>
+        </div>
     </div>
 </div>
 

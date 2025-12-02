@@ -49,17 +49,37 @@ function recalcSummary() {
         totalPrice += qty * price;
     });
 
-    document.querySelector("#sumQty").textContent = totalQty + " items";
-    document.querySelector("#sumTotal").textContent = totalPrice.toFixed(2);
+    const sumQtyEl = document.querySelector("#sumQty");
+    const sumTotalEl = document.querySelector("#sumTotal");
+    
+    if (sumQtyEl) sumQtyEl.textContent = totalQty;
+    if (sumTotalEl) sumTotalEl.textContent = totalPrice.toFixed(2);
 }
 
 // ==================== Banner ====================
 function refreshProceedButtonState() {
-    const hasUnavailable = document.querySelector('.order-item[data-unavailable="1"]');
+    let hasSelectedUnavailable = false;
+    
+    document.querySelectorAll(".order-item").forEach(item => {
+        const checkbox = item.querySelector(".item-check");
+        const isChecked = checkbox && checkbox.checked;
+        const isUnavailable = item.dataset.unavailable === "1";
+        
+        if (isChecked && isUnavailable) {
+            hasSelectedUnavailable = true;
+        }
+    });
+    
     const banner = document.getElementById("cartBanner");
+    const proceedBtn = document.getElementById("btnProceed");
 
-    if (hasUnavailable) banner.classList.add("show");
-    else banner.classList.remove("show");
+    if (hasSelectedUnavailable) {
+        banner?.classList.add("show");
+        if (proceedBtn) proceedBtn.disabled = true;
+    } else {
+        banner?.classList.remove("show");
+        if (proceedBtn) proceedBtn.disabled = false;
+    }
 }
 
 // ==================== Sync Qty to server ====================
@@ -68,7 +88,7 @@ async function syncToServer(cartItemId, newQty) {
         await fetch("../cart/cartquant.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `cartItemId=${cartItemId}&newQty=${newQty}`
+            body: `cartItemId=${encodeURIComponent(cartItemId)}&newQty=${encodeURIComponent(newQty)}`
         });
     } catch (err) {
         console.error(err);
@@ -83,12 +103,19 @@ async function removeItem(cartItemId, domItem, options = {}) {
         const res = await fetch("../cart/remove_item.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `cartItemId=${cartItemId}`
+            body: `cartItemId=${encodeURIComponent(cartItemId)}`
         });
 
-        const data = await res.json();
+        let data = null;
+        try {
+            data = await res.json();
+        } catch (e) {
+            console.warn("Invalid JSON received from server");
+            if (!silent) showToast("Server error", true);
+            return;
+        }
 
-        if (!data.success) {
+        if (!data || !data.success) {
             if (!silent) showToast("Failed to remove item", true);
             return;
         }
@@ -96,7 +123,23 @@ async function removeItem(cartItemId, domItem, options = {}) {
         const panel = domItem.closest(".stall-panel");
         domItem.remove();
 
-        if (panel && !panel.querySelector(".order-item")) panel.remove();
+        if (panel && !panel.querySelector(".order-item")) {
+            panel.remove();
+        }
+
+        const hasItems = document.querySelector(".order-item");
+        if (!hasItems) {
+            const main = document.querySelector(".order-main");
+            if (main) {
+                main.innerHTML = `
+                    <div style="text-align:center; padding:60px; color:var(--nord3);">
+                        <i class="fas fa-shopping-basket" style="font-size:3rem; margin-bottom:16px; opacity:.5;"></i>
+                        <p>Your cart is empty.</p>
+                        <a href="../index.php" class="btn-secondary" style="display:inline-block; width:auto; margin-top:10px;">Go to Menu</a>
+                    </div>
+                `;
+            }
+        }
 
         recalcSummary();
         refreshProceedButtonState();
@@ -105,72 +148,64 @@ async function removeItem(cartItemId, domItem, options = {}) {
 
     } catch (err) {
         console.error(err);
+        if (!silent) showToast("Error removing item", true);
     }
 }
 
-// ==================== Init Card ====================
-function initCartItems() {
-    document.querySelectorAll(".order-item").forEach(item => {
-        const minus = item.querySelector(".minus");
-        const plus = item.querySelector(".plus");
-        const qtyElem = item.querySelector(".qty-value");
-        const subElem = item.querySelector(".sub-val");
-        const btnEdit = item.querySelector(".btn-edit");
-        const btnRemove = item.querySelector(".btn-remove");
+// ==================== Confirm Modal ====================
+function showConfirm(message) {
+    return new Promise(resolve => {
+        const modal = document.getElementById("confirmModal");
+        const box   = modal.querySelector(".modal-box");
+        const msg   = document.getElementById("confirmMsg");
+        const ok    = document.getElementById("confirmOk");
+        const can   = document.getElementById("confirmCancel");
 
-        const cartItemId = item.dataset.id;
-        const productId = item.dataset.productId;
+        msg.textContent = message;
+        modal.style.display = "flex";
+        box.style.transform = "scale(.9)";
 
-        // 加
-        plus?.addEventListener("click", () => {
-            if (item.dataset.unavailable === "1") return;
+        setTimeout(() => { box.style.transform = "scale(1)"; }, 10);
 
-            let qty = parseInt(qtyElem.textContent);
-            qty++;
-            qtyElem.textContent = qty;
+        const cleanup = (value) => {
+            box.style.transform = "scale(.9)";
+            setTimeout(() => { modal.style.display = "none"; }, 180);
+            ok.onclick = null;
+            can.onclick = null;
+            resolve(value);
+        };
 
-            subElem.textContent = "RM " + (qty * item.dataset.unitPrice).toFixed(2);
-            recalcSummary();
-            syncToServer(cartItemId, qty);
-        });
-
-        // 减
-        minus?.addEventListener("click", () => {
-            if (item.dataset.unavailable === "1") return;
-
-            let qty = parseInt(qtyElem.textContent);
-            if (qty <= 1) return;
-
-            qty--;
-            qtyElem.textContent = qty;
-
-            subElem.textContent = "RM " + (qty * item.dataset.unitPrice).toFixed(2);
-            recalcSummary();
-            syncToServer(cartItemId, qty);
-        });
-
-        // Edit
-        btnEdit?.addEventListener("click", () => {
-            if (item.dataset.unavailable === "1") return;
-
-            window.location.href =
-                `../pages/product_details.php?product_id=${productId}&cart_item_id=${cartItemId}`;
-        });
-
-        // Remove
-        btnRemove?.addEventListener("click", () => {
-            removeItem(cartItemId, item);
-        });
+        ok.onclick  = () => cleanup(true);
+        can.onclick = () => cleanup(false);
     });
-
-    recalcSummary();
-    refreshProceedButtonState();
 }
 
-// ==================== Polling (FIXED!!) ====================
-async function pollCartStatus() {
+// ==================== Delete Selected ====================
+async function deleteSelectedItems() {
+    const selectedItems = Array.from(document.querySelectorAll(".order-item"))
+        .filter(item => {
+            const check = item.querySelector(".item-check");
+            return check && check.checked;
+        });
 
-    // 收集所有 cartItemId
+    if (selectedItems.length === 0) {
+        showToast("No items selected", true);
+        return;
+    }
+
+    const ok = await showConfirm(`Delete ${selectedItems.length} item(s)?`);
+    if (!ok) return;
+
+    selectedItems.forEach(item => {
+        const cartItemId = item.dataset.id;
+        removeItem(cartItemId, item, { silent: true });
+    });
+
+    showToast(`${selectedItems.length} item(s) removed`, false);
+}
+
+// ==================== Smart Polling ====================
+async function pollCartStatus() {
     const idList = Array.from(document.querySelectorAll(".order-item"))
         .map(i => i.dataset.id);
 
@@ -186,67 +221,196 @@ async function pollCartStatus() {
         const data = await res.json();
         if (!data.items) return;
 
-        data.items.forEach(status => {
+        let needsRecalc = false;
 
+        data.items.forEach(status => {
             const item = document.querySelector(`.order-item[data-id="${status.cartItemId}"]`);
             if (!item) return;
 
-            // 更新价格
-            item.dataset.unitPrice = status.unitPrice;
-            item.querySelector(".unit-val").textContent = status.unitPrice.toFixed(2);
-
-            // 更新 subtotal
-            const qty = parseInt(item.querySelector(".qty-value").textContent);
-            item.querySelector(".sub-val").textContent =
-                "RM " + (qty * status.unitPrice).toFixed(2);
-
-            // 更新库存
-            item.dataset.stock = status.stock;
-
-            // 更新可用性
+            const oldPrice       = parseFloat(item.dataset.unitPrice);
+            const oldStock       = parseInt(item.dataset.stock);
+            const wasUnavailable = item.dataset.unavailable === "1";
             const nowUnavailable = status.isUnavailable;
 
-            let pill = item.querySelector(".item-status-pill");
+            const priceChanged        = oldPrice !== status.unitPrice;
+            const stockChanged        = oldStock !== status.stock;
+            const availabilityChanged = wasUnavailable !== nowUnavailable;
 
-            if (nowUnavailable) {
-                item.dataset.unavailable = "1";
-                item.classList.add("is-disabled");
+            if (!priceChanged && !stockChanged && !availabilityChanged) {
+                return;
+            }
 
-                if (!pill) {
-                    pill = document.createElement("div");
-                    pill.className = "item-status-pill";
-                    item.appendChild(pill);
+            needsRecalc = true;
+
+            if (priceChanged) {
+                item.dataset.unitPrice = status.unitPrice;
+                const unitPriceEl = item.querySelector(".unit-price");
+                if (unitPriceEl) {
+                    unitPriceEl.textContent = `RM ${status.unitPrice.toFixed(2)}`;
                 }
-                pill.textContent = status.statusLabel;
 
-                item.querySelector(".minus")?.setAttribute("disabled", true);
-                item.querySelector(".plus")?.setAttribute("disabled", true);
-                item.querySelector(".btn-edit")?.setAttribute("disabled", true);
+                const qty = parseInt(item.querySelector(".qty-value").textContent);
+                const subValEl = item.querySelector(".sub-val");
+                if (subValEl) {
+                    subValEl.textContent = (qty * status.unitPrice).toFixed(2);
+                }
+            }
 
-            } else {
-                item.dataset.unavailable = "0";
-                item.classList.remove("is-disabled");
+            if (stockChanged) {
+                item.dataset.stock = status.stock;
+            }
 
-                pill?.remove();
+            if (availabilityChanged) {
+                let badge = item.querySelector(".status-badge");
 
-                item.querySelector(".minus")?.removeAttribute("disabled");
-                item.querySelector(".plus")?.removeAttribute("disabled");
-                item.querySelector(".btn-edit")?.removeAttribute("disabled");
+                if (nowUnavailable) {
+                    item.dataset.unavailable = "1";
+                    item.classList.add("is-disabled");
+
+                    if (!badge) {
+                        badge = document.createElement("div");
+                        badge.className = "status-badge";
+                        item.appendChild(badge);
+                    }
+                    badge.textContent = status.statusLabel;
+
+                    item.querySelector(".minus")?.setAttribute("disabled", "true");
+                    item.querySelector(".plus")?.setAttribute("disabled", "true");
+
+                    const checkbox = item.querySelector(".item-check");
+                    if (checkbox) checkbox.checked = false;
+
+                } else {
+                    item.dataset.unavailable = "0";
+                    item.classList.remove("is-disabled");
+                    badge?.remove();
+
+                    item.querySelector(".minus")?.removeAttribute("disabled");
+                    item.querySelector(".plus")?.removeAttribute("disabled");
+                }
             }
         });
 
-        recalcSummary();
-        refreshProceedButtonState();
+        if (needsRecalc) {
+            recalcSummary();
+            refreshProceedButtonState();
+        }
 
     } catch (err) {
         console.error("polling failed", err);
     }
 }
 
+// ==================== Polling Control ====================
+let pollingInterval = null;
+
+function startPolling() {
+    stopPolling();
+    pollingInterval = setInterval(pollCartStatus, 3000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// ==================== Event Delegation for Cart Items ====================
+function handleCartClick(e) {
+    const target = e.target;
+
+    // +/- qty buttons
+    const minusBtn  = target.closest(".minus");
+    const plusBtn   = target.closest(".plus");
+    const removeBtn = target.closest(".btn-remove");
+
+    if (!minusBtn && !plusBtn && !removeBtn) return;
+
+    const item = target.closest(".order-item");
+    if (!item) return;
+
+    const cartItemId = item.dataset.id;
+    const qtyElem = item.querySelector(".qty-value");
+    const subElem = item.querySelector(".sub-val");
+    const unitPrice = parseFloat(item.dataset.unitPrice);
+
+    // Remove
+    if (removeBtn) {
+        removeItem(cartItemId, item);
+        return;
+    }
+
+    // Quantity change
+    if (item.dataset.unavailable === "1") return;
+
+    let qty = parseInt(qtyElem.textContent, 10) || 0;
+
+    if (plusBtn) {
+        qty++;
+    } else if (minusBtn) {
+        if (qty <= 1) return;
+        qty--;
+    }
+
+    qtyElem.textContent = qty;
+    if (subElem) {
+        subElem.textContent = (qty * unitPrice).toFixed(2);
+    }
+
+    recalcSummary();
+    syncToServer(cartItemId, qty);
+}
+
+function handleCartChange(e) {
+    const target = e.target;
+    if (!target.classList.contains("item-check")) return;
+
+    recalcSummary();
+    refreshProceedButtonState();
+}
+
 // ==================== Init ====================
 document.addEventListener("DOMContentLoaded", () => {
-    initCartItems();
+    const orderMain = document.querySelector(".order-main");
+    const btnDeleteSelected = document.getElementById("btnDeleteSelected");
+    const btnProceed = document.getElementById("btnProceed");
 
-    // 每 3 秒自动更新 status
-    setInterval(pollCartStatus, 3000);
+    // 事件代理：整块 order-main 只绑一次
+    orderMain?.addEventListener("click", handleCartClick);
+    orderMain?.addEventListener("change", handleCartChange);
+
+    btnDeleteSelected?.addEventListener("click", deleteSelectedItems);
+
+    btnProceed?.addEventListener("click", (e) => {
+        const hasSelectedUnavailable = Array.from(document.querySelectorAll(".order-item"))
+            .some(item => {
+                const checkbox = item.querySelector(".item-check");
+                const isChecked = checkbox && checkbox.checked;
+                const isUnavailable = item.dataset.unavailable === "1";
+                return isChecked && isUnavailable;
+            });
+
+        if (hasSelectedUnavailable) {
+            e.preventDefault();
+            showToast("Please remove unavailable items first", true);
+            return;
+        }
+        window.location.href = "../pages/payment.php";
+    });
+
+    // 初始计算
+    recalcSummary();
+    refreshProceedButtonState();
+
+    // 启动轮询
+    startPolling();
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopPolling();
+        } else {
+            startPolling();
+        }
+    });
 });
