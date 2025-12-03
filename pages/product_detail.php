@@ -86,12 +86,9 @@ for ($i = 0; $i < 4; $i++) {
     ];
 }
 
-// =====================================================
-// 5. UNIVERSAL IMAGE FIXER (STALL LOGO + PRODUCT IMAGES)
-// =====================================================
 function fixAssetUrl($path)
 {
-    if (!$path) return "https://via.placeholder.com/40?text=S";
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg";
     if (strpos($path, 'http') === 0) return $path;
     $clean = ltrim($path, '/');
     return "/U-Order/assets/" . $clean;
@@ -99,7 +96,7 @@ function fixAssetUrl($path)
 
 function fixImageUrl($path)
 {
-    if (!$path) return "https://via.placeholder.com/600x400?text=No+Image";
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg"; // Placeholder
     if (strpos($path, 'http') === 0) return $path;
     $clean = ltrim($path, '/');
     return "../assets/" . $clean;
@@ -111,7 +108,6 @@ include '../includes/header.php';
 ?>
 
 <link rel="stylesheet" href="/U-Order/assets/css/product.css">
-
 <style>
     .stall-badge {
         display: inline-flex;
@@ -164,9 +160,8 @@ include '../includes/header.php';
         cursor: not-allowed;
         opacity: 0.7;
     }
-
 </style>
-
+<?php flash(); ?>
 <div class="product-page-wrapper">
     <!-- ============================
          IMAGE CAROUSEL
@@ -201,7 +196,6 @@ include '../includes/header.php';
         <!-- Stall Badge -->
         <a href="menu.php?stallid=<?php echo $product['StallId']; ?>" class="stall-badge">
             <img src="<?php echo htmlspecialchars($stallLogoUrl); ?>" class="stall-badge-logo">
-            <i class="fas fa-store"></i>
             <?php echo htmlspecialchars($product['StallName']); ?>
         </a>
 
@@ -213,23 +207,11 @@ include '../includes/header.php';
         </div>
 
         <p class="product-description-full"><?php echo nl2br(htmlspecialchars($product['Description'])); ?></p>
-        <!-- INLINE ERROR MESSAGE -->
-        <div id="inline-error" style="
-    display:none;
-    background:#fee2e2;
-    color:#b91c1c;
-    padding:10px 14px;
-    border-radius:8px;
-    margin-bottom:10px;
-    border:1px solid #fca5a5;
-    font-size:0.95rem;
-"></div>
-
         <!-- Desktop Options -->
         <div class="desktop-options">
             <div class="option-group">
                 <label class="option-label">Special Instructions</label>
-                <textarea id="desktop-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
+                <textarea id="desktop-note" class="note-input" placeholder="Any remarks?"><?php echo htmlspecialchars($initialNote); ?></textarea>
             </div>
 
             <div class="option-group">
@@ -245,6 +227,7 @@ include '../includes/header.php';
                 <label class="option-label">Pickup Time</label>
                 <div class="time-selector">
                     <?php foreach ($timeSlots as $slot): ?>
+                        <?php if ($timeSlots) ?>
                         <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
                             <?php echo $slot['label']; ?>
                         </div>
@@ -264,7 +247,7 @@ include '../includes/header.php';
 <div class="bottom-action-bar mobile-only">
     <div class="bar-price">
         <span>Total</span>
-        <strong>RM <span class="display-total"><?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></span></strong>
+        <strong>RM <?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></strong>
     </div>
     <button class="action-btn" id="trigger-sheet-btn"><?php echo $cartItemId ? 'Update' : 'Add'; ?></button>
 </div>
@@ -276,7 +259,7 @@ include '../includes/header.php';
         <span class="sheet-title"><?php echo $cartItemId ? 'Update Order' : 'Customize'; ?></span>
         <span class="close-sheet">&times;</span>
     </div>
-<div id="inline-error-mobile" style="
+    <div id="inline-error-mobile" style="
     display:none;
     background:#fee2e2;
     color:#b91c1c;
@@ -306,7 +289,18 @@ include '../includes/header.php';
             <label class="option-label">Pickup Time</label>
             <div class="time-selector">
                 <?php foreach ($timeSlots as $slot): ?>
-                    <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                    <?php
+                    // Disable if NOT 'ASAP' AND (Time >= 18:00 OR Time < 09:00)
+                    $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
+
+                    // Set styles based on boolean
+                    $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                    $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                    ?>
+
+                    <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"
+                        data-time="<?php echo $slot['value']; ?>"
+                        style="<?php echo $disabledStyle; ?>">
                         <?php echo $slot['label']; ?>
                     </div>
                 <?php endforeach; ?>
