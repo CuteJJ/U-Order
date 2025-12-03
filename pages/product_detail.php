@@ -163,9 +163,6 @@ include '../includes/header.php';
 </style>
 <?php flash(); ?>
 <div class="product-page-wrapper">
-    <!-- ============================
-         IMAGE CAROUSEL
-    ============================= -->
     <div class="product-carousel">
         <div class="carousel-track">
             <?php foreach ($images as $img): ?>
@@ -181,6 +178,13 @@ include '../includes/header.php';
                     <div class="indicator <?php echo $i === 0 ? 'active' : ''; ?>" data-index="<?php echo $i; ?>"></div>
                 <?php endforeach; ?>
             </div>
+
+            <button class="carousel-arrow arrow-prev" aria-label="Previous Slide">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="carousel-arrow arrow-next" aria-label="Next Slide">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         <?php endif; ?>
 
         <a href="../index.php" class="back-overlay-btn">
@@ -367,10 +371,6 @@ include '../includes/header.php';
         ">OK</button>
     </div>
 </div>
-
-
 <script src="/U-Order/assets/js/product.js"></script>
-
 </body>
-
 </html>

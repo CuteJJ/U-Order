@@ -327,11 +327,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // 页面加载 & Polling
     // =========================
 
-    // 页面加载时做一次“软检查”：
-    // 只显示 warning，不锁按钮（避免你说的“一进来就不能 Add”）
+    // 页面加载时做一次“软检查”
     verifyProduct({ showPopup: false, affectButtons: false, softInlineError: true });
 
-    // 每 3 秒轮询一次（同样只做软提示）
+    // 每 3 秒轮询一次
     setInterval(() => {
         verifyProduct({ showPopup: false, affectButtons: false, softInlineError: true });
     }, 3000);
@@ -348,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // 这里是“硬检查”：真正决定能不能提交
+            // 这里是“硬检查”
             const ok = await verifyProduct({
                 showPopup: true,
                 affectButtons: true,
@@ -361,4 +360,88 @@ document.addEventListener("DOMContentLoaded", () => {
             orderForm.submit();
         });
     });
+
+    // ==========================================
+    // CAROUSEL LOGIC
+    // ==========================================
+    const track = document.querySelector('.carousel-track');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    const carouselContainer = document.querySelector('.product-carousel');
+    // Get the new arrow buttons
+    const prevBtn = document.querySelector('.arrow-prev');
+    const nextBtn = document.querySelector('.arrow-next');
+
+    // Only run if we actually have slides
+    if (track && slides.length > 0 && carouselContainer) {
+        let slideIndex = 0;
+        const totalSlides = slides.length;
+
+        // 1. Update Position
+        function updateCarousel() {
+            const slideWidth = carouselContainer.getBoundingClientRect().width;
+            track.style.transform = `translateX(-${slideIndex * slideWidth}px)`;
+
+            // Update dots
+            indicators.forEach((dot, index) => {
+                dot.classList.toggle('active', index === slideIndex);
+            });
+        }
+
+        // 2. Click Indicators
+        indicators.forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const idx = parseInt(e.target.dataset.index);
+                if (!isNaN(idx)) {
+                    slideIndex = idx;
+                    updateCarousel();
+                }
+            });
+        });
+
+        // 3. Arrow Click Events (NEW)
+        if (prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                // Go to previous, or loop to last
+                slideIndex = (slideIndex > 0) ? slideIndex - 1 : totalSlides - 1;
+                updateCarousel();
+            });
+
+            nextBtn.addEventListener('click', () => {
+                // Go to next, or loop to first
+                slideIndex = (slideIndex < totalSlides - 1) ? slideIndex + 1 : 0;
+                updateCarousel();
+            });
+        }
+
+        // 4. Resize Listener
+        window.addEventListener('resize', updateCarousel);
+
+        // 5. Touch / Swipe Support
+        let startX = 0;
+        let endX = 0;
+
+        carouselContainer.addEventListener('touchstart', (e) => {
+            startX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        carouselContainer.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const threshold = 50; 
+            if (endX < startX - threshold) {
+                // Swiped Left -> Next
+                nextBtn ? nextBtn.click() : null; // Reuse click logic
+            } else if (endX > startX + threshold) {
+                // Swiped Right -> Prev
+                prevBtn ? prevBtn.click() : null; // Reuse click logic
+            }
+        }
+
+        // Initialize once
+        setTimeout(updateCarousel, 50);
+    }
 });
