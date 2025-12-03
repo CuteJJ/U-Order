@@ -3,7 +3,6 @@
 require __DIR__ . '/../configs/db.php';
 require __DIR__ . '/../includes/functions.php';
 
-// Check Login
 if (!isLoggedIn()) {
     flash('warning', 'Please login to view your orders.');
     header("Location: /U-Order/pages/login.php");
@@ -12,7 +11,7 @@ if (!isLoggedIn()) {
 
 $userId = $_SESSION['user_id'];
 
-// 2. Fetch Data (Using your provided query)
+// 2. Fetch Data
 $sql = "
     SELECT o.*, s.StallName
     FROM orders o
@@ -20,12 +19,18 @@ $sql = "
     WHERE o.UserId = :uid
     ORDER BY o.OrderId DESC
 ";
-
 $stmt = $db->prepare($sql);
 $stmt->execute(['uid' => $userId]);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 3. Include Header
+$itemSql = "
+    SELECT p.ProductName, oi.Quantity, oi.Subtotal 
+    FROM orderitems oi
+    JOIN products p ON oi.ProductId = p.ProductId 
+    WHERE OrderId = :oid
+";
+$itemStmt = $db->prepare($itemSql);
+
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -55,83 +60,103 @@ include __DIR__ . '/../includes/header.php';
         </div>
     <?php else: ?>
         <div class="history-grid">
-            <?php foreach ($orders as $order):
-                // 1. Determine Status Color
+
+            <?php
+            $index = 0; // Initialize counter
+            foreach ($orders as $order):
+                // 1. Fetch Items
+                $itemStmt->execute(['oid' => $order['OrderId']]);
+                $orderItems = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                // 2. Calculate Total Order Price
+                $orderTotal = 0;
+                foreach ($orderItems as $item) {
+                    $orderTotal += $item['Subtotal'];
+                }
+
+                // 3. Status Logic
                 $statusClass = 'status-pending';
                 if ($order['Status'] == 'completed') $statusClass = 'status-completed';
                 if ($order['Status'] == 'cancelled') $statusClass = 'status-cancelled';
                 if ($order['Status'] == 'ready') $statusClass = 'status-ready';
 
-                // 2. Parse Created Date
+                // 4. Date Logic
                 $dateObj = new DateTime($order['CreatedAt']);
                 $formattedDate = $dateObj->format('d M, h:i A');
-
-                // 3. GET REAL PICKUP TIME FROM DB (The Fix)
-                // We assume your 'orders' table has a 'PickupTime' column just like 'cartitems'
-                // If it's NULL, we fallback to CreatedAt + 15 mins (Logic for ASAP)
-                if (!empty($order['PickupTime'])) {
-                    $pickupObj = new DateTime($order['PickupTime']);
-                    $pickupDisplay = $pickupObj->format('h:i A'); // e.g. "06:30 PM"
-                } else {
-                    $pickupDisplay = "ASAP";
-                }
-
-                // 4. Parse Payment Method only (removed Pickup parsing)
-                $payMethod = "Cash"; // Default
-                $parts = explode('|', $order['Notes']);
-                foreach ($parts as $part) {
-                    if (strpos(trim($part), 'Method:') === 0) {
-                        $payMethod = trim(str_replace('Method:', '', $part));
-                    }
-                }
             ?>
                 <div class="history-card">
-                    <div class="card-top">
-                        <div class="stall-info">
-                            <h3><?php echo htmlspecialchars($order['StallName']); ?></h3>
-                            <span class="order-date"><?php echo $formattedDate; ?></span>
+            
+            <?php if ($index === 0): ?>
+                <span style="
+                    position: absolute; 
+                    top: 0; 
+                    left: 0; 
+                    background: #81A1C1; 
+                    color: white; 
+                    font-size: 0.7rem; 
+                    padding: 4px 12px; 
+                    border-bottom-right-radius: 10px; /* Rounds the inner corner */
+                    border-top-left-radius: 10px;
+                    font-weight: bold; 
+                    letter-spacing: 1px;
+                    z-index: 10;
+                ">
+                    LATEST
+                </span>
+            <?php endif; ?>
+
+                    <div class="card-header-toggle">
+                        <div class="card-top">
+                            <div class="stall-info">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <h3><?php echo htmlspecialchars($order['StallName']); ?></h3>
+    
+                                    <span class="order-total-price">RM <?php echo number_format($orderTotal, 2); ?></span>
+                                </div>
+                                <div class="sub-info">
+                                    <span class="order-date">#<?php echo $order['OrderId']; ?> &bull; <?php echo $formattedDate; ?></span>
+                                    <span class="status-badge <?php echo $statusClass; ?>">
+                                        <?php echo ucfirst($order['Status']); ?>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="toggle-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
-                        <span class="status-badge <?php echo $statusClass; ?>">
-                            <?php echo ucfirst($order['Status']); ?>
-                        </span>
+                    </div>
+
+                    <div class="order-items-list" style="display: none;">
+                        <div class="card-divider"></div>
+                        <?php if (count($orderItems) > 0): ?>
+                            <?php foreach ($orderItems as $item): ?>
+                                <div class="item-row">
+                                    <div class="item-left">
+                                        <span class="item-qty"><?php echo $item['Quantity']; ?>x</span>
+                                        <span class="item-name"><?php echo htmlspecialchars($item['ProductName']); ?></span>
+                                    </div>
+                                    <span class="item-price">RM <?php echo number_format($item['Subtotal'], 2); ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p style="font-size:0.8rem; color:#999;">No items found.</p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="card-divider"></div>
-
-                    <div class="order-details-grid">
-                        <div class="detail-item">
-                            <i class="fas fa-hashtag"></i>
-                            <div>
-                                <label>Order ID</label>
-                                <span>#<?php echo $order['OrderId']; ?></span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-wallet"></i>
-                            <div>
-                                <label>Payment</label>
-                                <span><?php echo htmlspecialchars($payMethod); ?></span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-clock"></i>
-                            <div>
-                                <label>Pickup Time</label>
-                                <span><?php echo $pickupDisplay; ?></span>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="card-actions">
-                        <a href="/U-Order/index.php?stall_id=<?php echo htmlspecialchars($order['StallId']); ?>" class="reorder-link">
+                        <a href="/U-Order/pages/menu.php?stallid=<?php echo htmlspecialchars($order['StallId']); ?>" class="reorder-link">
                             View Stall <i class="fas fa-store"></i>
                         </a>
                     </div>
                 </div>
-            <?php endforeach; ?>
+            <?php
+                $index++; // Increment
+            endforeach;
+            ?>
         </div>
     <?php endif; ?>
-
     <div style="height: 60px;"></div>
 </div>
 

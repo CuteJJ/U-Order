@@ -11,29 +11,6 @@
     margin-bottom: 20px;
 }
 
-.back-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #fff;
-    color: var(--nord3);
-    border: 1px solid var(--nord4);
-    border-radius: 50px; /* Makes it a pill */
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-}
-
-.back-pill:hover {
-    background-color: var(--nord6); /* Slightly darker on hover */
-    color: var(--nord0);
-    transform: translateX(-3px); /* Slide left effect */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
 /* Header Section */
 .history-header {
     margin-bottom: 25px;
@@ -54,32 +31,16 @@
 
 /* Responsive Grid */
 .history-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Mobile: 1 column */
+    display: flex;
+    flex-direction: column;
     gap: 20px;
-}
-
-/* Desktop: 2 Columns */
-@media (min-width: 768px) {
-    .history-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Wide Desktop: 3 Columns */
-@media (min-width: 1024px) {
-    .history-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-    }
-    
-    .order-history-wrapper {
-        padding: 2rem;
-    }
+    max-width: 800px; 
+    margin: 0 auto;   
 }
 
 /* Card Styling */
 .history-card {
+    position: relative; 
     background: #fff;
     border-radius: 16px;
     border: 1px solid var(--nord6);
@@ -88,6 +49,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    overflow: hidden; 
 }
 
 .history-card:hover {
@@ -152,6 +114,37 @@
     background: var(--nord6);
     margin-bottom: 15px;
     width: 100%;
+}
+
+/* Product List Inside Card */
+.order-items-list {
+    background-color: var(--nord6); /* Light grey background */
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.item-row {
+    display: flex;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--nord1);
+}
+
+.item-qty {
+    font-weight: 700;
+    color: var(--nord10); /* Blue color for quantity */
+    min-width: 25px;
+}
+
+.item-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adds "..." if name is too long */
 }
 
 /* Order Details Grid (Inside Card) */
@@ -258,4 +251,94 @@
 .btn-browse:hover {
     transform: translateY(-2px);
     background: var(--nord9);
+}
+
+/* Make the header look clickable */
+.card-header-toggle {
+    cursor: pointer;
+    padding-bottom: 10px; /* Space between header and divider */
+}
+
+/* Flex layout for the top part */
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stall-info {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+
+.sub-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+/* Total Price Styling */
+.order-total-price {
+    font-weight: 800;
+    color: var(--nord10);
+    font-size: 1.1rem;
+}
+
+/* Chevron Animation */
+.toggle-icon i {
+    color: var(--nord3);
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon.rotate i {
+    transform: rotate(180deg);
+}
+
+/* Item Row Adjustments */
+.item-row {
+    display: flex;
+    justify-content: space-between; /* Push price to right */
+    align-items: center;
+    padding: 5px 0;
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-price {
+    font-size: 0.9rem;
+    color: var(--nord2);
+    font-weight: 600;
+}
+
+/* Back to Menu Button (Desktop Only) */
+.back-pill {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: var(--nord3);
+    border: 1px solid var(--nord4);
+    border-radius: 50px; /* Makes it a pill */
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.back-pill:hover {
+    background-color: var(--nord6); /* Slightly darker on hover */
+    color: var(--nord10);
+    transform: translateX(-3px); /* Slide left effect */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+@media (min-width: 1024px) {
+    .back-pill { display: inline-flex; }
 }

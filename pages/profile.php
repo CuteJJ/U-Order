@@ -57,7 +57,9 @@ include '../includes/header.php';
     <div class="profile-card">
         <!-- Full width column for Back button & Title -->
         <div style="grid-column: span 2; margin:none; padding:none;">
-             <a href="../index.php" class="back-btn-desktop">&larr; Back to Menu</a>
+            <a href="/U-Order/index.php" class="back-pill">
+            <i class="fas fa-arrow-left"></i> Back to Menu
+        </a>
              <h2 class="profile-section-title" style="border:none; margin-bottom:0; text-align:center;">My Profile</h2>
              <?php flash(); ?>
         </div>

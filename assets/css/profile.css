@@ -1,5 +1,4 @@
 /* --- PROFILE PAGE STYLING --- */
-
 .profile-wrapper {
     width: 100%;
     min-height: calc(100vh - 80px); /* Adjust for header/nav */
@@ -120,16 +119,30 @@
 }
 .btn-logout:hover { background-color: #bf616a; }
 
-/* Back Button (Desktop Only) */
-.back-btn-desktop {
+/* Back to Menu Button (Desktop Only) */
+.back-pill {
     display: none;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #fff;
     color: var(--nord3);
+    border: 1px solid var(--nord4);
+    border-radius: 50px; /* Makes it a pill */
     font-weight: 600;
-    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
 }
-.back-btn-desktop:hover { color: var(--nord10); }
+
+.back-pill:hover {
+    background-color: var(--nord6); /* Slightly darker on hover */
+    color: var(--nord10);
+    transform: translateX(-3px); /* Slide left effect */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
 
 @media (min-width: 1024px) {
-    .back-btn-desktop { display: inline-block; }
+    .back-pill { display: inline-flex; }
 }

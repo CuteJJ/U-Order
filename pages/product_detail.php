@@ -227,8 +227,18 @@ include '../includes/header.php';
                 <label class="option-label">Pickup Time</label>
                 <div class="time-selector">
                     <?php foreach ($timeSlots as $slot): ?>
-                        <?php if ($timeSlots) ?>
-                        <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                        <?php
+                        // Disable if NOT 'ASAP' AND (Time >= 18:00 OR Time < 09:00)
+                        $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
+
+                        // Set styles based on boolean
+                        $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                        $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                        ?>
+
+                        <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"
+                            data-time="<?php echo $slot['value']; ?>"
+                            style="<?php echo $disabledStyle; ?>">
                             <?php echo $slot['label']; ?>
                         </div>
                     <?php endforeach; ?>
@@ -273,7 +283,7 @@ include '../includes/header.php';
     <div class="sheet-body">
         <div class="option-group">
             <label class="option-label">Special Instructions</label>
-            <textarea id="mobile-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
+            <textarea id="mobile-note" class="note-input" placeholder="Any remarks?"><?php echo htmlspecialchars($initialNote); ?></textarea>
         </div>
 
         <div class="option-group">

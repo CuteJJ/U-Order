@@ -33,4 +33,16 @@ $(document).ready(function() {
         let count = parseInt(badge.text());
         badge.text(count + 1);
     });
+
+    // Order History Toggle
+    $('.card-header-toggle').on('click', function() {
+        // 1. Find the list specifically inside this card
+        var list = $(this).closest('.history-card').find('.order-items-list');
+        
+        // 2. Slide Toggle the list
+        list.slideToggle(300); // 300ms animation speed
+        
+        // 3. Rotate the chevron icon
+        $(this).find('.toggle-icon').toggleClass('rotate');
+    });
 });
