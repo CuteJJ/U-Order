@@ -227,7 +227,18 @@ include 'includes/header.php';
         <nav class="desktop-nav">
             <a href="index.php" class="active">Home</a>
             <a href="#">Notification</a>
-            <a href="pages/order_history.php">Activity</a>
+
+            <?php 
+            // DYNAMIC LINK BASED ON ROLE
+            if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+                echo '<a href="pages/admin_dashboard.php">Dashboard</a>';
+            } elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'vendor') {
+                echo '<a href="pages/vendor_dashboard.php">Dashboard</a>';
+            } else {
+                echo '<a href="pages/order_history.php">Activity</a>';
+            }
+            ?>
+            
             <a href="pages/profile.php">Profile</a>
         </nav>
 
