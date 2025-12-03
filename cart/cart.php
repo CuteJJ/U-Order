@@ -224,6 +224,21 @@ foreach ($rows as $r) {
         }
         .cart-banner.show { display: block; }
 
+        /* Flash Messages */
+        .flash-message {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ffeeba;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
         .cart-actions-row {
             display: flex;
             justify-content: flex-end;
@@ -539,6 +554,9 @@ foreach ($rows as $r) {
         <i class="fas fa-exclamation-triangle"></i> 
         Some items are unavailable. Please remove them to proceed.
     </div>
+    
+    <!-- DISPLAY FLASH MESSAGES HERE -->
+    <?php flash(); ?>
 
     <!-- Global Actions -->
     <div class="cart-actions-row">
@@ -547,6 +565,9 @@ foreach ($rows as $r) {
         </button>
     </div>
 
+    <!-- WRAP IN FORM TO SUBMIT SELECTED ITEMS TO PAYMENT.PHP -->
+    <form action="../pages/payment.php" method="POST" id="checkoutForm">
+    
     <div class="order-layout">
         <!-- LEFT COLUMN: Items -->
         <section class="order-main">
@@ -559,17 +580,14 @@ foreach ($rows as $r) {
             <?php else: ?>
                 <?php foreach ($stalls as $stall): ?>
                     <article class="stall-panel">
-                      <header class="stall-panel-header">
-    <a href="../pages/menu.php?stallid=<?= $stall['stallId'] ?>" 
-       style="text-decoration: none; color: inherit; display: flex; align-items: center; width: 100%; transition: opacity 0.2s;">
-        <div class="stall-panel-info">
-            <img src="<?= htmlspecialchars($stall['logoUrl']) ?>" class="stall-panel-logo" alt="Stall Logo">
-            <div>
-                <h2><?= htmlspecialchars($stall['stallName']) ?></h2>
-            </div>
-        </div>
-    </a>
-</header>
+                        <header class="stall-panel-header">
+                            <div class="stall-panel-info">
+                                <img src="<?= htmlspecialchars($stall['logoUrl']) ?>" class="stall-panel-logo" alt="Stall Logo">
+                                <div>
+                                    <h2><?= htmlspecialchars($stall['stallName']) ?></h2>
+                                </div>
+                            </div>
+                        </header>
 
                         <div class="stall-items">
                             <?php foreach ($stall['items'] as $item): ?>
@@ -594,9 +612,12 @@ foreach ($rows as $r) {
                                         </div>
                                     <?php endif; ?>
 
-                                    <!-- 1. Checkbox -->
+                                    <!-- 1. Checkbox: Add name and value for form submission -->
                                     <div class="item-check-wrap">
-                                        <input type="checkbox" class="item-check" <?= $item['isUnavailable'] ? '' : 'checked' ?>>
+                                        <input type="checkbox" class="item-check" 
+                                               name="selected_items[]" 
+                                               value="<?= $item['cartItemId'] ?>"
+                                               <?= $item['isUnavailable'] ? '' : 'checked' ?>>
                                     </div>
 
                                     <!-- 2. Image & Details -->
@@ -625,7 +646,6 @@ foreach ($rows as $r) {
 
                                             <!-- Edit / Remove Links -->
                                             <div class="item-actions-row">
-                                                <!-- Link to product_detail.php correctly -->
                                                 <a href="../pages/product_detail.php?id=<?= $item['productId'] ?>&cart_item_id=<?= $item['cartItemId'] ?>" 
                                                    class="action-link action-edit">
                                                     <i class="fas fa-pen"></i> Edit
@@ -678,17 +698,20 @@ foreach ($rows as $r) {
                 </p>
 
                <div class="summary-actions">
-    <a href="../index.php" class="btn-secondary">Add more items</a>
+                    <a href="../index.php" class="btn-secondary">Add more items</a>
 
-    <!-- Checkout button should NOT be inside <a> -->
-    <button id="btnProceed" class="btn-primary" type="button">
-        Checkout
-    </button>
-</div>
+                    <!-- Checkout button as Submit -->
+                    <button id="btnProceed" class="btn-primary" type="submit">
+                        Checkout
+                    </button>
+                </div>
 
             </div>
         </aside>
     </div>
+    
+    </form> <!-- END FORM -->
+    
 </div>
 <div id="confirmModal" class="modal-overlay" style="
     display:none;

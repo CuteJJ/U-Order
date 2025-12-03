@@ -7,48 +7,54 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// --- STRIPE CONFIGURATION(Private Key) ---
+// 1. GET SELECTED ITEMS
+$selectedItems = $_POST['selected_items'] ?? null;
 
-// 1. Function to Charge CARD (Background)
-function chargeStripeCard($token, $amount, $secretKey) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, "https://api.stripe.com/v1/charges");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'amount' => round($amount * 100), 
-        'currency' => 'myr',
-        'source' => $token,
-        'description' => 'Canteen Card Payment'
-    ]));
-    curl_setopt($ch, CURLOPT_USERPWD, $secretKey . ':');
-    $result = curl_exec($ch);
-    $response = json_decode($result, true);
-    curl_close($ch);
-    
-    if (isset($response['error'])) {
-        throw new Exception("Stripe Error: " . $response['error']['message']);
-    }
-    return $response;
+if (empty($selectedItems)) {
+    flash('error', 'No items received for processing.');
+    header("Location: ../cart/cart.php");
+    exit;
 }
 
-// 2. Function to Create E-WALLET Session (Redirect)
-function createStripeSession($amount, $secretKey, $paymentId) {
+if (!is_array($selectedItems)) {
+    $selectedItems = explode(',', $selectedItems);
+}
+$selectedIds = array_map('intval', $selectedItems);
+$selectedIds = array_filter($selectedIds);
+$selectedIdsStr = implode(',', $selectedIds);
+
+if (empty($selectedIds)) {
+    flash('error', 'Invalid items selected.');
+    header("Location: ../cart/cart.php");
+    exit;
+}
+
+// --- STRIPE CONFIGURATION ---
+
+// Helper: Create Checkout Session
+function createStripeSession($amount, $secretKey, $methodTypes) {
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $host = $_SERVER['HTTP_HOST'];
-    $successUrl = "$protocol://$host/U-Order/pages/order_success.php?payment_id=$paymentId&status=success";
+    
+    // SUCCESS URL: Points to the NEW callback file to insert data
+    $successUrl = "$protocol://$host/U-Order/pages/payment_callback.php?session_id={CHECKOUT_SESSION_ID}";
+    
+    // CANCEL URL: Points back to cart or payment page (No DB changes)
     $cancelUrl  = "$protocol://$host/U-Order/pages/payment.php?error=cancelled";
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://api.stripe.com/v1/checkout/sessions");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'payment_method_types' => ['grabpay', 'fpx'],
+        'payment_method_types' => $methodTypes, 
         'line_items' => [[
             'price_data' => [
                 'currency' => 'myr',
-                'product_data' => ['name' => 'Canteen Order #' . $paymentId],
+                'product_data' => ['name' => 'Canteen Order Payment'], // Generic name since order ID isn't made yet
                 'unit_amount' => round($amount * 100),
             ],
             'quantity' => 1,
@@ -65,73 +71,87 @@ function createStripeSession($amount, $secretKey, $paymentId) {
     if (isset($response['error'])) {
         throw new Exception("Stripe Session Error: " . $response['error']['message']);
     }
+    
     return $response['url'];
 }
 
 $userId = $_SESSION['user_id'];
 $paymentMethodInput = $_POST['payment_method'] ?? 'cash';
 
-// --- MAP FRONTEND VALUE TO DATABASE ENUM ---
-// payment.php sends: 'stripe', 'ewallet', 'cash'
-// Database table 'payments' column 'PaymentMethod' expects: 'card', 'e-wallet', 'cash'
+// Map Inputs
 switch ($paymentMethodInput) {
-    case 'stripe':
-        $dbPaymentMethod = 'card';
+    case 'stripe': 
+        $dbPaymentMethod = 'card'; 
+        $stripeMethods = ['card','fpx']; 
         break;
-    case 'ewallet':
-        $dbPaymentMethod = 'e-wallet';
+    case 'ewallet': 
+        $dbPaymentMethod = 'e-wallet'; 
+        $stripeMethods = ['grabpay']; 
         break;
-    default:
-        $dbPaymentMethod = 'cash';
+    default: 
+        $dbPaymentMethod = 'cash'; 
+        $stripeMethods = []; 
         break;
 }
 
-// Retrieve Checkout Data
-$pickupTime = $_SESSION['checkout_time'] ?? 'ASAP';
+// Prepare Data
+$pickupTime = $_SESSION['checkout_time'] ?? null;
 $userNotes = $_SESSION['checkout_notes'] ?? '';
-$finalNote = "Pickup: " . $pickupTime . " | Method: " . ucfirst($dbPaymentMethod);
-if (!empty($userNotes)) $finalNote .= " | Note: " . $userNotes;
-
-// Determine Initial Status
-if ($paymentMethodInput === 'stripe' || $paymentMethodInput === 'ewallet') {
-    $paymentStatus = 'paid';
-}else {
-    $paymentStatus = 'pending'; // Cash is pending
-}
+$finalNote = $userNotes; // Notes = Just the remark
 
 try {
-    $db->beginTransaction();
-
-    // Get Cart
-    $sql = "SELECT ci.*, p.UnitPrice, p.StallId, p.ProductName FROM carts c JOIN cartitems ci ON c.CartId = ci.CartId JOIN products p ON ci.ProductId = p.ProductId WHERE c.UserId = :uid";
+    // 2. GET CART ITEMS (FILTERED) to calculate total and prep data
+    $sql = "SELECT ci.*, p.UnitPrice, p.StallId, p.ProductName 
+            FROM carts c
+            JOIN cartitems ci ON c.CartId = ci.CartId
+            JOIN products p ON ci.ProductId = p.ProductId
+            WHERE c.UserId = :uid 
+              AND ci.CartItemId IN ($selectedIdsStr)";
+              
     $stmt = $db->prepare($sql);
     $stmt->execute([':uid' => $userId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if (empty($cartItems)) throw new Exception("Cart is empty.");
+    if (empty($cartItems)) throw new Exception("No valid items found.");
 
     $totalAmount = 0;
     foreach ($cartItems as $item) $totalAmount += ($item['UnitPrice'] * $item['Quantity']);
 
-    // --- HANDLE STRIPE CARD (Immediate Charge) ---
-    if ($paymentMethodInput === 'stripe') {
-        if (!isset($_POST['stripeToken'])) throw new Exception("No payment token.");
-        chargeStripeCard($_POST['stripeToken'], $totalAmount, $stripeSecretKey);
+    // ==========================================
+    // PATH A: ONLINE PAYMENT (Stripe/E-Wallet)
+    // ==========================================
+    if ($paymentMethodInput !== 'cash') {
+        // 1. Store ALL necessary data in Session (Temporary)
+        $_SESSION['pending_order'] = [
+            'userId' => $userId,
+            'totalAmount' => $totalAmount,
+            'dbPaymentMethod' => $dbPaymentMethod,
+            'finalNote' => $finalNote,
+            'pickupTime' => $pickupTime,
+            'cartItems' => $cartItems, // The full array of items
+            'selectedIdsStr' => $selectedIdsStr // IDs to delete later
+        ];
+
+        // 2. Redirect to Stripe
+        $redirectUrl = createStripeSession($totalAmount, $stripeSecretKey, $stripeMethods);
+        header("Location: " . $redirectUrl);
+        exit; 
+        // STOP HERE. DB insertion happens in 'payment_callback.php'
     }
 
-    // --- CREATE PAYMENT RECORD (WITH PAYMENT METHOD) ---
+    // ==========================================
+    // PATH B: CASH PAYMENT (Immediate)
+    // ==========================================
+    $db->beginTransaction();
+
+    // Insert Payment
     $sql = "INSERT INTO payments (UserId, TotalAmount, Status, PaymentMethod, CreatedAt) 
-            VALUES (:uid, :amt, :status, :method, NOW())";
+            VALUES (:uid, :amt, 'pending', :method, NOW())";
     $stmt = $db->prepare($sql);
-    $stmt->execute([
-        ':uid' => $userId, 
-        ':amt' => $totalAmount, 
-        ':status' => $paymentStatus,
-        ':method' => $dbPaymentMethod // Storing the mapped value ('card', 'e-wallet', or 'cash')
-    ]);
+    $stmt->execute([':uid' => $userId, ':amt' => $totalAmount, ':method' => 'cash']);
     $paymentId = $db->lastInsertId();
 
-    // Create Orders per Stall
+    // Insert Orders & Items
     $ordersByStall = [];
     foreach ($cartItems as $item) { $ordersByStall[$item['StallId']][] = $item; }
 
@@ -144,39 +164,35 @@ try {
         $stmt->execute([':pid' => $paymentId, ':uid' => $userId, ':sid' => $stallId, ':notes' => $finalNote]);
         $orderId = $db->lastInsertId();
 
-        $sqlList = "INSERT INTO orderitems (OrderId, ProductId, Quantity, Subtotal) VALUES (:oid, :prod, :qty, :sub)";
+        $sqlList = "INSERT INTO orderitems (OrderId, ProductId, Quantity, Subtotal, Note, PickupTime) VALUES (:oid, :prod, :qty, :sub, :note, :time)";
         $stmtList = $db->prepare($sqlList);
 
         foreach ($items as $item) {
-            $stmtList->execute([':oid' => $orderId, ':prod' => $item['ProductId'], ':qty' => $item['Quantity'], ':sub' => ($item['UnitPrice'] * $item['Quantity'])]);
+            $stmtList->execute([
+                ':oid' => $orderId, 
+                ':prod' => $item['ProductId'], 
+                ':qty' => $item['Quantity'], 
+                ':sub' => ($item['UnitPrice'] * $item['Quantity']),
+                ':note' => $item['Note'],
+                ':time' => !empty($item['PickupTime']) ? $item['PickupTime'] : $pickupTime
+            ]);
             $stmtDeduct->execute([':qty' => $item['Quantity'], ':pid' => $item['ProductId']]);
         }
     }
 
-    // Clear Cart & Session
-    $stmt = $db->prepare("DELETE FROM cartitems WHERE CartId = :cid");
-    $stmt->execute([':cid' => $cartItems[0]['CartId']]);
+    // Delete Processed Items
+    $db->exec("DELETE FROM cartitems WHERE CartItemId IN ($selectedIdsStr)");
     unset($_SESSION['checkout_notes']);
     unset($_SESSION['checkout_time']);
 
     $db->commit();
-
-    // --- HANDLE E-WALLET REDIRECT (Post-Database) ---
-    if ($paymentMethodInput === 'ewallet') {
-        // Generate the Real Stripe Checkout Link (GrabPay/FPX)
-        $redirectUrl = createStripeSession($totalAmount, $stripeSecretKey, $paymentId);
-        header("Location: " . $redirectUrl);
-        exit;
-    }
-
-    // For Card/Cash, go straight to success
     header("Location: order_success.php?payment_id=" . $paymentId);
     exit;
 
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
     error_log("Payment Error: " . $e->getMessage()); 
-    flash('error', 'Payment Error: ' . $e->getMessage());
+    flash('error', 'Payment Failed: ' . $e->getMessage());
     header("Location: payment.php");
     exit;
 }

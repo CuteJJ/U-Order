@@ -9,20 +9,49 @@ if (!isLoggedIn()) {
 
 $userId = $_SESSION['user_id'];
 
-// Recalculate total for security display
+// 1. Get Selected Items from POST
+$selectedItems = $_POST['selected_items'] ?? null;
+
+if (empty($selectedItems)) {
+    flash('error', 'No items selected for checkout. Please select items in your cart.');
+    // Correct redirect to the cart folder
+    header("Location: ../cart/cart.php");
+    exit;
+}
+
+// Ensure it's an array and sanitize IDs
+if (!is_array($selectedItems)) {
+    $selectedItems = explode(',', $selectedItems);
+}
+$selectedIds = array_map('intval', $selectedItems);
+// Filter out 0 or invalid IDs
+$selectedIds = array_filter($selectedIds);
+
+if (empty($selectedIds)) {
+    flash('error', 'Invalid selection data.');
+    header("Location: ../cart/cart.php");
+    exit;
+}
+
+$selectedIdsStr = implode(',', $selectedIds);
+
+// 2. Recalculate total ONLY for selected items
+// Added: AND ci.CartItemId IN ($selectedIdsStr)
 $sql = "SELECT SUM(p.UnitPrice * ci.Quantity) as Total 
         FROM carts c
         JOIN cartitems ci ON c.CartId = ci.CartId
         JOIN products p ON ci.ProductId = p.ProductId
-        WHERE c.UserId = :uid";
+        WHERE c.UserId = :uid 
+          AND ci.CartItemId IN ($selectedIdsStr)";
+
 $stmt = $db->prepare($sql);
 $stmt->execute([':uid' => $userId]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalAmount = $result['Total'] ?? 0;
 
 if ($totalAmount == 0) {
-    flash('error', 'Your cart is empty.');
-    header("Location: cart.php");
+    flash('error', 'Selected items have a total of 0 or represent an invalid selection.');
+    header("Location: ../cart/cart.php");
     exit;
 }
 ?>
@@ -92,6 +121,11 @@ if ($totalAmount == 0) {
             <small style="font-size: 0.4em; vertical-align: middle;">RM</small> <?php echo number_format($totalAmount, 2); ?>
         </div>
         <form id="paymentForm" action="process_payment.php" method="POST">
+            <!-- 3. PASS SELECTED ITEMS TO NEXT PAGE -->
+            <?php foreach ($selectedIds as $id): ?>
+                <input type="hidden" name="selected_items[]" value="<?= htmlspecialchars($id) ?>">
+            <?php endforeach; ?>
+
             <label style="font-weight:bold; display:block; margin-bottom:10px;">Select Payment Method</label>
             
             <div class="payment-methods">
@@ -115,15 +149,9 @@ if ($totalAmount == 0) {
             <input type="hidden" name="payment_method" id="selectedMethod" value="stripe">
             
             <!-- STRIPE Section -->
-            <div id="section-stripe">
-                <label style="margin-bottom:5px; display:block; color:#666;">Credit or Debit Card</label>
-                <div id="card-element">
-                    <!-- A Stripe Element will be inserted here. -->
-                </div>
-                <div id="card-errors" role="alert" style="color: #fa755a; margin-top: 5px; font-size: 0.9em;"></div>
-                <p style="font-size:0.8em; color:#999; margin-top:10px;">
-                    TEST MODE: Use <strong style="color:#333">4242 4242 4242 4242</strong> for the card number.
-                </p>
+            <div id="section-stripe" class="info-box">
+                <strong>💳 Card Payment</strong><br>
+                You will be redirected to the Card / Online Banking simulator to complete your payment.
             </div>
 
             <!-- E-WALLET Section -->
@@ -153,8 +181,6 @@ if ($totalAmount == 0) {
 
 <script>
     // 1. Initialize Stripe
-    // Replace this with your own Publishable Key if you have one. 
-    // This is a generic test key provided by Stripe docs for testing.
     var stripe = Stripe('pk_test_51SX1myLUKR77BP7mQd7X6amafGv985Qn9UGbOcA0RVRSbE2cIfCiTXkDbfXifnKfJRYs2IvkBWrZF6Smi1LRMS2l00bfmNBJee'); 
     var elements = stripe.elements();
 
