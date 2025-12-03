@@ -1,0 +1,261 @@
+/* Container Layout */
+.order-history-wrapper {
+    width: 100%;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Navigation Bar */
+.history-nav {
+    margin-bottom: 20px;
+}
+
+.back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: var(--nord3);
+    border: 1px solid var(--nord4);
+    border-radius: 50px; /* Makes it a pill */
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.back-pill:hover {
+    background-color: var(--nord6); /* Slightly darker on hover */
+    color: var(--nord0);
+    transform: translateX(-3px); /* Slide left effect */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Header Section */
+.history-header {
+    margin-bottom: 25px;
+}
+
+.history-header h1 {
+    font-size: 1.8rem;
+    color: var(--nord1);
+    margin-bottom: 5px;
+    font-weight: 800;
+}
+
+.history-header p {
+    color: var(--nord3);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Responsive Grid */
+.history-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile: 1 column */
+    gap: 20px;
+}
+
+/* Desktop: 2 Columns */
+@media (min-width: 768px) {
+    .history-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Wide Desktop: 3 Columns */
+@media (min-width: 1024px) {
+    .history-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+    
+    .order-history-wrapper {
+        padding: 2rem;
+    }
+}
+
+/* Card Styling */
+.history-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--nord6);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: var(--nord8);
+}
+
+/* Card Top Section */
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.stall-info h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--nord0);
+    font-weight: 700;
+}
+
+.order-date {
+    font-size: 0.8rem;
+    color: var(--nord3);
+    margin-top: 4px;
+    display: block;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Specific Colors based on Nord */
+.status-pending {
+    background-color: rgba(235, 203, 139, 0.2); /* Nord13 light */
+    color: #9e824c; /* Darker version of Nord13 for text readability */
+    border: 1px solid rgba(235, 203, 139, 0.4);
+}
+
+.status-completed, .status-ready {
+    background-color: rgba(163, 190, 140, 0.2); /* Nord14 light */
+    color: #6a8b54;
+    border: 1px solid rgba(163, 190, 140, 0.4);
+}
+
+.status-cancelled {
+    background-color: rgba(191, 97, 106, 0.15); /* Nord11 light */
+    color: var(--nord11);
+    border: 1px solid rgba(191, 97, 106, 0.3);
+}
+
+.card-divider {
+    height: 1px;
+    background: var(--nord6);
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* Order Details Grid (Inside Card) */
+.order-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-item i {
+    color: var(--nord9); /* Nord9 Icon */
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.detail-item div {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-item label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--nord3);
+    font-weight: 600;
+}
+
+.detail-item span {
+    font-size: 0.9rem;
+    color: var(--nord1);
+    font-weight: 600;
+}
+
+/* Card Actions */
+.card-actions {
+    margin-top: auto; /* Pushes to bottom */
+    padding-top: 15px;
+    border-top: 1px dashed var(--nord4);
+    text-align: right;
+}
+
+.reorder-link {
+    color: var(--nord10);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.reorder-link:hover {
+    color: var(--nord9);
+    text-decoration: underline;
+}
+
+/* Empty State Styling */
+.no-orders {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border-radius: 20px;
+    border: 2px dashed var(--nord4);
+}
+
+.no-orders .icon-box {
+    width: 80px;
+    height: 80px;
+    background: var(--nord6);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+    color: var(--nord3);
+}
+
+.no-orders h3 {
+    margin: 0 0 10px;
+    color: var(--nord1);
+}
+
+.no-orders p {
+    color: var(--nord3);
+    margin-bottom: 20px;
+}
+
+.btn-browse {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--nord10);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn-browse:hover {
+    transform: translateY(-2px);
+    background: var(--nord9);
+}
