@@ -253,6 +253,7 @@
     background: var(--nord9);
 }
 
+
 /* Make the header look clickable */
 .card-header-toggle {
     cursor: pointer;
@@ -321,22 +322,20 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background-color: #fff;
-    color: var(--nord3);
-    border: 1px solid var(--nord4);
-    border-radius: 50px; /* Makes it a pill */
-    font-weight: 600;
+    border-radius: 50px;
     font-size: 0.9rem;
+    font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    background: var(--nord6); 
+    color: var(--nord0);      
+    border: 1px solid var(--nord4);
 }
 
 .back-pill:hover {
-    background-color: var(--nord6); /* Slightly darker on hover */
-    color: var(--nord10);
-    transform: translateX(-3px); /* Slide left effect */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 @media (min-width: 1024px) {

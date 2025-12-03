@@ -4,13 +4,15 @@
 
     const cfg = window.MENU_CONFIG;
 
+    // DOM Elements
     const grid           = document.getElementById("menu-grid");
     const form           = document.getElementById("menu-filter-form");
     const searchInput    = document.getElementById("search-input");
     const sortSelect     = document.getElementById("sort-select");
     const categoryHidden = document.getElementById("category-hidden");
     const catScroll      = document.getElementById("category-scroll");
-    const searchBtn      = document.getElementById("search-btn");
+
+    // Note: Search Button removed from HTML, logic merged into Input
 
     if (!grid || !form || !searchInput || !sortSelect || !categoryHidden || !catScroll) {
         return;
@@ -20,6 +22,7 @@
     let currentCategory = cfg.category || "";
     let currentSort     = cfg.sort || "default";
     let isLoading       = false;
+    let debounceTimer; // Timer for real-time search
 
     function escapeHtml(str) {
         if (str === null || str === undefined) return "";
@@ -90,7 +93,7 @@
        AJAX 请求 menu.php?ajax=1
     =============================================================== */
     async function ajaxFetch() {
-        if (isLoading) return;
+        // Allow rapid typing updates
         setLoading(true);
 
         const params = new URLSearchParams({
@@ -121,11 +124,11 @@
             renderEmptyState();
         } finally {
             setLoading(false);
-             if (grid.style.opacity === "0") {
-        requestAnimationFrame(() => {
-            grid.style.opacity = "1";
-        });
-    }
+            if (grid.style.opacity === "0") {
+                requestAnimationFrame(() => {
+                    grid.style.opacity = "1";
+                });
+            }
         }
     }
 
@@ -136,13 +139,12 @@
         const card = e.target.closest(".cat-card");
         if (!card) return;
         
-        e.preventDefault();
+        // e.preventDefault();
         currentCategory = card.dataset.category || "";
         categoryHidden.value = currentCategory;
 
         updateCategoryActive();
-       ajaxFetch();
-
+        ajaxFetch();
     });
 
     function updateCategoryActive() {
@@ -160,18 +162,22 @@
     });
 
     /* ===============================================================
-       Search Button 点击 → AJAX
+       Search Input (Real-Time) → AJAX
     =============================================================== */
-    searchBtn.addEventListener("click", () => {
-        currentSearch = searchInput.value.trim();
-        ajaxFetch();
+    // Replaced original Button logic with Debounce logic
+    searchInput.addEventListener("input", (e) => {
+        clearTimeout(debounceTimer);
+        currentSearch = e.target.value.trim();
+        
+        // 延迟 300ms 后自动请求
+        debounceTimer = setTimeout(() => {
+            ajaxFetch();
+        }, 100);
     });
 
-    /* ===============================================================
-       Search Enter → AJAX
-    =============================================================== */
     form.addEventListener("submit", e => {
         e.preventDefault();
+        clearTimeout(debounceTimer);
         currentSearch = searchInput.value.trim();
         ajaxFetch();
     });
@@ -187,6 +193,7 @@
         });
 
         try {
+            // Note: Ensure menu_polling.php exists for this to work
             const res = await fetch(`menu_polling.php?${params.toString()}`, {
                 cache: "no-store",
                 headers: { "Accept": "application/json" }
@@ -222,6 +229,6 @@
 
     // 初始化
     updateCategoryActive();
-    ajaxFetch();
+    // ajaxFetch(); // PHP renders first load
 
 })();

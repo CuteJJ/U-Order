@@ -24,7 +24,7 @@ $stmt->execute(['uid' => $userId]);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $itemSql = "
-    SELECT p.ProductName, oi.Quantity, oi.Subtotal 
+    SELECT p.ProductName, oi.Quantity, oi.Subtotal, oi.Note 
     FROM orderitems oi
     JOIN products p ON oi.ProductId = p.ProductId 
     WHERE OrderId = :oid
@@ -138,13 +138,16 @@ include __DIR__ . '/../includes/header.php';
                                     </div>
                                     <span class="item-price">RM <?php echo number_format($item['Subtotal'], 2); ?></span>
                                 </div>
+                                <?php if (!empty($item['Note'])): ?>
+                                    <div class="item-note">
+                            <i style="color: #7f7f7fff; font-size: 0.8rem;">Notes: <?php echo htmlspecialchars($item['Note']); ?></i>
+                                    </div>
+                                <?php endif; ?>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <p style="font-size:0.8rem; color:#999;">No items found.</p>
                         <?php endif; ?>
                     </div>
-
-                    <div class="card-divider"></div>
                     <div class="card-actions">
                         <a href="/U-Order/pages/menu.php?stallid=<?php echo htmlspecialchars($order['StallId']); ?>" class="reorder-link">
                             View Stall <i class="fas fa-store"></i>
