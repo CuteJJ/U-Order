@@ -635,6 +635,166 @@
                 <?php endforeach; ?>
             </div>
         </section>
+        
+        <?php
+    }
+    
+    $response['html'] = ob_get_clean();
+    $response['hasResults'] = $totalResultCount > 0;
+    
+    echo json_encode($response);
+    exit;
+}
+
+/* ============================================================
+   NORMAL PAGE LOAD
+============================================================ */
+$search = $_GET['search'] ?? '';
+
+/* ============================================================
+   CATEGORIES
+============================================================ */
+$catSql = "SELECT * FROM categories ORDER BY CategoryId ASC";
+$catStmt = $db->prepare($catSql);
+$catStmt->execute();
+$categories = $catStmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* ============================================================
+   TOP SELLERS (SHOW UNAVAILABLE + CLOSED)
+============================================================ */
+$topSql = "SELECT p.*, p.CategoryId, s.StallName, s.IsAvailable AS StallOpen,
+           (SELECT ImageURL FROM productimages pi WHERE pi.ProductId = p.ProductId LIMIT 1) AS ImageURL,
+           (SELECT COUNT(*) FROM cartitems ci WHERE ci.ProductId = p.ProductId) AS SalesCount
+           FROM products p
+           JOIN stalls s ON p.StallId = s.StallId
+           GROUP BY p.ProductId
+           ORDER BY SalesCount DESC
+           LIMIT 3";
+
+$topStmt = $db->prepare($topSql);
+
+try {
+    $topStmt->execute();
+    $topSellers = $topStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $topSellers = [];
+}
+
+/* ============================================================
+   STALLS
+============================================================ */
+$stallSql = "SELECT * FROM stalls ORDER BY StallName ASC";
+$stallStmt = $db->prepare($stallSql);
+$stallStmt->execute();
+$stalls = $stallStmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* ============================================================
+   FETCH Products Under Stall
+============================================================ */
+function getStallProducts($db, $stallId, $searchTerm = '')
+{
+    $sql = "SELECT p.*, p.CategoryId,
+            (SELECT ImageURL FROM productimages pi 
+             WHERE pi.ProductId = p.ProductId LIMIT 1) AS ImageURL
+            FROM products p
+            WHERE p.StallId = :sid";
+
+    $params = [':sid' => $stallId];
+
+    if (!empty($searchTerm)) {
+        $sql .= " AND (p.ProductName LIKE :search OR p.Description LIKE :search)";
+        $params[':search'] = "%$searchTerm%";
+    }
+
+    $sql .= " ORDER BY p.ProductName ASC";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* ============================================================
+   USER INFO
+============================================================ */
+$userName = isset($_SESSION['name']) ? htmlspecialchars($_SESSION['name']) : 'Student';
+$userInitials = isset($_SESSION['name']) ? urlencode($_SESSION['name']) : 'Student';
+
+include 'includes/header.php';
+?>
+
+<!-- HEADER SECTION -->
+<header class="home-header">
+    <div class="header-content">
+        <div class="greeting">
+            <div class="profile-pic-small">
+                <img src="https://ui-avatars.com/api/?name=<?php echo $userInitials; ?>&background=81A1C1&color=fff&size=128" alt="Profile">
+            </div>
+            <h1>Good Morning,<br><span><?php echo $userName; ?>!</span></h1>
+        </div>
+
+        <nav class="desktop-nav">
+            <a href="index.php" class="active">Home</a>
+            <a href="#">Notification</a>
+
+            <?php 
+            // DYNAMIC LINK BASED ON ROLE
+            if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+                echo '<a href="pages/admin_dashboard.php">Dashboard</a>';
+            } elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'vendor') {
+                echo '<a href="pages/vendor_dashboard.php">Dashboard</a>';
+            } else {
+                echo '<a href="pages/order_history.php">Activity</a>';
+            }
+            ?>
+            
+            <a href="pages/profile.php">Profile</a>
+        </nav>
+
+        <form class="search-bar-container" id="searchForm">
+            <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="searchInput" 
+                       name="search" 
+                       placeholder="Search for food..." 
+                       value="<?php echo htmlspecialchars($search); ?>">
+            </div>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+</header>
+<?php if (empty($search)): ?>
+<!-- ==========================================================
+     CATEGORIES
+========================================================== -->
+<section class="section-categories">
+    <div class="section-header">
+        <h3>Categories</h3>
+    </div>
+
+    <div class="cat-scroll">
+        <!-- All -->
+        <div class="cat-card active" data-category-id="all">
+            <div class="cat-box">
+                <i class="fas fa-border-all"></i>
+            </div>
+            <span>All</span>
+        </div>
+
+        <?php foreach ($categories as $cat): ?>
+            <div class="cat-card" data-category-id="<?php echo htmlspecialchars($cat['CategoryId']); ?>">
+                <div class="cat-box">
+                    <?php if (!empty($cat['CategoryLogo'])): ?>
+                        <img src="<?php echo htmlspecialchars($cat['CategoryLogo']); ?>"
+                             style="width:26px;height:26px;object-fit:contain;">
+                    <?php else: ?>
+                        <i class="fas fa-utensils"></i>
+                    <?php endif; ?>
+                </div>
+                <span><?php echo htmlspecialchars($cat['CategoryName']); ?></span>
+            </div>
         <?php endforeach; ?>
     <?php endif; ?>
     </div>

@@ -87,15 +87,17 @@ for ($i = 0; $i < 4; $i++) {
 }
 
 // =====================================================
-// 5. IMAGE FIXERS
+// 5. UNIVERSAL IMAGE FIXER (STALL LOGO + PRODUCT IMAGES)
 // =====================================================
-function fixAssetUrl($path) {
+function fixAssetUrl($path)
+{
     if (!$path) return "https://via.placeholder.com/40?text=S";
     if (strpos($path, 'http') === 0) return $path;
     return "/U-Order/assets/" . ltrim($path, '/');
 }
 
-function fixImageUrl($path) {
+function fixImageUrl($path)
+{
     if (!$path) return "https://via.placeholder.com/600x400?text=No+Image";
     if (strpos($path, 'http') === 0) return $path;
     return "../assets/" . ltrim($path, '/');
@@ -107,39 +109,64 @@ include '../includes/header.php';
 ?>
 
 <link rel="stylesheet" href="/U-Order/assets/css/product.css">
-
 <style>
-/* =============================
-   NEW: Carousel Arrows
-============================= */
-.carousel-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 30;
-    background: rgba(255,255,255,0.85);
-    border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.carousel-arrow i { font-size: 18px; color: #444; }
-.left-arrow { left: 10px; }
-.right-arrow { right: 10px; }
-.carousel-arrow:hover { background: #ffffff; }
+    .stall-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        text-decoration: none;
+        color: inherit;
+    }
 
-/* keep your existing CSS */
+    .stall-badge:hover {
+        background: #e0e0e0;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .stall-badge-logo {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    #error-modal {
+        opacity: 0;
+        transition: opacity .25s ease;
+    }
+
+    #error-modal.active {
+        opacity: 1;
+    }
+
+    #modal-card {
+        transform: scale(.95);
+        transition: transform .25s cubic-bezier(.16, .8, .3, 1);
+    }
+
+    #modal-card.pop {
+        transform: scale(1);
+    }
+
+    .action-btn.disabled {
+        background: #cccccc !important;
+        pointer-events: none;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
 </style>
-
+<?php flash(); ?>
 <div class="product-page-wrapper">
-
     <!-- ============================
-         IMAGE CAROUSEL (WITH ARROWS)
+         IMAGE CAROUSEL
     ============================= -->
     <div class="product-carousel">
 
@@ -167,6 +194,13 @@ include '../includes/header.php';
                     <div class="indicator <?= $i === 0 ? 'active' : '' ?>" data-index="<?= $i ?>"></div>
                 <?php endforeach; ?>
             </div>
+
+            <button class="carousel-arrow arrow-prev" aria-label="Previous Slide">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="carousel-arrow arrow-next" aria-label="Next Slide">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         <?php endif; ?>
 
         <a href="../index.php" class="back-overlay-btn">
@@ -180,10 +214,10 @@ include '../includes/header.php';
     <div class="product-info">
 
         <!-- Stall Badge -->
-        <a href="menu.php?stallid=<?= $product['StallId'] ?>" class="stall-badge">
-            <img src="<?= htmlspecialchars($stallLogoUrl) ?>" class="stall-badge-logo">
+        <a href="menu.php?stallid=<?php echo $product['StallId']; ?>" class="stall-badge">
+            <img src="<?php echo htmlspecialchars($stallLogoUrl); ?>" class="stall-badge-logo">
             <i class="fas fa-store"></i>
-            <?= htmlspecialchars($product['StallName']) ?>
+            <?php echo htmlspecialchars($product['StallName']); ?>
         </a>
 
         <h1 class="product-title-large"><?= htmlspecialchars($product['ProductName']) ?></h1>
@@ -193,25 +227,24 @@ include '../includes/header.php';
             <span class="price-value"><?= number_format($product['UnitPrice'], 2) ?></span>
         </div>
 
-        <p class="product-description-full"><?= nl2br(htmlspecialchars($product['Description'])) ?></p>
-
+        <p class="product-description-full"><?php echo nl2br(htmlspecialchars($product['Description'])); ?></p>
         <!-- INLINE ERROR MESSAGE -->
         <div id="inline-error" style="
-            display:none;
-            background:#fee2e2;
-            color:#b91c1c;
-            padding:10px 14px;
-            border-radius:8px;
-            margin-bottom:10px;
-            border:1px solid #fca5a5;
-            font-size:0.95rem;
-        "></div>
+    display:none;
+    background:#fee2e2;
+    color:#b91c1c;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-bottom:10px;
+    border:1px solid #fca5a5;
+    font-size:0.95rem;
+"></div>
 
         <!-- Desktop Options -->
         <div class="desktop-options">
             <div class="option-group">
                 <label class="option-label">Special Instructions</label>
-                <textarea id="desktop-note" class="note-input"><?= htmlspecialchars($initialNote) ?></textarea>
+                <textarea id="desktop-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
             </div>
 
             <div class="option-group">
@@ -227,8 +260,8 @@ include '../includes/header.php';
                 <label class="option-label">Pickup Time</label>
                 <div class="time-selector">
                     <?php foreach ($timeSlots as $slot): ?>
-                        <div class="time-pill <?= $slot['selected'] ?>" data-time="<?= $slot['value'] ?>">
-                            <?= $slot['label'] ?>
+                        <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                            <?php echo $slot['label']; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -246,9 +279,7 @@ include '../includes/header.php';
 <div class="bottom-action-bar mobile-only">
     <div class="bar-price">
         <span>Total</span>
-        <strong>RM 
-            <span class="display-total"><?= number_format($product['UnitPrice'] * $initialQty, 2) ?></span>
-        </strong>
+        <strong>RM <span class="display-total"><?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></span></strong>
     </div>
     <button class="action-btn" id="trigger-sheet-btn"><?= $cartItemId ? 'Update' : 'Add' ?></button>
 </div>
@@ -260,23 +291,22 @@ include '../includes/header.php';
         <span class="sheet-title"><?= $cartItemId ? 'Update Order' : 'Customize' ?></span>
         <span class="close-sheet">&times;</span>
     </div>
-
-    <div id="inline-error-mobile" style="
-        display:none;
-        background:#fee2e2;
-        color:#b91c1c;
-        padding:10px 14px;
-        border-radius:8px;
-        margin-bottom:10px;
-        border:1px solid #fca5a5;
-        font-size:0.9rem;
-    "></div>
+<div id="inline-error-mobile" style="
+    display:none;
+    background:#fee2e2;
+    color:#b91c1c;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-bottom:10px;
+    border:1px solid #fca5a5;
+    font-size:0.9rem;
+"></div>
 
     <div class="sheet-body">
 
         <div class="option-group">
             <label class="option-label">Special Instructions</label>
-            <textarea id="mobile-note" class="note-input"><?= htmlspecialchars($initialNote) ?></textarea>
+            <textarea id="mobile-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
         </div>
 
         <div class="option-group">
@@ -292,8 +322,8 @@ include '../includes/header.php';
             <label class="option-label">Pickup Time</label>
             <div class="time-selector">
                 <?php foreach ($timeSlots as $slot): ?>
-                    <div class="time-pill <?= $slot['selected'] ?>" data-time="<?= $slot['value'] ?>">
-                        <?= $slot['label'] ?>
+                    <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                        <?php echo $slot['label']; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -352,48 +382,7 @@ include '../includes/header.php';
     </div>
 </div>
 
-<!-- CAROUSEL JS (NEW) -->
-<script>
-const track = document.querySelector('.carousel-track');
-const slides = Array.from(document.querySelectorAll('.carousel-slide'));
-const dots = Array.from(document.querySelectorAll('.indicator'));
-const leftBtn = document.querySelector('.left-arrow');
-const rightBtn = document.querySelector('.right-arrow');
 
-let currentIndex = 0;
-
-function updateCarousel() {
-    const width = slides[0].clientWidth;
-    track.style.transform = `translateX(-${currentIndex * width}px)`;
-
-    dots.forEach(d => d.classList.remove('active'));
-    if (dots[currentIndex]) dots[currentIndex].classList.add('active');
-}
-
-rightBtn?.addEventListener('click', () => {
-    currentIndex++;
-    if (currentIndex >= slides.length) currentIndex = 0;
-    updateCarousel();
-});
-
-leftBtn?.addEventListener('click', () => {
-    currentIndex--;
-    if (currentIndex < 0) currentIndex = slides.length - 1;
-    updateCarousel();
-});
-
-dots.forEach((dot, idx) => {
-    dot.addEventListener('click', () => {
-        currentIndex = idx;
-        updateCarousel();
-    });
-});
-
-window.addEventListener('resize', updateCarousel);
-</script>
-
-<!-- MAIN PRODUCT JS -->
 <script src="/U-Order/assets/js/product.js"></script>
-
 </body>
 </html>

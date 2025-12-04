@@ -76,7 +76,7 @@ $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2>My Order History</h2>
-            <a href="menu.php" class="btn btn-primary">Back to Menu</a>
+            <a href="../index.php" class="btn btn-primary">Back to Menu</a>
         </div>
 
         <?php if (empty($orders)): ?>

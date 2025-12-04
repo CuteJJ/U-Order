@@ -1,135 +1,244 @@
-/* --- PROFILE PAGE STYLING --- */
+/* /assets/css/profile.css */
 
+/* --- LAYOUT & CONTAINER --- */
 .profile-wrapper {
     width: 100%;
-    min-height: calc(100vh - 80px); /* Adjust for header/nav */
-    padding: 20px;
+    min-height: 80vh;
+    padding: 20px; /* Consistent padding */
     display: flex;
     justify-content: center;
-    /* Default to column for mobile */
-    flex-direction: column; 
+    align-items: flex-start;
 }
 
-.profile-card {
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    padding: 2rem;
-    width: 100%;
-    max-width: 600px; /* Mobile/Tablet max width */
-    margin: 0 auto;
-}
-
-/* Desktop Adjustments */
 @media (min-width: 1024px) {
     .profile-wrapper {
         padding: 40px;
-        align-items: flex-start; /* Align to top */
-    }
-
-    .profile-card {
-        max-width: 100%; /* Use full width of container */
-        padding: 4rem;
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Split layout if desired, or keep single column */
-        gap: 40px;
+        align-items: center; 
     }
 }
 
-/* Section Headers */
-.profile-section-title {
-    color: var(--nord10);
-    margin-bottom: 1.5rem;
-    font-size: 1.5rem;
+/* --- MAIN CARD --- */
+.profile-card {
+    background: #fff;
+    width: 100%;
+    max-width: 850px; /* Slightly wider for better spacing */
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HERO SECTION --- */
+.profile-hero {
+    height: 180px; /* Taller to allow better overlap */
+    background: linear-gradient(135deg, var(--nord10), var(--nord9));
+    position: relative;
+    padding: 25px 30px;
+}
+
+.back-btn-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.back-btn-hero:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* --- HEADER CONTENT (Avatar & Name) --- */
+.profile-header-content {
+    margin-top: -70px; /* Pull content up into hero */
+    padding: 0 35px 30px; /* Match sides */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center on mobile */
+    position: relative;
+    z-index: 2; /* Ensure on top */
+}
+
+.avatar-container {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: #fff;
+    padding: 5px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15); /* Stronger shadow for pop */
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--nord4);
+}
+
+.user-identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center text on mobile */
+    gap: 6px;
+    padding-top: 10px; /* Spacing from avatar on desktop if needed */
+}
+
+.user-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--nord0);
+    margin: 0;
+    line-height: 1.2;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 5px 20px;
+}
+
+.user-role-badge {
+    display: inline-block;
+    background: var(--nord6);
+    color: var(--nord3);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
     font-weight: 700;
-    border-bottom: 2px solid var(--nord4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Desktop Header Adjustments */
+@media (min-width: 768px) {
+    .profile-header-content {
+        flex-direction: row;
+        align-items: flex-end; /* Align to bottom of avatar */
+        gap: 30px;
+        text-align: left;
+    }
+    .user-identity {
+        align-items: flex-start; /* Left align text on desktop */
+        padding-bottom: 10px; /* Lift text slightly */
+    }
+    .avatar-container { margin-bottom: 0; }
+    .user-name { text-align: left; font-size: 2rem; }
+}
+
+/* --- BODY CONTENT --- */
+.profile-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 10px 35px 50px 35px;
+}
+
+@media (min-width: 850px) {
+    .profile-body {
+        grid-template-columns: 1fr 1fr; /* 2 Columns */
+        gap: 60px;
+    }
+}
+
+/* --- SECTIONS --- */
+.section-title {
+    font-size: 1.1rem;
+    color: var(--nord3);
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid var(--nord6); /* Subtle divider */
     padding-bottom: 10px;
 }
 
-/* Form Groups */
-.form-group {
-    margin-bottom: 1.5rem;
-}
+.section-title i { color: var(--nord10); font-size: 1.2rem; }
 
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--nord2);
-    font-weight: 600;
-}
+.info-list { display: flex; flex-direction: column; gap: 15px; }
 
-.form-input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid var(--nord4);
-    border-radius: 8px;
-    background-color: var(--nord6);
-    color: var(--nord0);
-    font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--nord9);
-    background-color: #fff;
-}
-
-/* Info Display */
-.info-row {
+.info-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--nord6);
-}
-
-.info-label {
-    font-weight: 600;
-    color: var(--nord3);
-}
-
-.info-value {
-    color: var(--nord0);
-    font-weight: 500;
-}
-
-/* Buttons */
-.btn-action {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    display: inline-block;
-    text-decoration: none;
+    align-items: center;
+    padding: 15px;
+    background: var(--nord6);
+    border-radius: 12px;
     transition: background 0.2s;
 }
+.info-item:hover { background: var(--nord5); }
 
-.btn-update {
-    background-color: var(--nord10);
-    color: #fff;
+.info-item label { font-size: 0.9rem; color: var(--nord3); font-weight: 600; }
+.info-item span { font-weight: 700; color: var(--nord0); }
+
+/* --- FORMS --- */
+.modern-input-group { margin-bottom: 20px; }
+.modern-input-group label {
+    display: block; font-size: 0.85rem; font-weight: 700; 
+    color: var(--nord3); margin-bottom: 8px; margin-left: 4px;
 }
-.btn-update:hover { background-color: var(--nord9); }
 
-.btn-logout {
-    background-color: var(--nord11); /* Red for logout */
-    color: #fff;
+.modern-input {
+    width: 100%; padding: 14px 16px; border: 2px solid var(--nord4);
+    border-radius: 12px; font-size: 1rem; transition: all 0.2s;
+    background: #fff; color: var(--nord0);
+}
+.modern-input:focus {
+    border-color: var(--nord10); box-shadow: 0 0 0 4px rgba(94, 129, 172, 0.1); outline: none;
+}
+
+/* --- BUTTONS --- */
+.btn-primary {
+    width: 100%; padding: 15px; background: var(--nord10); color: #fff;
+    border: none; border-radius: 12px; font-weight: 700; font-size: 1rem;
+    cursor: pointer; transition: 0.2s;
+}
+.btn-primary:hover { background: var(--nord9); transform: translateY(-2px); }
+
+.btn-danger {
+    background: #fff; color: var(--nord11); border: 2px solid var(--nord6);
     margin-top: 20px;
 }
-.btn-logout:hover { background-color: #bf616a; }
-
-/* Back Button (Desktop Only) */
-.back-btn-desktop {
-    display: none;
-    margin-bottom: 20px;
-    color: var(--nord3);
-    font-weight: 600;
-    cursor: pointer;
+.btn-danger:hover {
+    background: var(--nord11); color: #fff; border-color: var(--nord11);
 }
-.back-btn-desktop:hover { color: var(--nord10); }
 
-@media (min-width: 1024px) {
-    .back-btn-desktop { display: inline-block; }
+/* --- SECURITY TOGGLE --- */
+.security-section {
+    border: 2px solid var(--nord6); border-radius: 16px; padding: 20px;
+}
+.security-header {
+    display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+}
+.btn-toggle-password {
+    background: transparent; color: var(--nord10); border: none; font-weight: 800; cursor: pointer;
+}
+.password-form-container {
+    display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--nord6);
+}
+.password-form-container.active { display: block; animation: slideDown 0.3s ease; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

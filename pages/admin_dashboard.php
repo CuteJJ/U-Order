@@ -93,7 +93,7 @@ foreach ($chartData as $row) {
                 <h4 style="margin-bottom: 10px; color: var(--text-main);">Quick Actions</h4>
                 <a href="stall_register.php" class="btn btn-admin primary" style="text-align:center;">+ Register New Stall</a>
                 <a href="reports.php" class="btn btn-admin" style="text-align:center;">View Reports</a>
-                <a href="menu.php" class="btn btn-admin" style="text-align:center;">View Live Menu</a>
+                <a href="../index.php" class="btn btn-admin" style="text-align:center;">View Live Menu</a>
             </div>
         </div>
 

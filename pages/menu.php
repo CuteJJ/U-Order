@@ -2,15 +2,18 @@
 include '../configs/db.php';
 include '../includes/functions.php';
 
-function fixAssetUrl($path) {
+function fixAssetUrl($path)
+{
     if (!$path) return "../assets/images/products/placeholder_food.png";
     if (strpos($path, 'http') === 0) return $path;
 
     $cleanPath = ltrim($path, '/');
 
+    // 如果本来就是 images/... 就补上 ../assets/
     if (strpos($cleanPath, 'images/') === 0) {
         return "../assets/" . $cleanPath;
     }
+    // 否则直接拼到 ../assets 下
     return "../assets/" . $cleanPath;
 }
 
@@ -25,18 +28,12 @@ $categoryFilter = $_GET['category'] ?? '';
 $sort           = $_GET['sort']     ?? 'default';
 
 /* ============================================================
-   Query products for this stall
+   取当前档口产品（显示全部，包括 unavailable）
 ============================================================ */
 $params = [':stallid' => $stallId];
 
 $sql = "SELECT 
-            p.ProductId,
-            p.ProductName,
-            p.Description,
-            p.UnitPrice,
-            p.IsAvailable,
-            p.CategoryId,
-            p.StallId,
+            p.*,
             s.StallName,
             s.LogoUrl,
             c.CategoryName,
@@ -47,19 +44,21 @@ $sql = "SELECT
         FROM products p
         JOIN stalls s ON p.StallId = s.StallId
         LEFT JOIN categories c ON p.CategoryId = c.CategoryId
-        WHERE s.StallId = :stallid";
-        
+        WHERE s.StallId = :stallid
+        AND s.IsAvailable = 1";
+
 if ($search) {
     $sql .= " AND (p.ProductName LIKE :search OR p.Description LIKE :search)";
     $params[':search'] = "%$search%";
 }
 
+// 后端 category 过滤
 if ($categoryFilter !== '') {
     $sql .= " AND p.CategoryId = :cat";
     $params[':cat'] = $categoryFilter;
 }
 
-// Sorting
+// 排序：默认按名字，Sort 改为按价格
 switch ($sort) {
     case 'price_asc':
         $sql .= " ORDER BY p.UnitPrice ASC";
@@ -77,514 +76,296 @@ $stmt->execute($params);
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* ============================================================
-   ⭐  AJAX ENDPOINT: menu.php?ajax=1
+   ⭐  AJAX: menu.php?ajax=1
 ============================================================ */
 if (isset($_GET['ajax'])) {
-    // Set proper headers
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-cache, must-revalidate');
-    
-    // Fix ImageURL paths
+    // 修复 ImageURL 路径
     foreach ($products as &$p) {
-        $p['ImageURL'] = fixAssetUrl($p['ImageURL'] ?? '');
+        $img = $p['ImageURL'] ?? '';
+        if (!$img) {
+            $p['ImageURL'] = "../assets/images/products/placeholder_food.png";
+        } else if (strpos($img, "http") === 0) {
+            $p['ImageURL'] = $img;
+        } else {
+            $p['ImageURL'] = "../assets/" . ltrim($img, '/');
+        }
     }
-
     echo json_encode([
         "success" => true,
-        "items"   => $products,
-        "count"   => count($products)
-    ], JSON_UNESCAPED_SLASHES);
+        "items"   => $products
+    ]);
     exit;
 }
 
 /* ============================================================
-   Get categories for this stall
+   只取【这个 stall 拥有的】category 列表
+   (Includes Logo for display)
 ============================================================ */
-$catSql = "SELECT DISTINCT c.CategoryId, c.CategoryName
-        FROM products p
-        JOIN categories c ON p.CategoryId = c.CategoryId
-        WHERE p.StallId = :stallid
-        ORDER BY c.CategoryName ASC";
+$catSql = "SELECT DISTINCT c.CategoryId, c.CategoryName, c.CategoryLogo
+           FROM products p
+           JOIN categories c ON p.CategoryId = c.CategoryId
+           WHERE p.StallId = :stallid
+           ORDER BY c.CategoryName ASC";
 $catStmt = $db->prepare($catSql);
 $catStmt->execute([':stallid' => $stallId]);
 $cats = $catStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Stall Info for Header
+$stallName = !empty($products) ? $products[0]['StallName'] : 'Stall Menu';
+$stallLogo = !empty($products) ? fixAssetUrl($products[0]['LogoUrl']) : '';
+
+include '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Canteen Menu</title>
-<link rel="stylesheet" href="../assets/css/root.css">
 
 <style>
-body {
-    background: var(--snow-3);
-    font-family: var(--font-main);
-    margin: 0;
-}
-
-/* ================= HEADER（Menu + Search + Sort） ================ */
-.menu-header {
-    background: var(--snow-1);
-    padding: 18px 24px;
-    box-shadow: var(--shadow-small);
-    margin-bottom: 12px;
-}
-
-.menu-header-top {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.menu-title-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.menu-title-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, 0.04);
-}
-
-.menu-title-pill-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    background: #111827;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #f9fafb;
-}
-
-.menu-header h2 {
-    margin: 0;
-    color: var(--polar-1);
-    font-size: 1.4rem;
-}
-
-/* Search + Sort 条 */
-.filter-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.filter-input {
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--polar-4);
-    flex: 1;
-    min-width: 200px;
-    font-size: 0.95rem;
-}
-
-.filter-select {
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--polar-4);
-    min-width: 170px;
-    font-size: 0.9rem;
-    background: #fff;
-}
-
-/* Search button */
-.filter-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    background: var(--frost-3);
-    color: #f9fafb;
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-}
-
-.filter-btn i {
-    font-size: 0.9rem;
-}
-
-.filter-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.45);
-    opacity: 0.96;
-}
-
-.filter-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-.filter-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* ================= CATEGORIES ================= */
-.section-categories {
-    padding: 6px 24px 18px 24px;
-}
-
-.section-categories .section-header {
-    margin-bottom: 10px;
-}
-
-.section-categories .section-header h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--polar-1);
-}
-
-.cat-scroll {
-    display: flex;
-    gap: 18px;
-    padding: 6px 4px 10px 4px;
-    overflow-x: auto;
-}
-
-.cat-scroll::-webkit-scrollbar {
-    height: 6px;
-}
-.cat-scroll::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.6);
-    border-radius: 999px;
-}
-
-.cat-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 72px;
-    text-decoration: none;
-    color: var(--polar-2);
-    cursor: pointer;
-}
-
-.cat-box {
-    width: 68px;
-    height: 68px;
-    border-radius: 22px;
-    background: #ffffff;
-    box-shadow: 0 8px 30px rgba(15,23,42,0.08);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #111827;
-    transition: 0.23s ease;
-}
-
-.cat-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.cat-card.active .cat-box {
-    background: #e0e7ff;
-    color: #1d4ed8;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(129, 140, 248, 0.5);
-}
-
-/* ===================== Product Cards ===================== */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-    padding: 0 24px 40px;
-    transition: opacity 0.25s ease;
-}
-
-.card {
-    background: white;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-soft);
-    cursor: pointer;
-    height: 360px;
-    transition: 0.25s;
-    display: flex;
-    flex-direction: column;
-    animation: fadeInUp 0.35s ease forwards;
-}
-
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-}
-
-.card.unavailable {
-    background: #dcdcdc;
-    filter: grayscale(0.6);
-    cursor: not-allowed;
-}
-
-.card.unavailable .card-title,
-.card.unavailable .card-desc,
-.card.unavailable .price-tag {
-    color: var(--polar-4) !important;
-}
-
-.card-img {
-    height: 170px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
-
-.unavailable-layer {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.40);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.unavailable-layer img {
-    width: 65%;
-    opacity: 0.9;
-}
-
-.hidden-unavailable {
-    display: none;
-}
-
-.card-body {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-}
-
-.card-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--polar-1);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.card-desc {
-    font-size: 0.9rem;
-    color: var(--polar-4);
-    height: 40px;
-    overflow: hidden;
-}
-
-.price-tag {
-    font-weight: bold;
-    margin-top: auto;
-    color: var(--aurora-green);
-}
-
-/* Empty state */
-.menu-empty-state {
-    width: 100%;
-    padding: 40px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: var(--polar-3);
-    animation: fadeInUp 0.3s ease forwards;
-    grid-column: 1 / -1;
-}
-
-.menu-empty-emoji {
-    font-size: 2.4rem;
-    margin-bottom: 10px;
-}
-
-.menu-empty-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: var(--polar-1);
-}
-
-.menu-empty-sub {
-    font-size: 0.95rem;
-    color: var(--polar-4);
-}
-/* Back button INSIDE the header */
-.back-overlay-btn {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-.back-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: #ffffff; /* 纯白最清楚 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #111; /* 深色箭头，超明显 */
-    font-size: 1.2rem;
-    text-decoration: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: 0.2s ease;
-}
-
-.back-btn:hover {
-    transform: translateY(-2px);
-}
-
-
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(18px);
+    /* STALL HERO */
+    .stall-hero {
+        background: #fff;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    @media (min-width: 1024px) {
+        .stall-hero { flex-direction: row; justify-content: space-between; align-items: center; }
     }
-}
+    .stall-info { display: flex; align-items: center; gap: 15px; }
+    .stall-logo-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--nord4); }
+    .stall-text h1 { margin: 0; font-size: 1.6rem; color: var(--nord0); font-weight: 800; }
+    .stall-text p { margin: 0; color: var(--nord3); font-size: 0.95rem; }
+
+    /* CONTROLS (Search & Sort) */
+    .menu-controls { display: flex; gap: 12px; width: 100%; max-width: 650px; flex-wrap: wrap; }
+    .search-input-wrapper { position: relative; flex-grow: 1; min-width: 200px; }
+    .search-input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--nord3); pointer-events: none; }
+    
+    #search-input {
+        width: 100%; padding: 12px 12px 12px 45px;
+        border: 2px solid var(--nord4); border-radius: 12px;
+        font-family: inherit; background: var(--nord6); color: var(--nord0);
+        transition: 0.2s;
+    }
+    #search-input:focus { outline: none; border-color: var(--nord9); background: #fff; }
+
+    /* CUSTOM DROPDOWN CSS */
+    .custom-select-wrapper {
+        position: relative;
+        min-width: 160px;
+    }
+    
+    #sort-select {
+        width: 100%;
+        appearance: none; /* Hide default arrow */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding: 12px 40px 12px 20px; /* Right padding for custom arrow */
+        border: 2px solid var(--nord4);
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--nord2);
+        font-family: inherit;
+        /* Custom Chevron Icon (SVG) */
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234C566A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+    }
+    #sort-select:focus { outline: none; border-color: var(--nord9); }
+
+    /* CATEGORIES SCROLL */
+    .section-categories { margin-bottom: 30px; }
+    .section-header h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--nord1); font-weight: 700; }
+
+    #category-scroll {
+        display: flex; gap: 15px; overflow-x: auto; 
+        /* Key Fix: Add padding to container so active transformation isn't clipped */
+        padding: 10px 5px 20px 5px;
+        scrollbar-width: none;
+    }
+    #category-scroll::-webkit-scrollbar { display: none; }
+
+    .cat-card {
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+        cursor: pointer; min-width: 72px; text-decoration: none; transition: 0.2s;
+        opacity: 0.7;
+    }
+    .cat-card.active { opacity: 1; transform: translateY(-8px);}
+    .cat-card.active .cat-box { background: var(--nord10); box-shadow: 0 8px 20px rgba(94, 129, 172, 0.4); }
+    .cat-card.active .cat-box i, .cat-card.active .cat-box img {filter: brightness(0) saturate(100%) invert(100%) sepia(100%) saturate(23%) hue-rotate(229deg) brightness(105%) contrast(102%); }
+
+    .cat-box {
+        width: 60px; height: 60px; background: #fff; border-radius: 18px;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 1.4rem; color: var(--nord10);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.2s;
+        overflow: hidden;
+    }
+    .cat-label { font-size: 0.85rem; font-weight: 600; color: var(--nord2); text-align: center; }
+
+    /* PRODUCT GRID */
+    #menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
+        padding-bottom: 50px;
+        transition: opacity 0.2s ease;
+    }
+    @media (min-width: 1024px) {
+        #menu-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+    }
+
+    /* CARD generated by JS */
+    .card {
+        background: #fff; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid var(--nord6);
+        display: flex; flex-direction: column; cursor: pointer;
+        transition: transform 0.2s; height: 100%;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    
+    .card-img {
+        height: 160px; background-size: cover; background-position: center; position: relative;
+    }
+    @media (min-width: 1024px) { .card-img { height: 200px; } }
+
+    .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
+    
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--nord0); margin-bottom: 5px; }
+    .card-desc { 
+        font-size: 0.9rem; color: var(--nord3); margin-bottom: 15px; 
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        flex-grow: 1;
+    }
+    .price-tag { font-size: 1.2rem; font-weight: 800; color: var(--nord0); margin-top: auto; }
+
+    /* Unavailable State */
+    .card.unavailable { opacity: 0.7; filter: grayscale(1); }
+    .unavailable-layer {
+        position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .hidden-unavailable { display: none !important; }
+    .unavailable-layer img { width: 60%; opacity: 0.8; }
+
+    /* Empty State */
+    .menu-empty-state { grid-column: 1/-1; text-align: center; padding: 50px; color: var(--nord3); }
+    .menu-empty-emoji { font-size: 3rem; margin-bottom: 15px; }
 </style>
-</head>
-<body>
 
-<div class="menu-header">
-    <div class="menu-header-top">
-      <a href="../index.php" class="back-btn">
-        <i class="fas fa-arrow-left"></i>
-    </a>
-        <div class="menu-title-group">
-            <div class="menu-title-pill">
-                <div class="menu-title-pill-icon" style="overflow:hidden;">
-                    <img src="<?php echo fixAssetUrl($products[0]['LogoUrl'] ?? ''); ?>"
-                        style="width:20px;height:20px;border-radius:50%;object-fit:cover;">
-                </div>
-                <span><?php echo htmlspecialchars($products[0]['StallName'] ?? ''); ?></span>
+<div class="app-wrapper">
+
+    <div class="stall-hero">
+        <div class="stall-info">
+            <img src="<?php echo htmlspecialchars($stallLogo); ?>" class="stall-logo-img">
+            <div class="stall-text">
+                <h1><?php echo htmlspecialchars($stallName); ?></h1>
+                <p>Browsing Menu</p>
             </div>
             <h2>Menu</h2>
         </div>
+
+        <form id="menu-filter-form" class="menu-controls">
+            <input type="hidden" id="category-hidden" value="<?php echo htmlspecialchars($categoryFilter); ?>">
+            
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Search food..." 
+                       value="<?php echo htmlspecialchars($search); ?>" autocomplete="off">
+            </div>
+
+            <div class="custom-select-wrapper">
+                <select id="sort-select">
+                    <option value="default" <?php if ($sort === 'default') echo 'selected'; ?>>Sort: Default</option>
+                    <option value="price_asc" <?php if ($sort === 'price_asc') echo 'selected'; ?>>Price: Low</option>
+                    <option value="price_desc" <?php if ($sort === 'price_desc') echo 'selected'; ?>>Price: High</option>
+                </select>
+            </div>
+        </form>
     </div>
 
-    <form class="filter-bar" method="GET" id="menu-filter-form">
-        <input type="hidden" name="stallid" value="<?php echo (int)$stallId; ?>">
-        <input type="hidden" name="category" id="category-hidden" value="<?php echo htmlspecialchars($categoryFilter); ?>">
-
-        <input type="text" name="search" placeholder="Search food..."
-            value="<?php echo htmlspecialchars($search); ?>" class="filter-input" id="search-input">
-
-        <select name="sort" class="filter-select" id="sort-select">
-            <option value="default"   <?php if ($sort === 'default')   echo 'selected'; ?>>Sort: Default</option>
-            <option value="price_asc" <?php if ($sort === 'price_asc') echo 'selected'; ?>>Price: Low → High</option>
-            <option value="price_desc"<?php if ($sort === 'price_desc')echo 'selected'; ?>>Price: High → Low</option>
-        </select>
-
-        <button type="submit" class="filter-btn" id="search-btn">
-            <i class="fas fa-search"></i>
-            <span>Search</span>
-        </button>
-    </form>
-</div>
-
-<!-- Categories -->
-<section class="section-categories">
-    <div class="section-header">
-        <h3>Categories</h3>
-    </div>
-
-    <div class="cat-scroll" id="category-scroll">
-        <a href="#" class="cat-card <?php echo ($categoryFilter === '' ? 'active' : ''); ?>" data-category="">
-            <div class="cat-box">All</div>
-            <div class="cat-label">All</div>
-        </a>
-
-        <?php foreach ($cats as $c): 
-            $isActive = ($categoryFilter !== '' && (int)$categoryFilter === (int)$c['CategoryId']);
-        ?>
-            <a href="#" class="cat-card <?php echo $isActive ? 'active' : ''; ?>" data-category="<?php echo (int)$c['CategoryId']; ?>">
-                <div class="cat-box">
-                    <?php echo htmlspecialchars($c['CategoryName']); ?>
-                </div>
-                <div class="cat-label">
-                    <?php echo htmlspecialchars($c['CategoryName']); ?>
-                </div>
-            </a>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<!-- Products Grid -->
-<div class="grid-container" id="menu-grid">
-<?php if (empty($products)): ?>
-    <div class="menu-empty-state">
-        <div class="menu-empty-emoji">(っ °Д °;)っ</div>
-        <div class="menu-empty-title">No results found</div>
-        <div class="menu-empty-sub">
-            Try searching something else or choosing another category.
+    <section class="section-categories">
+        <div class="section-header">
+            <h3>Categories</h3>
         </div>
-    </div>
-<?php else: ?>
-    <?php foreach ($products as $p): ?>
-        <?php
+
+        <div id="category-scroll">
+            <div class="cat-card <?php echo ($categoryFilter === '') ? 'active' : ''; ?>" data-category="">
+                <div class="cat-box">
+                    <i class="fas fa-border-all"></i>
+                </div>
+                <div class="cat-label">All</div>
+            </div>
+
+            <?php foreach ($cats as $c): ?>
+                <?php $isActive = ($categoryFilter == $c['CategoryId']); ?>
+                <div class="cat-card <?php echo $isActive ? 'active' : ''; ?>" 
+                     data-category="<?php echo $c['CategoryId']; ?>">
+                    <div class="cat-box">
+                        <?php if (!empty($c['CategoryLogo'])): ?>
+                            <img src="<?php echo htmlspecialchars($c['CategoryLogo']); ?>" 
+                                 style="width:30px; height:30px; object-fit:contain;">
+                        <?php else: ?>
+                            <i class="fas fa-utensils"></i>
+                        <?php endif; ?>
+                    </div>
+                    <div class="cat-label"><?php echo htmlspecialchars($c['CategoryName']); ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <div id="menu-grid">
+        <?php foreach ($products as $p): ?>
+            <?php
             $img = fixAssetUrl($p['ImageURL'] ?? '');
             $isUnavailable = ($p['IsAvailable'] == 0);
-        ?>
-        <div class="card <?php echo $isUnavailable ? 'unavailable' : ''; ?>"
-            data-id="<?php echo $p['ProductId']; ?>"
-            <?php if (!$isUnavailable): ?>
-                onclick="location.href='product_detail.php?id=<?php echo $p['ProductId']; ?>'"
-            <?php endif; ?>
-        >
-            <div class="card-img" style="background-image:url('<?php echo $img; ?>');">
-                <div class="unavailable-layer <?php echo $isUnavailable ? '' : 'hidden-unavailable'; ?>">
-                    <img src="../assets/images/unavailable.png" alt="Unavailable">
+            ?>
+            <div class="card <?php echo $isUnavailable ? 'unavailable' : ''; ?>" 
+                 data-id="<?php echo $p['ProductId']; ?>"
+                 <?php if (!$isUnavailable): ?>
+                 onclick="window.location.href='product_detail.php?id=<?php echo $p['ProductId']; ?>'"
+                 <?php endif; ?>>
+                
+                <div class="card-img" style="background-image:url('<?php echo $img; ?>')">
+                    <div class="unavailable-layer <?php echo $isUnavailable ? '' : 'hidden-unavailable'; ?>">
+                        <img src="../assets/images/unavailable.png" alt="Unavailable">
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-title"><?php echo htmlspecialchars($p['ProductName']); ?></div>
+                    <div class="card-desc"><?php echo htmlspecialchars($p['Description']); ?></div>
+                    <div class="price-tag">RM <?php echo number_format($p['UnitPrice'], 2); ?></div>
                 </div>
             </div>
-
-            <div class="card-body">
-                <div class="card-title"><?php echo htmlspecialchars($p['ProductName']); ?></div>
-                <div class="card-desc"><?php echo htmlspecialchars($p['Description']); ?></div>
-                <div class="price-tag">RM <?php echo number_format($p['UnitPrice'], 2); ?></div>
+        <?php endforeach; ?>
+        
+        <?php if (empty($products)): ?>
+            <div class="menu-empty-state">
+                <div class="menu-empty-emoji">(っ °Д °;)っ</div>
+                <div class="menu-empty-title">No results found</div>
+                <div class="menu-empty-sub">Try searching something else.</div>
             </div>
-        </div>
-    <?php endforeach; ?>
-<?php endif; ?>
+        <?php endif; ?>
+    </div>
+
 </div>
 
 <script>
-const MENU_STATE = {
-    stallId: <?php echo (int)$stallId; ?>,
-    search: <?php echo json_encode($search); ?>,
-    category: <?php echo json_encode($categoryFilter); ?>,
-    sort: <?php echo json_encode($sort); ?>
-};
-
-window.MENU_CONFIG = MENU_STATE;
+    const MENU_STATE = {
+        stallId: <?php echo (int)$stallId; ?>,
+        search: <?php echo json_encode($search); ?>,
+        category: <?php echo json_encode($categoryFilter); ?>,
+        sort: <?php echo json_encode($sort); ?>
+    };
+    window.MENU_CONFIG = MENU_STATE;
 </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script src="../assets/js/menu.js"></script>
 
-</body>
-</html>
+<?php include '../includes/footer.php'; ?>
