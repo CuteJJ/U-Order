@@ -49,7 +49,7 @@ if ($cartItemId) {
     $existing = $st->fetch(PDO::FETCH_ASSOC);
 }
 
-$initialQty  = $existing ? (int)$existing['Quantity'] : 1;
+$initialQty = $existing ? (int)$existing['Quantity'] : 1;
 $initialNote = $existing ? $existing['Note'] : '';
 $initialTime = $existing ? $existing['PickupTime'] : 'ASAP';
 
@@ -69,38 +69,37 @@ $timeSlots[] = [
 ];
 
 for ($i = 0; $i < 4; $i++) {
-    $ts     = $nextSlot + ($i * 1800);
-    $label  = date('h:i A', $ts);
-    $value  = date('H:i', $ts);
-    $sel    = '';
+    $ts = $nextSlot + ($i * 1800);
+    $label = date('h:i A', $ts);
+    $value = date('H:i', $ts);
 
+    $selected = '';
     if ($existing && date('H:i', strtotime($existing['PickupTime'])) == $value) {
-        $sel = 'selected';
+        $selected = 'selected';
         $timeSlots[0]['selected'] = '';
     }
 
     $timeSlots[] = [
-        'label'    => $label,
-        'value'    => $value,
-        'selected' => $sel
+        'label' => $label,
+        'value' => $value,
+        'selected' => $selected
     ];
 }
 
-// =====================================================
-// 5. UNIVERSAL IMAGE FIXER (STALL LOGO + PRODUCT IMAGES)
-// =====================================================
 function fixAssetUrl($path)
 {
-    if (!$path) return "https://via.placeholder.com/40?text=S";
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg";
     if (strpos($path, 'http') === 0) return $path;
-    return "/U-Order/assets/" . ltrim($path, '/');
+    $clean = ltrim($path, '/');
+    return "/U-Order/assets/" . $clean;
 }
 
 function fixImageUrl($path)
 {
-    if (!$path) return "https://via.placeholder.com/600x400?text=No+Image";
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg"; // Placeholder
     if (strpos($path, 'http') === 0) return $path;
-    return "../assets/" . ltrim($path, '/');
+    $clean = ltrim($path, '/');
+    return "../assets/" . $clean;
 }
 
 $stallLogoUrl = fixAssetUrl($product['LogoURL']);
@@ -161,37 +160,22 @@ include '../includes/header.php';
         cursor: not-allowed;
         opacity: 0.7;
     }
-
 </style>
 <?php flash(); ?>
 <div class="product-page-wrapper">
-    <!-- ============================
-         IMAGE CAROUSEL
-    ============================= -->
     <div class="product-carousel">
-
-        <!-- LEFT ARROW -->
-        <button class="carousel-arrow left-arrow">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-
         <div class="carousel-track">
             <?php foreach ($images as $img): ?>
                 <div class="carousel-slide">
-                    <img src="<?= htmlspecialchars(fixImageUrl($img)) ?>" alt="Product">
+                    <img src="<?php echo htmlspecialchars(fixImageUrl($img)); ?>" alt="Product">
                 </div>
             <?php endforeach; ?>
         </div>
 
-        <!-- RIGHT ARROW -->
-        <button class="carousel-arrow right-arrow">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-
         <?php if (count($images) > 1): ?>
             <div class="carousel-indicators">
                 <?php foreach ($images as $i => $img): ?>
-                    <div class="indicator <?= $i === 0 ? 'active' : '' ?>" data-index="<?= $i ?>"></div>
+                    <div class="indicator <?php echo $i === 0 ? 'active' : ''; ?>" data-index="<?php echo $i; ?>"></div>
                 <?php endforeach; ?>
             </div>
 
@@ -206,8 +190,8 @@ include '../includes/header.php';
         <a href="../index.php" class="back-overlay-btn">
             <i class="fas fa-arrow-left"></i>
         </a>
-
     </div>
+
     <!-- ============================
          PRODUCT INFO
     ============================= -->
@@ -216,42 +200,29 @@ include '../includes/header.php';
         <!-- Stall Badge -->
         <a href="menu.php?stallid=<?php echo $product['StallId']; ?>" class="stall-badge">
             <img src="<?php echo htmlspecialchars($stallLogoUrl); ?>" class="stall-badge-logo">
-            <i class="fas fa-store"></i>
             <?php echo htmlspecialchars($product['StallName']); ?>
         </a>
 
-        <h1 class="product-title-large"><?= htmlspecialchars($product['ProductName']) ?></h1>
+        <h1 class="product-title-large"><?php echo htmlspecialchars($product['ProductName']); ?></h1>
 
         <div class="price-display">
             <span class="currency-symbol">RM</span>
-            <span class="price-value"><?= number_format($product['UnitPrice'], 2) ?></span>
+            <span class="price-value"><?php echo number_format($product['UnitPrice'], 2); ?></span>
         </div>
 
         <p class="product-description-full"><?php echo nl2br(htmlspecialchars($product['Description'])); ?></p>
-        <!-- INLINE ERROR MESSAGE -->
-        <div id="inline-error" style="
-    display:none;
-    background:#fee2e2;
-    color:#b91c1c;
-    padding:10px 14px;
-    border-radius:8px;
-    margin-bottom:10px;
-    border:1px solid #fca5a5;
-    font-size:0.95rem;
-"></div>
-
         <!-- Desktop Options -->
         <div class="desktop-options">
             <div class="option-group">
                 <label class="option-label">Special Instructions</label>
-                <textarea id="desktop-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
+                <textarea id="desktop-note" class="note-input" placeholder="Any remarks?"><?php echo htmlspecialchars($initialNote); ?></textarea>
             </div>
 
             <div class="option-group">
                 <label class="option-label">Quantity</label>
                 <div class="quantity-wrapper">
                     <button class="qty-btn qty-minus"><i class="fas fa-minus"></i></button>
-                    <span class="qty-display"><?= $initialQty ?></span>
+                    <span class="qty-display"><?php echo $initialQty; ?></span>
                     <button class="qty-btn qty-plus"><i class="fas fa-plus"></i></button>
                 </div>
             </div>
@@ -260,7 +231,18 @@ include '../includes/header.php';
                 <label class="option-label">Pickup Time</label>
                 <div class="time-selector">
                     <?php foreach ($timeSlots as $slot): ?>
-                        <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                        <?php
+                        // Disable if NOT 'ASAP' AND (Time >= 18:00 OR Time < 09:00)
+                        $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
+
+                        // Set styles based on boolean
+                        $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                        $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                        ?>
+
+                        <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"
+                            data-time="<?php echo $slot['value']; ?>"
+                            style="<?php echo $disabledStyle; ?>">
                             <?php echo $slot['label']; ?>
                         </div>
                     <?php endforeach; ?>
@@ -268,8 +250,8 @@ include '../includes/header.php';
             </div>
 
             <button class="action-btn submit-order-btn" style="width:100%; margin-top:20px;">
-                <?= $cartItemId ? 'Update Order' : 'Add to Order' ?> - RM 
-                <span class="display-total"><?= number_format($product['UnitPrice'] * $initialQty, 2) ?></span>
+                <?php echo $cartItemId ? 'Update Order' : 'Add to Order'; ?>
+                - RM <span class="display-total"><?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></span>
             </button>
         </div>
     </div>
@@ -279,19 +261,19 @@ include '../includes/header.php';
 <div class="bottom-action-bar mobile-only">
     <div class="bar-price">
         <span>Total</span>
-        <strong>RM <span class="display-total"><?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></span></strong>
+        <strong>RM <?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></strong>
     </div>
-    <button class="action-btn" id="trigger-sheet-btn"><?= $cartItemId ? 'Update' : 'Add' ?></button>
+    <button class="action-btn" id="trigger-sheet-btn"><?php echo $cartItemId ? 'Update' : 'Add'; ?></button>
 </div>
 
 <!-- MOBILE SHEET -->
 <div class="sheet-overlay"></div>
 <div class="bottom-sheet">
     <div class="sheet-header">
-        <span class="sheet-title"><?= $cartItemId ? 'Update Order' : 'Customize' ?></span>
+        <span class="sheet-title"><?php echo $cartItemId ? 'Update Order' : 'Customize'; ?></span>
         <span class="close-sheet">&times;</span>
     </div>
-<div id="inline-error-mobile" style="
+    <div id="inline-error-mobile" style="
     display:none;
     background:#fee2e2;
     color:#b91c1c;
@@ -303,17 +285,16 @@ include '../includes/header.php';
 "></div>
 
     <div class="sheet-body">
-
         <div class="option-group">
             <label class="option-label">Special Instructions</label>
-            <textarea id="mobile-note" class="note-input"><?php echo htmlspecialchars($initialNote); ?></textarea>
+            <textarea id="mobile-note" class="note-input" placeholder="Any remarks?"><?php echo htmlspecialchars($initialNote); ?></textarea>
         </div>
 
         <div class="option-group">
             <label class="option-label">Quantity</label>
             <div class="quantity-wrapper" style="justify-content:space-between;">
                 <button class="qty-btn qty-minus"><i class="fas fa-minus"></i></button>
-                <span class="qty-display sheet-qty-val"><?= $initialQty ?></span>
+                <span class="qty-display sheet-qty-val"><?php echo $initialQty; ?></span>
                 <button class="qty-btn qty-plus"><i class="fas fa-plus"></i></button>
             </div>
         </div>
@@ -322,34 +303,43 @@ include '../includes/header.php';
             <label class="option-label">Pickup Time</label>
             <div class="time-selector">
                 <?php foreach ($timeSlots as $slot): ?>
-                    <div class="time-pill <?php echo $slot['selected']; ?>" data-time="<?php echo $slot['value']; ?>">
+                    <?php
+                    // Disable if NOT 'ASAP' AND (Time >= 18:00 OR Time < 09:00)
+                    $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
+
+                    // Set styles based on boolean
+                    $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                    $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                    ?>
+
+                    <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"
+                        data-time="<?php echo $slot['value']; ?>"
+                        style="<?php echo $disabledStyle; ?>">
                         <?php echo $slot['label']; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
         </div>
-
     </div>
 
     <div class="sheet-footer">
         <button class="action-btn submit-order-btn" style="width:100%;">
-            Confirm - RM 
-            <span class="display-total"><?= number_format($product['UnitPrice'] * $initialQty, 2) ?></span>
+            Confirm - RM <span class="display-total"><?php echo number_format($product['UnitPrice'] * $initialQty, 2); ?></span>
         </button>
     </div>
 </div>
 
 <!-- Hidden Form -->
 <form id="order-form" action="cart_action.php" method="POST">
-    <input type="hidden" name="action" value="<?= $cartItemId ? 'update_item' : 'add' ?>">
-    <input type="hidden" name="product_id" value="<?= $product['ProductId'] ?>">
-    <input type="hidden" name="cart_item_id" value="<?= $cartItemId ?>">
-    <input type="hidden" name="quantity" id="final-qty" value="<?= $initialQty ?>">
-    <input type="hidden" name="pickup_time" id="final-time" value="<?= $initialTime ?>">
-    <input type="hidden" name="note" id="final-note" value="<?= htmlspecialchars($initialNote) ?>">
+    <input type="hidden" name="action" value="<?php echo $cartItemId ? 'update_item' : 'add'; ?>">
+    <input type="hidden" name="product_id" value="<?php echo $product['ProductId']; ?>">
+    <input type="hidden" name="cart_item_id" value="<?php echo $cartItemId; ?>">
+    <input type="hidden" name="quantity" id="final-qty" value="<?php echo $initialQty; ?>">
+    <input type="hidden" name="pickup_time" id="final-time" value="<?php echo $initialTime; ?>">
+    <input type="hidden" name="note" id="final-note" value="<?php echo htmlspecialchars($initialNote); ?>">
 </form>
 
-<input type="hidden" id="unit-price" value="<?= $product['UnitPrice'] ?>">
+<input type="hidden" id="unit-price" value="<?php echo $product['UnitPrice']; ?>">
 
 <!-- ERROR POPUP MODAL -->
 <div id="error-modal" class="modal" style="
@@ -381,8 +371,6 @@ include '../includes/header.php';
         ">OK</button>
     </div>
 </div>
-
-
 <script src="/U-Order/assets/js/product.js"></script>
 </body>
 </html>

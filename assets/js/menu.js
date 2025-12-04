@@ -1,4 +1,4 @@
-// assets/js/menu.js - FIXED VERSION
+// assets/js/menu.js
 (function () {
     if (typeof window.MENU_CONFIG === "undefined") return;
 
@@ -35,7 +35,7 @@
     }
 
     /* ===============================================================
-       Render Empty State
+       渲染空状态
     =============================================================== */
     function renderEmptyState() {
         grid.innerHTML = `
@@ -50,13 +50,10 @@
     }
 
     /* ===============================================================
-       Render Products
+       渲染 Products
     =============================================================== */
     function renderProducts(items) {
-        if (!items || !items.length) {
-            renderEmptyState();
-            return;
-        }
+        if (!items || !items.length) return renderEmptyState();
 
         const html = items.map(p => {
             const id       = p.ProductId;
@@ -89,16 +86,11 @@
 
     function setLoading(v) {
         isLoading = v;
-        grid.style.opacity = v ? "0.4" : "1";
-        
-        // Disable inputs during loading
-        if (searchInput) searchInput.disabled = v;
-        if (sortSelect) sortSelect.disabled = v;
-        if (searchBtn) searchBtn.disabled = v;
+        grid.style.opacity = v ? "0.5" : "1";
     }
 
     /* ===============================================================
-       AJAX Fetch with proper error handling
+       AJAX 请求 menu.php?ajax=1
     =============================================================== */
     async function ajaxFetch() {
         // Allow rapid typing updates
@@ -116,15 +108,8 @@
             const res = await fetch(`menu.php?${params.toString()}`, {
                 method: "GET",
                 cache: "no-store",
-                headers: { 
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest"
-                }
+                headers: { "Accept": "application/json" }
             });
-
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
 
             const data = await res.json();
 
@@ -135,16 +120,8 @@
             }
 
         } catch (err) {
-            console.error("AJAX Error:", err);
-            grid.innerHTML = `
-                <div class="menu-empty-state">
-                    <div class="menu-empty-emoji">⚠️</div>
-                    <div class="menu-empty-title">Something went wrong</div>
-                    <div class="menu-empty-sub">
-                        ${escapeHtml(err.message)}
-                    </div>
-                </div>
-            `;
+            console.warn("AJAX Error:", err);
+            renderEmptyState();
         } finally {
             setLoading(false);
             if (grid.style.opacity === "0") {
@@ -156,7 +133,7 @@
     }
 
     /* ===============================================================
-       🔥 FIX: Category Click - Clear search when changing category
+       Category 点击 → AJAX
     =============================================================== */
     catScroll.addEventListener("click", e => {
         const card = e.target.closest(".cat-card");
@@ -177,7 +154,7 @@
     }
 
     /* ===============================================================
-       Sort Change
+       Sort → AJAX
     =============================================================== */
     sortSelect.addEventListener("change", () => {
         currentSort = sortSelect.value || "default";
@@ -206,13 +183,9 @@
     });
 
     /* ===============================================================
-       🔥 POLLING - Update availability status
+       🔥 POLLING（每 3 秒更新 avail）
     =============================================================== */
-    let pollingInterval = null;
-
     async function pollAvailability() {
-        if (isLoading || document.hidden) return;
-
         const params = new URLSearchParams({
             stallid: cfg.stallId,
             search: currentSearch,
@@ -226,32 +199,24 @@
                 headers: { "Accept": "application/json" }
             });
 
-            if (!res.ok) return;
-
             const data = await res.json();
-            if (!data.success || !data.items) return;
+            if (!data.success) return;
 
             data.items.forEach(row => {
                 const card = document.querySelector(`.card[data-id='${row.ProductId}']`);
                 if (!card) return;
 
                 const isAvail = (parseInt(row.IsAvailable, 10) === 1);
-                const wasAvail = !card.classList.contains("unavailable");
-                
-                if (isAvail === wasAvail) return;
-
                 const overlay = card.querySelector(".unavailable-layer");
 
                 if (isAvail) {
                     card.classList.remove("unavailable");
                     overlay?.classList.add("hidden-unavailable");
                     card.setAttribute("onclick", `location.href='product_detail.php?id=${row.ProductId}'`);
-                    card.style.cursor = "pointer";
                 } else {
                     card.classList.add("unavailable");
                     overlay?.classList.remove("hidden-unavailable");
                     card.removeAttribute("onclick");
-                    card.style.cursor = "not-allowed";
                 }
             });
 
@@ -260,31 +225,9 @@
         }
     }
 
-    function startPolling() {
-        if (pollingInterval) return;
-        pollingInterval = setInterval(pollAvailability, 5000);
-    }
+    setInterval(pollAvailability, 3000);
 
-    function stopPolling() {
-        if (pollingInterval) {
-            clearInterval(pollingInterval);
-            pollingInterval = null;
-        }
-    }
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            stopPolling();
-        } else {
-            startPolling();
-            pollAvailability();
-        }
-    });
-
-    /* ===============================================================
-       🔥 INIT - Don't call ajaxFetch, show PHP-rendered content
-    =============================================================== */
-    grid.style.opacity = "1";
+    // 初始化
     updateCategoryActive();
     // ajaxFetch(); // PHP renders first load
 
