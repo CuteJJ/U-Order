@@ -19,7 +19,7 @@ $stmt = $db->prepare($sql);
 $stmt->execute([':uid' => $userId]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalAmount = $result['Total'] ?? 0;
-
+    
 if ($totalAmount == 0) {
     flash('error', 'Your cart is empty.');
     header("Location: cart.php");

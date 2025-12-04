@@ -382,22 +382,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnDeleteSelected?.addEventListener("click", deleteSelectedItems);
 
-    btnProceed?.addEventListener("click", (e) => {
-        const hasSelectedUnavailable = Array.from(document.querySelectorAll(".order-item"))
-            .some(item => {
-                const checkbox = item.querySelector(".item-check");
-                const isChecked = checkbox && checkbox.checked;
-                const isUnavailable = item.dataset.unavailable === "1";
-                return isChecked && isUnavailable;
-            });
+  btnProceed?.addEventListener("click", (e) => {
+    const selectedIds = Array.from(document.querySelectorAll(".order-item"))
+        .filter(item => item.querySelector(".item-check")?.checked)
+        .map(item => item.dataset.id);
 
-        if (hasSelectedUnavailable) {
-            e.preventDefault();
-            showToast("Please remove unavailable items first", true);
-            return;
-        }
-        window.location.href = "../pages/payment.php";
-    });
+    if (selectedIds.length === 0) {
+        showToast("Please select at least 1 item", true);
+        return;
+    }
+
+    // redirect with selected cartItemIds
+    const params = selectedIds.join(",");
+    window.location.href = `../pages/payment.php?items=${params}`;
+});
 
     // 初始计算
     recalcSummary();

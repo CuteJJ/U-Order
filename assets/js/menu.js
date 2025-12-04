@@ -1,4 +1,4 @@
-// assets/js/menu.js
+// assets/js/menu.js - FIXED VERSION
 (function () {
     if (typeof window.MENU_CONFIG === "undefined") return;
 
@@ -32,7 +32,7 @@
     }
 
     /* ===============================================================
-       渲染空状态
+       Render Empty State
     =============================================================== */
     function renderEmptyState() {
         grid.innerHTML = `
@@ -47,10 +47,13 @@
     }
 
     /* ===============================================================
-       渲染 Products
+       Render Products
     =============================================================== */
     function renderProducts(items) {
-        if (!items || !items.length) return renderEmptyState();
+        if (!items || !items.length) {
+            renderEmptyState();
+            return;
+        }
 
         const html = items.map(p => {
             const id       = p.ProductId;
@@ -83,11 +86,16 @@
 
     function setLoading(v) {
         isLoading = v;
-        grid.style.opacity = v ? "0.5" : "1";
+        grid.style.opacity = v ? "0.4" : "1";
+        
+        // Disable inputs during loading
+        if (searchInput) searchInput.disabled = v;
+        if (sortSelect) sortSelect.disabled = v;
+        if (searchBtn) searchBtn.disabled = v;
     }
 
     /* ===============================================================
-       AJAX 请求 menu.php?ajax=1
+       AJAX Fetch with proper error handling
     =============================================================== */
     async function ajaxFetch() {
         if (isLoading) return;
@@ -105,8 +113,15 @@
             const res = await fetch(`menu.php?${params.toString()}`, {
                 method: "GET",
                 cache: "no-store",
-                headers: { "Accept": "application/json" }
+                headers: { 
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                }
             });
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
 
             const data = await res.json();
 
@@ -117,32 +132,43 @@
             }
 
         } catch (err) {
-            console.warn("AJAX Error:", err);
-            renderEmptyState();
+            console.error("AJAX Error:", err);
+            grid.innerHTML = `
+                <div class="menu-empty-state">
+                    <div class="menu-empty-emoji">⚠️</div>
+                    <div class="menu-empty-title">Something went wrong</div>
+                    <div class="menu-empty-sub">
+                        ${escapeHtml(err.message)}
+                    </div>
+                </div>
+            `;
         } finally {
             setLoading(false);
-             if (grid.style.opacity === "0") {
-        requestAnimationFrame(() => {
-            grid.style.opacity = "1";
-        });
-    }
         }
     }
 
     /* ===============================================================
-       Category 点击 → AJAX
+       🔥 FIX: Category Click - Clear search when changing category
     =============================================================== */
     catScroll.addEventListener("click", e => {
         const card = e.target.closest(".cat-card");
         if (!card) return;
         
         e.preventDefault();
+        
+        // Update category
         currentCategory = card.dataset.category || "";
         categoryHidden.value = currentCategory;
 
-        updateCategoryActive();
-       ajaxFetch();
+        // 🔥 KEY FIX: Clear search input when changing category
+        currentSearch = "";
+        searchInput.value = "";
 
+        // Update UI
+        updateCategoryActive();
+        
+        // Fetch with cleared search
+        ajaxFetch();
     });
 
     function updateCategoryActive() {
@@ -152,7 +178,7 @@
     }
 
     /* ===============================================================
-       Sort → AJAX
+       Sort Change
     =============================================================== */
     sortSelect.addEventListener("change", () => {
         currentSort = sortSelect.value || "default";
@@ -160,15 +186,28 @@
     });
 
     /* ===============================================================
-       Search Button 点击 → AJAX
+       Search Input - Real-time search on typing (debounced)
     =============================================================== */
-    searchBtn.addEventListener("click", () => {
+    let searchTimeout = null;
+    searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentSearch = searchInput.value.trim();
+            ajaxFetch();
+        }, 500); // Wait 500ms after user stops typing
+    });
+
+    /* ===============================================================
+       Search Button Click
+    =============================================================== */
+    searchBtn.addEventListener("click", (e) => {
+        e.preventDefault();
         currentSearch = searchInput.value.trim();
         ajaxFetch();
     });
 
     /* ===============================================================
-       Search Enter → AJAX
+       Form Submit (Enter key)
     =============================================================== */
     form.addEventListener("submit", e => {
         e.preventDefault();
@@ -177,9 +216,13 @@
     });
 
     /* ===============================================================
-       🔥 POLLING（每 3 秒更新 avail）
+       🔥 POLLING - Update availability status
     =============================================================== */
+    let pollingInterval = null;
+
     async function pollAvailability() {
+        if (isLoading || document.hidden) return;
+
         const params = new URLSearchParams({
             stallid: cfg.stallId,
             search: currentSearch,
@@ -192,24 +235,32 @@
                 headers: { "Accept": "application/json" }
             });
 
+            if (!res.ok) return;
+
             const data = await res.json();
-            if (!data.success) return;
+            if (!data.success || !data.items) return;
 
             data.items.forEach(row => {
                 const card = document.querySelector(`.card[data-id='${row.ProductId}']`);
                 if (!card) return;
 
                 const isAvail = (parseInt(row.IsAvailable, 10) === 1);
+                const wasAvail = !card.classList.contains("unavailable");
+                
+                if (isAvail === wasAvail) return;
+
                 const overlay = card.querySelector(".unavailable-layer");
 
                 if (isAvail) {
                     card.classList.remove("unavailable");
                     overlay?.classList.add("hidden-unavailable");
                     card.setAttribute("onclick", `location.href='product_detail.php?id=${row.ProductId}'`);
+                    card.style.cursor = "pointer";
                 } else {
                     card.classList.add("unavailable");
                     overlay?.classList.remove("hidden-unavailable");
                     card.removeAttribute("onclick");
+                    card.style.cursor = "not-allowed";
                 }
             });
 
@@ -218,10 +269,39 @@
         }
     }
 
-    setInterval(pollAvailability, 3000);
+    function startPolling() {
+        if (pollingInterval) return;
+        pollingInterval = setInterval(pollAvailability, 5000);
+    }
 
-    // 初始化
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopPolling();
+        } else {
+            startPolling();
+            pollAvailability();
+        }
+    });
+
+    /* ===============================================================
+       🔥 INIT - Don't call ajaxFetch, show PHP-rendered content
+    =============================================================== */
+    grid.style.opacity = "1";
     updateCategoryActive();
-    ajaxFetch();
+    startPolling();
+
+    console.log("Menu initialized:", {
+        stallId: cfg.stallId,
+        search: currentSearch,
+        category: currentCategory,
+        sort: currentSort
+    });
 
 })();

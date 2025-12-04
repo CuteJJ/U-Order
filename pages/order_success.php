@@ -26,7 +26,7 @@ $paymentId = $_GET['payment_id'] ?? 0;
         <p>Your payment (ID: #<?php echo htmlspecialchars($paymentId); ?>) has been processed.</p>
         <p>Your orders have been sent to the respective stalls.</p>
         
-        <a href="view_my_order.php" class="btn-home">View My Orders</a>
+        <a href="../order/order.php" class="btn-home">View My Orders</a>
     </div>
 </body>
 </html>
