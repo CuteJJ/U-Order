@@ -31,16 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('error', 'Please fill in all required fields.');
 
     // Email validation
-    }if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    }elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         flash('error', 'Invalid email address format.');
 
     // Password validation
-    }if (strlen($password) < 8 || strlen($password) > 16) {
-        flash('error', 'Password must be at least 8-16 characters long.');
+    }elseif (strlen($password) < 8 || strlen($password) > 16) {
+        flash('error', 'Password must be between 8 and 16 characters long.');
     
-
     // Confirm Password validation
-    }if ($password !== $confirmPassword) {
+    }elseif ($password !== $confirmPassword) {
         flash('error', 'Passwords do not match.');
     }else {
 

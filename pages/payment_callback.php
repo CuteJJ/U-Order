@@ -1,6 +1,8 @@
 <?php
 include '../configs/db.php';
 include '../includes/functions.php';
+// FIX: Include the email helper so sendReceipt() is defined
+include '../includes/email_helper.php'; 
 
 if (!isLoggedIn()) { header("Location: login.php"); exit; }
 
@@ -73,12 +75,17 @@ try {
     $ids = $orderData['selectedIdsStr'];
     $db->exec("DELETE FROM cartitems WHERE CartItemId IN ($ids)");
 
+    $db->commit();
+
+    // --- SEND EMAIL (Online) ---
+    // Note: We use $orderData here because it comes from the session
+    sendReceipt($db, $orderData['userId'], $paymentId, $orderData['totalAmount'], $orderData['cartItems']);
+
+
     // 5. Cleanup Session
     unset($_SESSION['pending_order']);
     unset($_SESSION['checkout_notes']);
     unset($_SESSION['checkout_time']);
-
-    $db->commit();
 
     // Success!
     header("Location: order_success.php?payment_id=" . $paymentId);

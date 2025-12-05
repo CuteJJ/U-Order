@@ -33,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Password validation
-    if (strlen($vendorPass) < 6) {
-        $errors[] = 'Password must be at least 6 characters long.';
+    if (strlen($vendorPass) < 8 || strlen($vendorPass) > 16) {
+        $errors[] = 'Password must be between 8 and 16 characters long.';
     }
     if ($vendorPass !== $confirmPass) {
         $errors[] = 'Passwords do not match.';
