@@ -1,4 +1,5 @@
 <?php
+// pages/vendor_profile.php
 require_once "../configs/db.php";
 require_once "../includes/functions.php";
 
@@ -25,217 +26,184 @@ if (!$vendor) {
 }
 
 $joined = date('d M Y', strtotime($vendor['CreatedAt']));
+$initials = strtoupper(substr($vendor['Name'], 0, 2));
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Vendor Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/css/vendor_profile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<?php include 'vendor_sidebar.php'; ?>
+<div class="page-wrapper">
+    <?php include 'vendor_sidebar.php'; ?>
 
-<div class="vp-main">
-    <div class="vp-inner">
-
-        <h1 class="vp-page-title">My Profile</h1>
-
-        <!-- 全局通知（保存成功 / 失敗） -->
+    <div class="vp-main-content">
+        
         <div id="vp-global-notif" class="vp-global-notif" aria-live="polite"></div>
 
-        <div class="vp-layout">
-
-            <!-- 左側：個人資料 / 聯絡 -->
-            <div class="vp-column">
-
-                <!-- Personal details -->
-                <section class="vp-card">
-                    <div class="vp-card-header">
-                        <div>
-                            <h2 class="vp-card-title">Personal Details</h2>
-                            <p class="vp-card-subtitle">Basic information about your account.</p>
-                        </div>
+        <div class="vp-container">
+            
+            <div class="vp-header-card">
+                <div class="vp-header-bg"></div>
+                
+                <div class="vp-header-body">
+                    <div class="vp-avatar-wrapper">
+                        <div class="vp-avatar"><?= $initials ?></div>
                     </div>
-
-                    <div class="vp-field-row">
-                        <div class="vp-field-label">Name</div>
-                        <div class="vp-field-static"><?= htmlspecialchars($vendor['Name']) ?></div>
+                    
+                    <div class="vp-identity">
+                        <h1 class="vp-username"><?= htmlspecialchars($vendor['Name']) ?></h1>
+                        <span class="vp-badge">VENDOR</span>
                     </div>
-                    <div class="vp-field-row">
-                        <div class="vp-field-label">Email</div>
-                        <div class="vp-field-static"><?= htmlspecialchars($vendor['Email']) ?></div>
-                    </div>
-                    <div class="vp-field-row">
-                        <div class="vp-field-label">Role</div>
-                        <div class="vp-field-static"><?= htmlspecialchars($vendor['Role']) ?></div>
-                    </div>
-                    <div class="vp-field-row">
-                        <div class="vp-field-label">Joined</div>
-                        <div class="vp-field-static"><?= htmlspecialchars($joined) ?></div>
-                    </div>
-                    <div class="vp-field-row">
-                        <div class="vp-field-label">Stall</div>
-                        <div class="vp-field-static"><?= htmlspecialchars($vendor['StallName']) ?></div>
-                    </div>
-                </section>
-
-                <!-- Phone -->
-                <section class="vp-card vp-field" data-field="phone">
-                    <div class="vp-card-header">
-                        <div>
-                            <h2 class="vp-card-title">Contact</h2>
-                            <p class="vp-card-subtitle">Used for students or admin to contact you.</p>
-                        </div>
-                        <button type="button" class="vp-icon-btn vp-edit-trigger">
-                            <span class="vp-icon-pencil" aria-hidden="true"></span>
-                            <span class="vp-edit-text">Edit</span>
-                        </button>
-                    </div>
-
-                    <div class="vp-field-body">
-                        <div class="vp-field-label-inline">Phone Number</div>
-                        <div class="vp-display-value" data-display-for="phone">
-                            <?= $vendor['PhoneNumber'] !== null && $vendor['PhoneNumber'] !== '' 
-                                ? htmlspecialchars($vendor['PhoneNumber']) 
-                                : '<span class="vp-muted">Not set</span>' ?>
-                        </div>
-
-                        <div class="vp-edit-area">
-                            <input
-                                type="text"
-                                name="phone"
-                                class="vp-input"
-                                placeholder="10–11 digits, numbers only"
-                                value="<?= htmlspecialchars($vendor['PhoneNumber']) ?>"
-                            >
-                            <div class="vp-hint">Must be 10–11 digits, numbers only.</div>
-
-                            <div class="vp-edit-actions">
-                                <button type="button" class="vp-btn vp-btn-secondary vp-cancel-edit">
-                                    Cancel
-                                </button>
-                                <button type="button" class="vp-btn vp-btn-primary vp-save-edit"
-                                        data-action="update_phone">
-                                    Save
-                                </button>
-                            </div>
-                            <div class="vp-error" data-error-for="phone"></div>
-                        </div>
-                    </div>
-                </section>
-
+                </div>
             </div>
 
-            <!-- 右側：Security + Stall Description -->
-            <div class="vp-column">
-
-                <!-- Security -->
-                <section class="vp-card vp-field" data-field="password">
-                    <div class="vp-card-header">
-                        <div>
-                            <h2 class="vp-card-title">Security</h2>
-                            <p class="vp-card-subtitle">Change your account password.</p>
+            <div class="vp-grid-layout">
+                
+                <div class="vp-col">
+                    
+                    <div class="vp-section">
+                        <div class="vp-section-header">
+                            <h2 class="vp-section-title">
+                                <span class="vp-icon">👤</span> Personal Details
+                            </h2>
                         </div>
-                        <button type="button" class="vp-icon-btn vp-edit-trigger">
-                            <span class="vp-icon-pencil" aria-hidden="true"></span>
-                            <span class="vp-edit-text">Edit</span>
-                        </button>
+                        
+                        <div class="vp-info-card">
+                            <div class="vp-info-row">
+                                <label>Email</label>
+                                <div class="vp-static-value"><?= htmlspecialchars($vendor['Email']) ?></div>
+                            </div>
+                            <div class="vp-info-row">
+                                <label>Joined</label>
+                                <div class="vp-static-value"><?= htmlspecialchars($joined) ?></div>
+                            </div>
+                            <div class="vp-info-row">
+                                <label>Stall</label>
+                                <div class="vp-static-value"><?= htmlspecialchars($vendor['StallName']) ?></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="vp-field-body">
-                        <div class="vp-field-label-inline">Password</div>
-                        <div class="vp-display-value" data-display-for="password">
-                            ••••••••
+                    <div class="vp-section" data-field="phone">
+                        <div class="vp-section-header">
+                            <h2 class="vp-section-title">
+                                <span class="vp-icon">📞</span> Contact Info
+                            </h2>
                         </div>
 
-                        <div class="vp-edit-area">
-                            <div class="vp-field-group">
-                                <label class="vp-label" for="vp-current-password">Current password</label>
-                                <input
-                                    id="vp-current-password"
-                                    type="password"
-                                    name="old_password"
-                                    class="vp-input"
-                                    autocomplete="current-password"
-                                >
-                            </div>
+                        <div class="vp-info-card">
+                            <div class="vp-edit-row">
+                                
+                                <div class="vp-display-mode">
+                                    <div class="vp-label-group">
+                                        <label>Phone Number</label>
+                                        <div class="vp-value-text">
+                                            <?= $vendor['PhoneNumber'] ? htmlspecialchars($vendor['PhoneNumber']) : '<span class="vp-placeholder">Add phone number</span>' ?>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="vp-edit-link vp-edit-trigger">Edit</button>
+                                </div>
 
-                            <div class="vp-field-group">
-                                <label class="vp-label" for="vp-new-password">New password</label>
-                                <input
-                                    id="vp-new-password"
-                                    type="password"
-                                    name="new_password"
-                                    class="vp-input"
-                                    autocomplete="new-password"
-                                    placeholder="At least 6 characters"
-                                >
-                                <div class="vp-hint">Make sure this is something secure and easy to remember.</div>
+                                <div class="vp-edit-mode">
+                                    <label>Phone Number</label>
+                                    <input type="text" name="phone" class="vp-input" value="<?= htmlspecialchars($vendor['PhoneNumber']) ?>" placeholder="e.g. 0123456789">
+                                    <div class="vp-action-btns">
+                                        <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_phone">Save</button>
+                                        <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
+                                    </div>
+                                    <div class="vp-error" data-error-for="phone"></div>
+                                </div>
                             </div>
-
-                            <div class="vp-edit-actions">
-                                <button type="button" class="vp-btn vp-btn-secondary vp-cancel-edit">
-                                    Cancel
-                                </button>
-                                <button type="button" class="vp-btn vp-btn-primary vp-save-edit"
-                                        data-action="update_password">
-                                    Save
-                                </button>
-                            </div>
-                            <div class="vp-error" data-error-for="password"></div>
                         </div>
                     </div>
-                </section>
 
-                <!-- Stall Description（移到这里） -->
-                <section class="vp-card vp-field" data-field="description">
-                    <div class="vp-card-header">
-                        <div>
-                            <h2 class="vp-card-title">Stall Description</h2>
-                            <p class="vp-card-subtitle">Short description shown to students.</p>
-                        </div>
-                        <button type="button" class="vp-icon-btn vp-edit-trigger">
-                            <span class="vp-icon-pencil" aria-hidden="true"></span>
-                            <span class="vp-edit-text">Edit</span>
-                        </button>
-                    </div>
+                </div>
 
-                    <div class="vp-field-body">
-                        <div class="vp-display-value vp-display-multiline" data-display-for="description">
-                            <?php
-                            $desc = trim((string)$vendor['Description']);
-                            echo $desc !== '' 
-                                ? nl2br(htmlspecialchars($desc))
-                                : '<span class="vp-muted">No description yet.</span>';
-                            ?>
+                <div class="vp-col">
+                    
+                    <div class="vp-section" data-field="password">
+                        <div class="vp-section-header">
+                            <h2 class="vp-section-title">
+                                <span class="vp-icon">🛡️</span> Security
+                            </h2>
                         </div>
 
-                        <div class="vp-edit-area">
-                            <textarea
-                                name="description"
-                                class="vp-textarea"
-                                rows="4"
-                                placeholder="Describe what your stall offers..."
-                            ><?= htmlspecialchars($vendor['Description']) ?></textarea>
+                        <div class="vp-info-card">
+                            <div class="vp-edit-row">
+                                
+                                <div class="vp-display-mode">
+                                    <div>
+                                        <div style="font-weight:600; color:#1e293b; margin-bottom: 2px;">Password</div>
+                                        <div style="font-size:13px; color:#64748b;">Manage account security</div>
+                                    </div>
+                                    <button type="button" class="vp-btn-outline vp-edit-trigger">Change</button>
+                                </div>
 
-                            <div class="vp-edit-actions">
-                                <button type="button" class="vp-btn vp-btn-secondary vp-cancel-edit">
-                                    Cancel
-                                </button>
-                                <button type="button" class="vp-btn vp-btn-primary vp-save-edit"
-                                        data-action="update_description">
-                                    Save
-                                </button>
+                                <div class="vp-edit-mode">
+                                    <div class="vp-form-group">
+                                        <label>Current Password</label>
+                                        <input type="password" name="old_password" class="vp-input">
+                                    </div>
+                                    <div class="vp-form-group">
+                                        <label>New Password</label>
+                                        <input type="password" name="new_password" class="vp-input" placeholder="Min. 6 chars">
+                                    </div>
+                                    <div class="vp-action-btns">
+                                        <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_password">Update</button>
+                                        <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
+                                    </div>
+                                    <div class="vp-error" data-error-for="password"></div>
+                                </div>
                             </div>
-                            <div class="vp-error" data-error-for="description"></div>
                         </div>
                     </div>
-                </section>
 
+                    <div class="vp-section" data-field="description">
+                        <div class="vp-section-header">
+                            <h2 class="vp-section-title">
+                                <span class="vp-icon">🏪</span> Stall Info
+                            </h2>
+                        </div>
+
+                        <div class="vp-info-card">
+                            <div class="vp-edit-row">
+                                
+                                <div class="vp-display-mode">
+                                    <div class="vp-label-group" style="width: 100%;">
+                                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                            <label>Description</label>
+                                            <button type="button" class="vp-edit-link vp-edit-trigger">Edit</button>
+                                        </div>
+                                        <div class="vp-value-text">
+                                            <?php 
+                                                $desc = trim((string)$vendor['Description']);
+                                                echo $desc ? nl2br(htmlspecialchars($desc)) : '<span class="vp-placeholder">No description yet.</span>';
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="vp-edit-mode">
+                                    <label>Description</label>
+                                    <textarea name="description" class="vp-textarea" rows="4"><?= htmlspecialchars($vendor['Description']) ?></textarea>
+                                    <div class="vp-action-btns">
+                                        <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_description">Save</button>
+                                        <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
+                                    </div>
+                                    <div class="vp-error" data-error-for="description"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-
         </div>
     </div>
 </div>
