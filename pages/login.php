@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['name'] = $user['Name'];
 
         if ($remember) {
+            // NOTE: Replace 'YOUR_SECRET_KEY' with a real env variable in production
             $secret = "YOUR_SECRET_KEY";
             $token = $user['UserId'] . ':' . hash_hmac('sha256', $user['UserId'], $secret);
             setcookie('remember_token', $token, time() + (86400 * 30), "/");
@@ -39,43 +40,61 @@ include '../includes/header.php';
 ?>
 
 <link rel="stylesheet" href="/U-Order/assets/css/auth.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-image-side" style="background-image: url('https://images.unsplash.com/photo-1543353071-87d3e7c91d81?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80');">
             <div class="auth-image-text">
-                <h1>Welcome Back</h1>
-                <p>Login to continue ordering.</p>
+                <h1>Welcome<br>Back.</h1>
+                <p>Hungry? You're in the right place.</p>
             </div>
         </div>
 
         <div class="auth-form-side">
             <h2>Login</h2>
+            <p class="sub-text">Enter your details to continue.</p>
+            
             <?php flash(); ?>
+            
             <form method="POST" action="">
                 <div class="form-group">
-                    <label>ID or Email</label>
-                    <input type="text" name="login_id" required placeholder="Enter ID or Email">
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="login_id" required placeholder="Student ID or Email">
+                    </div>
                 </div>
+                
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required placeholder="Enter Password">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" id="password" required placeholder="Password">
+                        <i class="fas fa-eye password-toggle"></i>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="remember" style="width:auto; margin:0;"> Remember Me
+                
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="remember"> Remember Me
                     </label>
+                    <a href="forgot_password.php" style="font-size: 0.9rem; color: var(--nord10); font-weight: 600;">Forgot Password?</a>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                
+                <button type="submit" class="btn btn-primary">
+                    Login <i class="fas fa-arrow-right"></i>
+                </button>
             </form>
+            
             <div class="links">
-                <a href="register.php">Register</a> | 
-                <a href="forgot_password.php">Forgot Password?</a>
+                New here? <a href="register.php">Create Account</a>
                 <br><br>
-                <a href="../index.php">&larr; Home</a>
+                <a href="../index.php" style="color: var(--text-muted); font-weight: 500;">&larr; Back to Home</a>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/U-Order/assets/js/auth.js"></script>
 
 <?php include '../includes/footer.php'; ?>
