@@ -244,7 +244,6 @@ include 'includes/header.php';
 
         <form class="search-bar-container" id="searchForm">
             <div class="search-input-group">
-                <i class="fas fa-search search-icon"></i>
                 <input type="text" 
                        id="searchInput" 
                        name="search" 
