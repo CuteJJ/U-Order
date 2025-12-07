@@ -167,7 +167,7 @@ include '../includes/header.php';
                     </div>
                 </div>
 
-                <a href="logout.php" class="btn-primary btn-danger" style="display:flex; justify-content:center; align-items:center; gap:10px; text-decoration:none;">
+                <a href="logout.php" onclick="return confirm('Are you sure you want to log out?');" class="btn-primary btn-danger" style="display:flex; justify-content:center; align-items:center; gap:10px; text-decoration:none;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </div>

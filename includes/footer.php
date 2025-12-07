@@ -1,15 +1,10 @@
 <?php
-// Include Cart Logic to fetch data for the sidebar
-// Use absolute path or relative based on your structure. 
-// Assuming includes/ is in the same directory as footer.php
 include_once __DIR__ . '/db_cart.php'; 
 ?>
 
     </div> <!-- End Main Wrapper -->
 
     <?php if (!isset($hideNav) || !$hideNav): ?>
-        <!-- ONLY SHOW CART & NAV IF NOT AUTH PAGE -->
-
         <!-- Floating Cart Button -->
         <div class="floating-cart-btn" id="cartToggle">
             <i class="fas fa-shopping-basket"></i>
@@ -27,12 +22,20 @@ include_once __DIR__ . '/db_cart.php';
             
             <?php flash(); ?> 
             <div class="cart-body">
-                <?php if (empty($cartItems)): ?>
+                <?php if (!isLoggedIn()): ?>
+                    <div class="cart-empty-state">
+                        <div style="text-align: center; padding: 20px;">
+                            <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--nord4); margin-bottom: 10px;"></i>
+                            <p style="color: var(--nord3);">Please log in first.</p>
+                            <a href="/U-Order/pages/login.php" class="btn btn-primary" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Login/Register Here</a>
+                        </div>
+                    </div>
+                <?php elseif (empty($cartItems)): ?>
                     <div class="cart-empty-state">
                         <div style="text-align: center; padding: 20px;">
                             <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--nord4); margin-bottom: 10px;"></i>
                             <p style="color: var(--nord3);">Your cart is empty.</p>
-                            <a href="/U-Order/index.php" class="btn btn-primary" style="margin-top: 10px; display: inline-block;">Browse Menu</a>
+                            <a href="/U-Order/index.php" class="btn btn-primary" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Browse Menu</a>
                         </div>
                     </div>
                 <?php else: ?>
