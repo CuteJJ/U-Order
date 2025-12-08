@@ -1,13 +1,18 @@
 <?php
 // pages/vendor_batch_update_items.php
+
+// 1. 設置腳本可以後台運行，不受瀏覽器關閉影響
+ignore_user_abort(true); 
+set_time_limit(0); 
+
 session_start();
 require_once '../configs/db.php';
 
-// 開啟日誌，方便出錯時查看
+// 開啟日誌
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// 1. 確保加載 PHPMailer 和 functions.php
+// 加載庫
 $libDir = __DIR__ . '/../lib/';
 if (file_exists($libDir . 'Exception.php')) require_once $libDir . 'Exception.php';
 if (file_exists($libDir . 'PHPMailer.php')) require_once $libDir . 'PHPMailer.php';
@@ -21,7 +26,7 @@ if (file_exists(__DIR__ . '/../includes/functions.php')) {
 
 header('Content-Type: application/json');
 
-// 2. 權限檢查
+// 權限檢查
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
@@ -35,27 +40,20 @@ if (empty($itemIds) || !is_array($itemIds)) {
     exit;
 }
 
-// 用來防止同一個訂單重複發信
+// 準備一個數組，用來暫存「等一下要發郵件」的清單
+// 我們不在數據庫事務裡發郵件，因為那會卡住數據庫
+$mailQueue = [];
 $processedPayments = [];
-// 用來記錄哪些主訂單需要檢查狀態 (避免重複檢查)
 $affectedOrderIds = [];
 
 try {
     $db->beginTransaction();
 
-    // 準備 SQL
-    // A. 獲取詳細資料 (包括 Email, PaymentMethod, PaymentStatus)
     $fetchSql = "
         SELECT 
-            oi.OrderListId, 
-            o.OrderId, 
-            o.PaymentId,
-            o.UserId,
-            pm.TotalAmount,
-            pm.Status as PaymentStatus,
-            pm.PaymentMethod,
-            u.Email,      
-            u.Name
+            oi.OrderListId, o.OrderId, o.PaymentId, o.UserId,
+            pm.TotalAmount, pm.Status as PaymentStatus, pm.PaymentMethod,
+            u.Email, u.Name
         FROM orderitems oi
         JOIN orders o    ON o.OrderId = oi.OrderId
         JOIN payments pm ON pm.PaymentId = o.PaymentId
@@ -63,110 +61,121 @@ try {
         WHERE oi.OrderListId = ?
     ";
     $stmtFetch = $db->prepare($fetchSql);
-    
-    // B. 更新菜品狀態
     $stmtUpdateItem = $db->prepare("UPDATE orderitems SET Status = ? WHERE OrderListId = ?");
-    
-    // C. 更新支付狀態
     $stmtUpdatePay  = $db->prepare("UPDATE payments SET Status = 'paid' WHERE PaymentId = ?");
-
-    // D. 檢查主訂單是否全部完成的 SQL (檢查該訂單還有多少個 '非 ready' 的菜品)
     $stmtCheckOrder = $db->prepare("SELECT COUNT(*) FROM orderitems WHERE OrderId = ? AND Status != 'ready'");
-    // E. 更新主訂單狀態
     $stmtUpdateOrder = $db->prepare("UPDATE orders SET Status = 'ready' WHERE OrderId = ?");
 
     foreach ($itemIds as $id) {
         $orderListId = (int)$id;
-
-        // 1. 獲取數據
         $stmtFetch->execute([$orderListId]);
         $data = $stmtFetch->fetch(PDO::FETCH_ASSOC);
 
         if (!$data) continue;
 
-        // 2. 更新當前菜品狀態 (如 Cooking -> Ready)
+        // 更新菜品狀態
         $stmtUpdateItem->execute([$newStatus, $orderListId]);
         
-        // 收集 OrderId 以便稍後檢查主訂單狀態
         if (!in_array($data['OrderId'], $affectedOrderIds)) {
             $affectedOrderIds[] = $data['OrderId'];
         }
 
-        // =================================================================
-        // 3. 核心業務邏輯：發送郵件 (條件已加回)
-        // 條件：狀態是 Ready + 是 Cash + 還是 Pending
-        // =================================================================
+        // 收集郵件發送需求 (注意：這裡不發送，只收集)
         $isReady   = ($newStatus === 'ready');
         $isCash    = (strtolower($data['PaymentMethod']) === 'cash');
         $isPending = ($data['PaymentStatus'] === 'pending');
         $pid       = $data['PaymentId'];
 
         if ($isReady && $isCash && $isPending) {
-            
-            // 確保這個訂單這一次還沒發過信
             if (!in_array($pid, $processedPayments)) {
+                $stmtUpdatePay->execute([$pid]); // 數據庫先改狀態
                 
-                // 3.1 更新 Payment 為 paid
-                $stmtUpdatePay->execute([$pid]);
-
-                // 3.2 發送郵件 (直接調用 get_mail，不依賴外部不穩定的函數)
-                $email = $data['Email'];
-                $name  = $data['Name'];
+                // 把發信需要的資料存起來，等一下再發
+                $mailQueue[] = [
+                    'email' => $data['Email'],
+                    'name'  => $data['Name'],
+                    'pid'   => $pid,
+                    'amount'=> $data['TotalAmount']
+                ];
                 
-                if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    try {
-                        if (function_exists('get_mail')) {
-                            $mail = get_mail();
-                            
-                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-                            $host = $_SERVER['HTTP_HOST'];
-                            $link = "$protocol://$host/U-Order/pages/view_receipt.php?payment_id=" . $pid;
-
-                            $mail->addAddress($email, $name);
-                            $mail->isHTML(true);
-                            $mail->Subject = "Order Ready & Payment Confirmed #" . $pid;
-                            $mail->Body = "
-                                <h3>Hello $name,</h3>
-                                <p>Your cash order is now <strong>READY</strong>.</p>
-                                <p><strong>Payment Status Updated: PAID</strong></p>
-                                <p>Order ID: #$pid<br>Total: RM " . number_format($data['TotalAmount'], 2) . "</p>
-                                <p><a href='$link' style='background:#6772e5;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;'>View Receipt</a></p>
-                            ";
-                            $mail->send();
-                        }
-                    } catch (Exception $e) {
-                        error_log("Mail Error for ID $pid: " . $e->getMessage());
-                    }
-                }
-                
-                // 標記已處理
                 $processedPayments[] = $pid;
             }
         }
     }
 
-    // =================================================================
-    // 4. 新增後端邏輯：檢查並更新主訂單 (Orders) 狀態
-    // 邏輯：如果該訂單下的所有菜品都已經是 'ready'，則將主訂單狀態改為 'ready'
-    // =================================================================
+    // 更新主訂單狀態
     foreach ($affectedOrderIds as $oid) {
-        // 查詢該訂單下，狀態 *不是* ready 的菜品數量
         $stmtCheckOrder->execute([$oid]);
         $notReadyCount = $stmtCheckOrder->fetchColumn();
-
-        // 如果數量為 0，代表所有菜品都好了
         if ($notReadyCount == 0) {
             $stmtUpdateOrder->execute([$oid]);
-            error_log("Order #$oid all items ready. Updated main order status to 'ready'.");
         }
     }
 
     $db->commit();
-    echo json_encode(['success' => true]);
+    
+    // =================================================================
+    // 【關鍵優化】 這裡開始「騙」瀏覽器說我們做完了
+    // =================================================================
+    
+    // 1. 準備返回的 JSON
+    $response = json_encode(['success' => true]);
+    
+    // 2. 關閉 Session 寫入，避免鎖死其他頁面
+    session_write_close();
+    
+    // 3. 清空並關閉緩衝區
+    ob_end_clean();
+    
+    // 4. 告訴瀏覽器：「內容長度就這麼多，你可以斷線了」
+    header("Connection: close");
+    header("Content-Encoding: none");
+    header("Content-Length: " . strlen($response));
+    
+    // 5. 輸出內容並強制刷新
+    echo $response;
+    flush();
+    
+    // --- 此刻，瀏覽器的 Loading 圈圈已經消失，用戶覺得已經完成了 ---
+    // --- 下面的代碼是在服務器後台默默執行的 ---
+
+    if (!empty($mailQueue)) {
+        if (function_exists('get_mail')) {
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+            $host = $_SERVER['HTTP_HOST'];
+            
+            foreach ($mailQueue as $task) {
+                try {
+                    // 稍微休息 0.5秒，避免瞬間發送太快被 SMTP 服務器拒絕
+                    usleep(500000); 
+
+                    $mail = get_mail(); // 每次都拿新的 mail 實例
+                    $link = "$protocol://$host/U-Order/pages/view_receipt.php?payment_id=" . $task['pid'];
+
+                    $mail->addAddress($task['email'], $task['name']);
+                    $mail->isHTML(true);
+                    $mail->Subject = "Order Ready & Payment Confirmed #" . $task['pid'];
+                    $mail->Body = "
+                        <h3>Hello " . htmlspecialchars($task['name']) . ",</h3>
+                        <p>Your cash order is now <strong>READY</strong>.</p>
+                        <p><strong>Payment Status Updated: PAID</strong></p>
+                        <p>Order ID: #" . $task['pid'] . "<br>Total: RM " . number_format($task['amount'], 2) . "</p>
+                        <p><a href='$link' style='background:#6772e5;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;'>View Receipt</a></p>
+                    ";
+                    $mail->send();
+                    error_log("Background Mail Sent to: " . $task['email']);
+                    
+                } catch (Exception $e) {
+                    error_log("Background Mail Error: " . $e->getMessage());
+                }
+            }
+        }
+    }
 
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
     error_log("Batch Error: " . $e->getMessage());
+    // 如果出錯，因為還沒騙瀏覽器，所以這裡返回正常的錯誤 JSON
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

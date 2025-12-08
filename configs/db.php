@@ -9,8 +9,11 @@ if (!function_exists('loadEnv')) {
         foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
             $line = trim($line);
 
-            // Skip comments
-            if ($line === '' || str_starts_with($line, '#')) continue;
+            // Skip comments and empty lines
+            if ($line === '' || strpos($line, '#') === 0) continue;
+
+            // 確保這行有 '='，防止報錯
+            if (strpos($line, '=') === false) continue;
 
             // Parse KEY=VALUE
             [$key, $value] = array_map('trim', explode('=', $line, 2));
