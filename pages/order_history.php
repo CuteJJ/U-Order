@@ -11,12 +11,12 @@ if (!isLoggedIn()) {
 
 $userId = $_SESSION['user_id'];
 
-// 2. Fetch Data
+// 2. Fetch Data - Only Completed Orders
 $sql = "
     SELECT o.*, s.StallName
     FROM orders o
     JOIN stalls s ON o.StallId = s.StallId
-    WHERE o.UserId = :uid
+    WHERE o.UserId = :uid AND o.Status = 'complete'
     ORDER BY o.OrderId DESC
 ";
 $stmt = $db->prepare($sql);
@@ -36,6 +36,60 @@ include __DIR__ . '/../includes/header.php';
 
 <link rel="stylesheet" href="/U-Order/assets/css/order_history.css">
 
+<style>
+/* Additional styles for the card actions */
+.card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 12px;
+}
+
+.view-details-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #6B8DB8 0%, #5a7ba6 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(107, 141, 184, 0.3);
+}
+
+.view-details-btn:hover {
+    background: linear-gradient(135deg, #5a7ba6 0%, #4a6a96 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 141, 184, 0.4);
+    color: white;
+}
+
+.reorder-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #f3f4f6;
+    color: #6B8DB8;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.reorder-link:hover {
+    background: #e5e7eb;
+    color: #5a7ba6;
+    transform: translateY(-2px);
+}
+</style>
+
 <div class="order-history-wrapper">
     <div class="history-nav">
         <a href="/U-Order/index.php" class="back-pill">
@@ -46,7 +100,7 @@ include __DIR__ . '/../includes/header.php';
 
     <div class="history-header">
         <h1>Order History</h1>
-        <p>Track your recent meals</p>
+        <p>Your completed orders</p>
     </div>
 
     <?php if (empty($orders)): ?>
@@ -54,8 +108,8 @@ include __DIR__ . '/../includes/header.php';
             <div class="icon-box">
                 <i class="fas fa-receipt"></i>
             </div>
-            <h3>No orders yet</h3>
-            <p>Looks like you haven't ordered anything yet.</p>
+            <h3>No completed orders yet</h3>
+            <p>You don't have any completed orders yet. Start ordering to see your history here!</p>
             <a href="/U-Order/index.php" class="btn-browse">Browse Stalls</a>
         </div>
     <?php else: ?>
@@ -149,8 +203,13 @@ include __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div class="card-actions">
+                        <a href="/U-Order/order/order_detail.php?id=<?php echo $order['OrderId']; ?>" class="view-details-btn">
+                            <i class="fas fa-file-invoice"></i>
+                            View Details
+                        </a>
                         <a href="/U-Order/pages/menu.php?stallid=<?php echo htmlspecialchars($order['StallId']); ?>" class="reorder-link">
-                            View Stall <i class="fas fa-store"></i>
+                            <i class="fas fa-store"></i>
+                            View Stall
                         </a>
                     </div>
                 </div>
