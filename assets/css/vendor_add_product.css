@@ -1,0 +1,440 @@
+/* path: assets/css/vendor_add_product.css */
+
+:root {
+    --bg-main: #f3f4f6;
+    --card-bg: #ffffff;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+    --border-soft: #e5e7eb;
+    --text-main: #111827;
+    --text-sub: #6b7280;
+    --danger: #dc2626;
+    --radius-lg: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+.page-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 內容區塊 */
+.content-area {
+    flex: 1;
+    padding: 24px 32px;
+    margin-left: 250px; /* 配合 Sidebar 寬度 */
+}
+
+.content-header {
+    margin-bottom: 20px;
+}
+
+.content-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.content-subtitle {
+    margin: 0;
+    color: var(--text-sub);
+    font-size: 14px;
+}
+
+/* 卡片主體 */
+.product-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    padding: 24px 24px 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* --- 佈局區塊 --- */
+.card-section {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 左側：圖片區 (寬度固定) */
+.card-media {
+    flex: 0 0 280px; /* 稍微加大一點給 Grid 用 */
+    padding-right: 12px;
+    border-right: 1px solid var(--border-soft);
+}
+
+/* 中間：主要資訊 (彈性) */
+.card-main {
+    flex: 1.4;
+    padding: 0 16px;
+    border-right: 1px solid var(--border-soft);
+}
+
+/* 右側：庫存 (寬度固定) */
+.card-stock {
+    flex: 0 0 260px;
+    padding-left: 16px;
+}
+
+.section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+}
+
+/* =========================================
+   圖片上傳與預覽樣式 (這裡是用來修復爆版問題的核心)
+   ========================================= */
+
+.image-upload-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 1. 點擊上傳的大框框 */
+.upload-drop-zone {
+    width: 100%;
+    aspect-ratio: 4 / 3; /* 保持長方形比例 */
+    border-radius: 16px;
+    background: linear-gradient(135deg, #e5f0ff, #fefce8);
+    border: 2px dashed rgba(148, 163, 184, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden; /* 防止內容溢出 */
+}
+
+.upload-drop-zone:hover {
+    border-color: var(--accent);
+    background: #eff6ff;
+}
+
+.image-placeholder {
+    color: var(--text-sub);
+    font-size: 13px;
+    pointer-events: none; /* 讓點擊事件穿透到 label */
+}
+
+.image-placeholder-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+}
+
+/* 2. 預覽圖 Grid 容器 (限制寬度，自動換行) */
+.preview-grid {
+    display: grid;
+    /* 自動填滿，每個格子最小 70px，最大 1fr */
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
+    gap: 8px;
+    width: 100%; /* 強制不超過父容器 */
+    margin-top: 5px;
+}
+
+/* 3. 單個預覽項目 (限制大小) */
+.preview-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1; /* 強制正方形 */
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+/* 4. 強制圖片適應容器 (這是解決爆版最關鍵的一行) */
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 裁切以填滿，不變形 */
+    display: block;
+}
+
+/* 移除按鈕樣式 */
+.preview-item .remove-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 2;
+    padding: 0;
+}
+
+.preview-item .remove-btn:hover {
+    background: var(--danger);
+}
+
+.image-actions {
+    margin-top: 10px;
+}
+
+/* =========================================
+   表單元件樣式 (按鈕、輸入框)
+   ========================================= */
+
+.btn {
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 16px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all .18s ease;
+    text-decoration: none; /* 給 <a> 標籤用 */
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-sub);
+    border: 1px dashed var(--border-soft);
+}
+
+.btn-ghost:hover {
+    border-style: solid;
+    color: var(--text-main);
+    background: #f9fafb;
+}
+
+.hint-text {
+    font-size: 11px;
+    color: var(--text-sub);
+    line-height: 1.4;
+    display: block;
+}
+
+.field-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.field label {
+    font-size: 13px;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.field span.label-badge {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+    margin-left: 6px;
+}
+
+.field input[type="text"],
+.field input[type="number"],
+.field select,
+.field textarea {
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    padding: 8px 14px;
+    font-size: 13px;
+    outline: none;
+    transition: all .16s ease;
+    background: #f9fafb;
+    width: 100%; /* 確保不超過父層 */
+}
+
+.field textarea {
+    border-radius: 14px;
+    min-height: 72px;
+    resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.field small {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 3px;
+}
+
+/* Toggle Switch */
+.pill-toggle {
+    border-radius: 999px;
+    border: 1px solid var(--border-soft);
+    background: #f9fafb;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pill-toggle-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.pill-toggle-label strong {
+    font-size: 13px;
+}
+
+.pill-toggle-label span {
+    font-size: 11px;
+    color: var(--text-sub);
+}
+
+.pill-toggle input[type="checkbox"] {
+    width: 34px;
+    height: 18px;
+    appearance: none;
+    border-radius: 999px;
+    background: #d1d5db;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    transition: background .16s ease;
+}
+
+.pill-toggle input[type="checkbox"]::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: #fff;
+    transition: transform .16s ease;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+}
+
+.pill-toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+}
+
+.pill-toggle input[type="checkbox"]:checked::after {
+    transform: translateX(14px);
+}
+
+.stock-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    background: #ecfdf5;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    gap: 6px;
+}
+
+.stock-pill span.icon {
+    font-size: 13px;
+}
+
+.actions-bar {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.error-text {
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+#new-category-group {
+    display: none;
+}
+
+/* RWD 響應式 */
+@media (max-width: 1024px) {
+    .product-card {
+        flex-direction: column;
+    }
+
+    .card-media,
+    .card-main,
+    .card-stock {
+        border: none;
+        padding: 0;
+        border-right: none;
+    }
+    
+    .card-media {
+        flex: auto;
+        width: 100%;
+    }
+}
+
+/* ... 原本的 CSS ... */
+
+/* 新增：錯誤狀態的輸入框樣式 */
+.input-error {
+    border-color: var(--danger) !important;
+    background-color: #fef2f2 !important;
+    box-shadow: 0 0 0 1px var(--danger) !important;
+}
+
+/* 讓圖片上傳區也有錯誤樣式 */
+.upload-drop-zone.input-error {
+    border-color: var(--danger) !important;
+    background-color: #fef2f2 !important;
+}

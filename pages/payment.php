@@ -13,7 +13,7 @@ $userId = $_SESSION['user_id'];
 $selectedItems = $_POST['selected_items'] ?? null;
 
 if (empty($selectedItems)) {
-    flash('error', 'No items selected for checkout. Please select items in your cart.');
+    flash('error');
     // Correct redirect to the cart folder
     header("Location: ../cart/cart.php");
     exit;

@@ -1,6 +1,7 @@
 <?php
 include '../configs/db.php';
 include '../includes/functions.php';
+include '../includes/email_helper.php';
 
 if (!isLoggedIn()) {
     header("Location: login.php");
@@ -186,6 +187,12 @@ try {
     unset($_SESSION['checkout_time']);
 
     $db->commit();
+    //Vendor Dashboard的在这里拿
+    //Add sendReceipt() to your Vendor Dashboard
+    // In your vendor order update logic:
+    // if ($newStatus === 'paid' && $oldStatus !== 'paid' && $paymentMethod === 'cash') {
+    //     sendReceipt($db, $userId, $paymentId, $totalAmount, $items);
+    // }
     header("Location: order_success.php?payment_id=" . $paymentId);
     exit;
 

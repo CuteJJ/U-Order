@@ -1,82 +1,87 @@
-.main-area {
-    /* 改动：背景由纯白改为极淡的冷灰 (Slate-50)，减少刺眼，增加层次 */
-    background: #f8fafc;
-    min-height: 100vh;
+/* assets/css/vendor_orders.css */
+
+/* 全局變量：方便改色 */
+:root {
+    --bg-main: #f0f2f5;
+    --card-white: #ffffff;
+    --primary: #4361ee;
+    --success: #2ec4b6;
+    --warning: #ff9f1c;
+    --danger: #e63946;
+    --text-dark: #2b2d42;
+    --text-grey: #8d99ae;
+    --border-radius: 12px;
 }
 
-/* 参考 menu 的 page-content */
-.page-content {
-    /* 顺序是：上 右 下 左 */
-    /* 把第一个数字 24px 改成 8px，就能明显拉上去了 */
-    padding: 2px 32px 24px 32px;
-
-    font-family: "Inter", sans-serif;
-    max-width: 1600px;
-    margin: 0 auto;
-}
-.orders-title {
-    font-size: 1.8rem;
-    font-weight: 800; /* 改动：更粗一点 */
-    margin-bottom: 24px;
-    color: #111827;
-    letter-spacing: -0.02em; /* 新增：字间距稍微收紧，更现代 */
+body {
+    background-color: var(--bg-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; /* 現代字體 */
+    color: var(--text-dark);
 }
 
-/* FILTER BAR */
+/* 篩選欄 */
 .filter-bar {
+    background: var(--card-white);
+    padding: 15px 25px;
+    border-radius: var(--border-radius);
     display: flex;
-    gap: 16px; /* 改动：调整间距 */
-    margin-bottom: 24px;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    margin-bottom: 25px;
     flex-wrap: wrap;
-    align-items: center; /* 新增：垂直居中 */
 }
 
-.filter-bar label {
-    font-size: 0.85rem;
-    font-weight: 500; /* 新增：加粗标签 */
-    margin-right: 6px;
-    color: #4b5563; /* 改动：颜色稍微柔和一点 */
+.filter-group label {
+    font-size: 0.9rem;
+    color: var(--text-grey);
+    margin-right: 8px;
+    font-weight: 600;
 }
 
-.filter-bar select {
-    padding: 8px 12px; /* 改动：按钮做大一点，好点 */
-    border-radius: 8px; /* 改动：圆角加大 */
-    border: 1px solid #d1d5db;
-    font-size: 0.85rem;
-    background-color: #ffffff;
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    outline: none;
+    background: #fff;
+    font-weight: 500;
+}
+
+/* 批量按鈕 */
+.batch-btn {
+    margin-left: auto;
+    background: var(--text-dark);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
-    outline: none; /* 新增：去掉默认黑框 */
     transition: all 0.2s;
 }
 
-/* 新增：鼠标悬停或点击时的效果 */
-.filter-bar select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+.batch-btn:disabled {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
 }
 
-/* THREE COLUMN LAYOUT */
+.batch-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 看板佈局 */
 .orders-board {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px; /* 改动：列之间的间距加大 */
-    align-items: start; /* 新增：防止列被强制拉伸 */
+    gap: 24px;
+    align-items: start;
 }
 
 .orders-column {
-    /* 核心改动：背景改为浅灰 (Slate-100)，形成“轨道” */
-    background: #ffbdaf;
-    
-    /* 改动：去掉了原来的 border，因为背景色已经区分了区域，不要边框更干净 */
-    border: none;
-    
-    border-radius: 16px; /* 改动：更大的圆角 */
-    padding: 16px;
-    
-    /* 改动：去掉外阴影，因为它是凹槽背景，不需要浮起 */
-    box-shadow: none; 
-    
-    min-height: 75vh;
+    background: transparent; /* 去掉灰色背景，更清爽 */
     display: flex;
     flex-direction: column;
 }
@@ -85,147 +90,195 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px; /* 改动：标题离卡片远一点 */
-    padding: 0 4px;      /* 新增：视觉上对齐下方的卡片 */
+    margin-bottom: 15px;
+    padding: 0 5px;
 }
 
 .column-title {
-    font-size: 0.95rem; /* 改动：稍微调小一点，更精致 */
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #475569;     /* 改动：用深灰代替纯黑 (Slate-600) */
-    text-transform: uppercase; /* 新增：大写字母，更有标题感 */
-    letter-spacing: 0.04em;
+    color: var(--text-dark);
 }
 
 .column-count {
-    /* 改动：背景色配合 Column 的背景加深一点 */
-    background: #e2e8f0; 
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #475569;
+    background: #e0e0e0;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-dark);
 }
 
-.column-body {
-    flex-grow: 1;
-}
-
-/* =========================================
-   4. 筛选栏 & 顶部工具条 (Filter Bar & Actions)
-   ========================================= */
-
-.filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 16px; /* 元素之间的间距 */
-    margin-bottom: 24px;
-    padding: 8px 4px; /* 给 focus 状态留点余地 */
-    flex-wrap: wrap;
-}
-
-/* 每一个筛选组 (Label + Select) */
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* 标签和下拉框的距离 */
-}
-
-/* 标签样式 */
-.filter-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #4b5563; /* Gray-600 */
-}
-
-/* 下拉选择框美化 */
-.filter-bar select {
-    appearance: none; /* 去掉默认丑陋的系统样式 */
-    background-color: #ffffff;
-    border: 1px solid #d1d5db; /* Gray-300 */
-    border-radius: 8px;
-    padding: 8px 32px 8px 12px; /* 右边留空给箭头 */
-    font-size: 0.9rem;
-    color: #111827;
-    cursor: pointer;
-    outline: none;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+/* === 卡片樣式 (核心) === */
+.item-card {
+    background: var(--card-white);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); /* 柔和陰影 */
+    border: 1px solid transparent;
     transition: all 0.2s ease;
-    
-    /* 自定义下拉箭头 (使用 SVG Data URI) */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 8px center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    min-width: 140px; /* 保证最小宽度，整齐 */
-}
-
-/* 鼠标悬停 */
-.filter-bar select:hover {
-    border-color: #9ca3af; /* Gray-400 */
-}
-
-/* 选中聚焦状态 */
-.filter-bar select:focus {
-    border-color: #3b82f6; /* Blue-500 */
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); /* 漂亮的蓝色光晕 */
-}
-
-/* --- 批量操作按钮 --- */
-
-/* 这是一个技巧：把按钮挤到最右边去 */
-#batchPrepare {
-    margin-left: auto; /* 只要父容器是 flex，这行代码会让按钮靠右对齐 */
-}
-
-/* 按钮通用基础样式 */
-.batch-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: inline-flex;
+    position: relative;
+}
+
+.item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+/* 選中狀態 */
+.item-card.selected {
+    border: 1px solid var(--primary);
+    background-color: #f8faff;
+}
+.item-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--primary);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 按钮 - 禁用状态 (默认状态) */
-.batch-btn:disabled {
-    background-color: #e5e7eb; /* Gray-200 */
-    color: #9ca3af; /* Gray-400 */
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none !important;
+/* CASH UNPAID 高亮樣式 */
+.item-card.card-unpaid {
+    border-left: 5px solid var(--warning); /* 左側橙色條 */
 }
 
-/* 按钮 - Start Preparing (蓝色) */
-/* 只有当没有 disabled 属性时才生效 */
-#batchPrepare:not(:disabled) {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+/* 卡片頭部 */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
-#batchPrepare:not(:disabled):hover {
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    transform: translateY(-1px);
-}
-#batchPrepare:not(:disabled):active {
-    transform: translateY(0);
+.order-id {
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--text-grey);
+    font-size: 0.9rem;
 }
 
-/* 按钮 - Mark Ready (绿色) */
-#batchReady:not(:disabled) {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    margin-left: 10px; /* 和左边的按钮拉开点距离 */
+/* 時間膠囊樣式 */
+.pickup-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
-#batchReady:not(:disabled):hover {
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    transform: translateY(-1px);
+.badge-asap { background: #ffebee; color: var(--danger); }
+.badge-time { background: #e3f2fd; color: var(--primary); }
+
+/* 卡片內容 */
+.card-body h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-dark);
 }
-#batchReady:not(:disabled):active {
-    transform: translateY(0);
+.qty {
+    color: var(--primary);
+    margin-left: 5px;
 }
+.order-note {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--danger);
+    background: #fff5f5;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* 卡片底部 */
+.card-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.customer-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-grey);
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* 支付狀態標籤 */
+.badge-payment {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.badge-warn { color: var(--warning); background: #fff8e1; }
+.badge-ok { color: var(--success); background: #e0f2f1; }
+
+/* 操作按鈕 (Cook / Ready) */
+.btn-action {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-cook {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 6px rgba(67, 97, 238, 0.3);
+}
+.btn-cook:hover { background: #304ffe; }
+
+.btn-ready {
+    background: var(--success);
+    color: white;
+    box-shadow: 0 2px 6px rgba(46, 196, 182, 0.3);
+}
+.btn-ready:hover { background: #20a090; }
+
+/* Load More 按鈕 */
+.load-more-btn {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: #fff;
+    border: 1px dashed #ccc;
+    color: #666;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.load-more-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #f8faff;
+}
+
+/* Loading Spinner */
+.spinner {
+    width: 30px; 
+    height: 30px; 
+    border: 3px solid #f3f3f3; 
+    border-top: 3px solid var(--primary); 
+    border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+    margin: 20px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

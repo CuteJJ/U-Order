@@ -6,11 +6,7 @@ $hideNav = true;
 
 if (isLoggedIn()) { header("Location: profile.php"); exit; }
 
-// Initialize variables to empty strings to avoid PHP warnings on first load
-$id_val = '';
-$name_val = '';
-$email_val = '';
-$phone_val = '';
+$id_val = ''; $name_val = ''; $email_val = ''; $phone_val = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $studentStaffId = $_POST['user_id'];
@@ -20,31 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $confirmPassword = $_POST['confirm_password'];
     $phone = $_POST['phone_number'];
     
-    // Keep input values to repopulate the form (Sticky Form)
-    $id_val = $studentStaffId;
-    $name_val = $name;
-    $email_val = $email;
-    $phone_val = $phone;
+    $id_val = $studentStaffId; $name_val = $name; $email_val = $email; $phone_val = $phone;
 
-    // (Basic Logic Abbreviated)
     if (empty($studentStaffId) || empty($name) || empty($email) || empty($password)) {
         flash('error', 'Please fill in all required fields.');
-
-    // Email validation
-    }if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         flash('error', 'Invalid email address format.');
-
-    // Password validation
-    }if (strlen($password) < 8 || strlen($password) > 16) {
-        flash('error', 'Password must be at least 8-16 characters long.');
-    
-
-    // Confirm Password validation
-    }if ($password !== $confirmPassword) {
+    } elseif (strlen($password) < 8 || strlen($password) > 16) {
+        flash('error', 'Password must be between 8 and 16 characters.');
+    } elseif ($password !== $confirmPassword) {
         flash('error', 'Passwords do not match.');
-    }else {
-
-        // Check if ID or Email exists
+    } else {
+        // Logic abbreviated for brevity (same as your original)
         $sql = "SELECT UserId FROM users WHERE UserId = :id OR Email = :email";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id' => $studentStaffId, ':email' => $email]);
@@ -52,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->rowCount() > 0) {
             flash('error', 'User ID or Email already registered.');
         } else {
-            // ... Checks ...
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             try {
                 $sql = "INSERT INTO users (UserId, Name, Email, HashedPassword, Role, PhoneNumber, CreatedAt) VALUES (:id, :name, :email, :pass, 'customer', :phone, NOW())";
@@ -62,12 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: login.php");
                 exit;
             } catch (PDOException $e) {
-                // Secure Error Handling
                 if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
                     flash('error', 'User ID or Email already registered.');
                 } else {
-                    error_log("Register Error: " . $e->getMessage()); 
-                    flash('error', 'System error occurred. Please try again.');
+                    flash('error', 'System error occurred.');
                 }
             }
         }
@@ -77,72 +57,79 @@ include '../includes/header.php';
 ?>
 
 <link rel="stylesheet" href="/U-Order/assets/css/auth.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-image-side" style="background-image: url('https://images.unsplash.com/photo-1552611052-33e04de081de?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80');">
             <div class="auth-image-text">
-                <h1>Join Us</h1>
-                <p>Skip the queue.</p>
+                <h1>Join<br>Us.</h1>
+                <p>Skip the queue. Eat better.</p>
             </div>
         </div>
 
         <div class="auth-form-side">
             <h2>Register</h2>
+            <p class="sub-text">Create your account to get started.</p>
             <?php flash(); ?>
+            
             <form method="POST" action="">
                 <div class="form-group">
-                    <label>ID</label>
-                    <input type="number" name="user_id" required placeholder="e.g. 2200123" value="<?php echo htmlspecialchars($id_val); ?>">
-                </div>
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" name="name" required placeholder="John Doe" value="<?php echo htmlspecialchars($name_val); ?>">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" required placeholder="student@uni.edu.my" value="<?php echo htmlspecialchars($email_val); ?>">
-                </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="text" name="phone_number" placeholder="012-3456789" value="<?php echo htmlspecialchars($phone_val); ?>">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div style="position: relative;">
-                        <input type="password" name="password" id="password" required placeholder="Min 8-16 characters" style="padding-right: 40px;">
-                        <span onclick="togglePassword('password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+                    <div class="input-wrapper">
+                        <i class="fas fa-id-card input-icon"></i>
+                        <input type="number" name="user_id" required placeholder="Student/Staff ID" value="<?php echo htmlspecialchars($id_val); ?>">
                     </div>
                 </div>
+                
                 <div class="form-group">
-                    <label>Confirm Password</label>
-                    <div style="position: relative;">
-                        <input type="password" name="confirm_password" id="confirm_password" required placeholder="Re-enter password" style="padding-right: 40px;">
-                        <span onclick="togglePassword('confirm_password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="name" required placeholder="Full Name" value="<?php echo htmlspecialchars($name_val); ?>">
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" name="email" required placeholder="Email Address" value="<?php echo htmlspecialchars($email_val); ?>">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone input-icon"></i>
+                        <input type="text" name="phone_number" placeholder="Phone (Optional)" value="<?php echo htmlspecialchars($phone_val); ?>">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="password" required placeholder="Password (8-16 chars)">
+                        <i class="fas fa-eye password-toggle"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" name="confirm_password" required placeholder="Confirm Password">
+                    </div>
+                </div>
+                
                 <button type="submit" class="btn btn-primary">Register</button>
             </form>
+            
             <div class="links">
-                <a href="login.php">Login</a>
+                Already have an account? <a href="login.php">Login</a>
                 <br><br>
-                <a href="../index.php">&larr; Home</a>
+                <a href="../index.php" style="color: var(--text-muted); font-weight: 500;">&larr; Back to Home</a>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    function togglePassword(fieldId, icon) {
-        const field = document.getElementById(fieldId);
-        if (field.type === "password") {
-            field.type = "text";
-            icon.textContent = "🙈"; // Icon for hidden
-        } else {
-            field.type = "password";
-            icon.textContent = "👁️"; // Icon for visible
-        }
-    }
-</script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/U-Order/assets/js/auth.js"></script>
 
 <?php include '../includes/footer.php'; ?>
