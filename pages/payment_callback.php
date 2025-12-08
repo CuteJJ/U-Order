@@ -6,7 +6,7 @@ include '../includes/email_helper.php';
 
 if (!isLoggedIn()) { header("Location: login.php"); exit; }
 
-// Check if we have the pending order data
+// Check if we have the pending order data from the session
 if (!isset($_SESSION['pending_order'])) {
     flash('error', 'Session expired or invalid order data.');
     header("Location: ../cart/cart.php");
@@ -19,6 +19,7 @@ try {
     $db->beginTransaction();
 
     // 1. Create Payment Record (Status = Paid)
+    // This records the total transaction amount coming from Stripe
     $sql = "INSERT INTO payments (UserId, TotalAmount, Status, PaymentMethod, CreatedAt) 
             VALUES (:uid, :amt, 'paid', :method, NOW())";
     $stmt = $db->prepare($sql);
@@ -29,32 +30,57 @@ try {
     ]);
     $paymentId = $db->lastInsertId();
 
-    // 2. Group items by Stall
-    $ordersByStall = [];
-    foreach ($orderData['cartItems'] as $item) { 
-        $ordersByStall[$item['StallId']][] = $item; 
+    // 2. Group items by Stall AND Pickup Time
+    // This ensures that if a user orders breakfast and lunch from the same stall, 
+    // they become two separate order tickets.
+    $groupedOrders = [];
+    foreach ($orderData['cartItems'] as $item) {
+        // Determine the specific time for this item
+        // If item has no specific time, use the global checkout time
+        $itemTime = !empty($item['PickupTime']) ? $item['PickupTime'] : $orderData['pickupTime'];
+        
+        // Create a unique key: StallID_Time
+        $uniqueKey = $item['StallId'] . '_' . $itemTime;
+
+        if (!isset($groupedOrders[$uniqueKey])) {
+            $groupedOrders[$uniqueKey] = [
+                'stallId'    => $item['StallId'],
+                'pickupTime' => $itemTime,
+                'items'      => []
+            ];
+        }
+        $groupedOrders[$uniqueKey]['items'][] = $item;
     }
 
     // Prepare Statements
+    // Updates stock for limited items
     $sqlDeduct = "UPDATE products SET Stock = Stock - :qty WHERE ProductId = :pid AND IsUnlimitedStock = 0 AND Stock >= :qty";
     $stmtDeduct = $db->prepare($sqlDeduct);
 
+    // Create the Order Ticket
     $sqlOrder = "INSERT INTO orders (PaymentId, UserId, StallId, Status, Notes, CreatedAt) VALUES (:pid, :uid, :sid, 'pending', :notes, NOW())";
     $stmtOrder = $db->prepare($sqlOrder);
 
+    // Insert the specific items
     $sqlItem = "INSERT INTO orderitems (OrderId, ProductId, Quantity, Subtotal, Note, PickupTime) VALUES (:oid, :prod, :qty, :sub, :note, :time)";
     $stmtItem = $db->prepare($sqlItem);
 
-    // 3. Insert Orders & Items
-    foreach ($ordersByStall as $stallId => $items) {
+    // 3. Insert Orders & Items based on the new groups
+    foreach ($groupedOrders as $group) {
+        $stallId = $group['stallId'];
+        $batchTime = $group['pickupTime'];
+        $items = $group['items'];
+
+        // Create the Order Header
         $stmtOrder->execute([
             ':pid' => $paymentId, 
             ':uid' => $orderData['userId'], 
             ':sid' => $stallId, 
-            ':notes' => $orderData['finalNote']
+            ':notes' => $orderData['finalNote'] // Global note attaches to all split orders
         ]);
         $orderId = $db->lastInsertId();
 
+        // Insert items for this specific order/time batch
         foreach ($items as $item) {
             $stmtItem->execute([
                 ':oid' => $orderId, 
@@ -62,8 +88,10 @@ try {
                 ':qty' => $item['Quantity'], 
                 ':sub' => ($item['UnitPrice'] * $item['Quantity']),
                 ':note' => $item['Note'],
-                ':time' => !empty($item['PickupTime']) ? $item['PickupTime'] : $orderData['pickupTime']
+                ':time' => $batchTime // Use the resolved batch time
             ]);
+
+            // Deduct Stock
             $stmtDeduct->execute([
                 ':qty' => $item['Quantity'], 
                 ':pid' => $item['ProductId']
@@ -78,16 +106,15 @@ try {
     $db->commit();
 
     // --- SEND EMAIL (Online) ---
-    // Note: We use $orderData here because it comes from the session
+    // We send one receipt for the whole payment, passing the full original list
     sendReceipt($db, $orderData['userId'], $paymentId, $orderData['totalAmount'], $orderData['cartItems']);
-
 
     // 5. Cleanup Session
     unset($_SESSION['pending_order']);
     unset($_SESSION['checkout_notes']);
     unset($_SESSION['checkout_time']);
 
-    // Success!
+    // Success! Redirect to success page
     header("Location: order_success.php?payment_id=" . $paymentId);
     exit;
 
