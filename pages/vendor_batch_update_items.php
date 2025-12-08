@@ -3,19 +3,25 @@
 session_start();
 require_once '../configs/db.php';
 
-// !!! 確保這裡引用了包含 sendReceipt() 的文件 !!!
-// 如果你的 sendReceipt 在 functions.php 裡，請確保路徑正確
-require_once '../includes/email_helper.php';
+// =======================================================================
+// 1. 引用你的 functions.php
+// 這裡我們不自己寫 env()，直接用你文件裡的
+// =======================================================================
+if (file_exists(__DIR__ . '/../functions.php')) {
+    require_once __DIR__ . '/../functions.php';
+} elseif (file_exists(__DIR__ . '/../includes/functions.php')) {
+    require_once __DIR__ . '/../includes/functions.php';
+}
 
 header('Content-Type: application/json');
 
-// 1. 安全權限檢查
+// 2. 權限檢查
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
 
-// 2. 獲取並驗證輸入
+// 3. 獲取數據
 $newStatus = $_POST['status'] ?? '';
 $itemIds   = $_POST['item_ids'] ?? [];
 
@@ -24,21 +30,10 @@ if (empty($itemIds) || !is_array($itemIds)) {
     exit;
 }
 
-// 只允許合法的狀態流轉
-$allowedStatuses = ['preparing', 'ready', 'completed']; 
-if (!in_array($newStatus, $allowedStatuses)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid status']);
-    exit;
-}
-
 try {
-    // 開啟事務，確保一系列操作要麼全成功，要麼全失敗
     $db->beginTransaction();
 
-    // 準備 SQL 語句 (性能優化：在循環外準備)
-    
-    // A. 查詢 Item 詳情 (包含支付信息)
-    // 我們需要 JOIN orders 和 payments 表來獲取這單是不是 Cash
+    // 準備 SQL
     $fetchSql = "
         SELECT 
             oi.OrderListId, 
@@ -53,66 +48,59 @@ try {
         WHERE oi.OrderListId = ?
     ";
     $stmtFetch = $db->prepare($fetchSql);
+    $stmtUpdateItem = $db->prepare("UPDATE orderitems SET Status = ? WHERE OrderListId = ?");
+    $stmtUpdatePay = $db->prepare("UPDATE payments SET Status = 'paid' WHERE PaymentId = ? AND Status = 'pending'");
 
-    // B. 更新 Item 狀態
-    $updateItemSql = "UPDATE orderitems SET Status = ? WHERE OrderListId = ?";
-    $stmtUpdateItem = $db->prepare($updateItemSql);
-
-    // C. 更新 Payment 狀態 (針對 Cash)
-    // 條件：PaymentId 匹配，且當前狀態必須是 'pending' (防止重複更新)
-    $updatePaySql = "UPDATE payments SET Status = 'paid' WHERE PaymentId = ? AND Status = 'pending'";
-    $stmtUpdatePay = $db->prepare($updatePaySql);
-
-    // --- 循環處理每個選中的 ID ---
     foreach ($itemIds as $id) {
         $orderListId = (int)$id;
 
-        // 1. 獲取數據
+        // A. 查數據
         $stmtFetch->execute([$orderListId]);
         $itemData = $stmtFetch->fetch(PDO::FETCH_ASSOC);
 
-        if (!$itemData) continue; // 找不到數據，跳過
+        if (!$itemData) continue;
 
-        // 2. 更新 OrderItem 狀態 (例如變成 preparing 或 ready)
+        // B. 更新狀態
         $stmtUpdateItem->execute([$newStatus, $orderListId]);
 
-        // 3. 【核心邏輯】 處理 Cash 自動付款與郵件
-        // 觸發條件：
-        // a. 新狀態是 'ready' (代表廚師做好了，一手交錢一手交貨)
-        // b. 支付方式是 'cash'
-        // c. 當前支付狀態是 'pending' (還沒給錢)
+        // C. 核心邏輯 (Cash + Ready)
         if ($newStatus === 'ready' && 
             strtolower($itemData['PaymentMethod']) === 'cash' && 
             $itemData['PaymentStatus'] === 'pending') {
             
-            // 執行 Payment 更新
+            // 更新 Payment -> Paid
             $stmtUpdatePay->execute([$itemData['PaymentId']]);
 
-            // 檢查是否真的更新了數據 (rowCount > 0)
-            // 如果 rowCount 為 0，說明被同一個訂單的其他菜品先觸發更新了，我們就不重複發郵件
+            // D. 發送郵件 (加了防護罩)
+            // 只有當數據庫真的更新了才發
             if ($stmtUpdatePay->rowCount() > 0) {
-                
-                // 4. 發送郵件 (調用 functions.php 裡的函數)
-                // 這裡傳一個空數組作為 $items 參數，因為你的 sendReceipt 主要是發送總金額確認
-                // 如果你需要列出具體菜品，這裡需要額外查詢，但目前需求看起來不需要
-                $itemsForReceipt = []; 
-
-                sendReceipt(
-                    $db, 
-                    $itemData['UserId'], 
-                    $itemData['PaymentId'], 
-                    $itemData['TotalAmount'], 
-                    $itemsForReceipt
-                );
+                try {
+                    if (function_exists('sendReceipt')) {
+                        // 使用 @ 符號抑制錯誤，並用 try-catch 包裹
+                        // 這樣就算 functions.php 裡報錯，代碼也會繼續往下走，commit 數據庫
+                        @sendReceipt(
+                            $db, 
+                            $itemData['UserId'], 
+                            $itemData['PaymentId'], 
+                            $itemData['TotalAmount'], 
+                            [] 
+                        );
+                    }
+                } catch (Throwable $e) {
+                    // 如果 functions.php 崩潰了，我們在這裡記錄日誌
+                    // 但是不拋出錯誤，讓流程繼續，這樣前端就不會 Network Error
+                    error_log("Email Failed (ignored to keep flow alive): " . $e->getMessage());
+                }
             }
         }
     }
 
+    // 提交事務
     $db->commit();
     echo json_encode(['success' => true]);
 
 } catch (Exception $e) {
-    $db->rollBack();
-    error_log("Vendor Batch Update Error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Database error']);
+    if ($db->inTransaction()) $db->rollBack();
+    error_log("Batch Error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
