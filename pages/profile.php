@@ -151,14 +151,14 @@ include '../includes/header.php';
                             <div class="modern-input-group">
                                 <label>Current Password</label>
                                 <div class="input-wrapper">
-                                    <input type="password" name="current_password" class="modern-input" placeholder="Enter current password" required>
+                                    <input type="password" name="current_password" class="modern-input" style="font-family: Arial, Helvetica, sans-serif;" placeholder="Enter current password" required>
                                     <i class="fas fa-eye password-toggle"></i>
                                 </div>
                             </div>
                             <div class="modern-input-group">
                                 <label>New Password</label>
                                 <div class="input-wrapper">
-                                    <input type="password" name="new_password" class="modern-input" placeholder="Enter new password (8-16 chars)" required>
+                                    <input type="password" name="new_password" class="modern-input" style="font-family: Arial, Helvetica, sans-serif;"  placeholder="Enter new password (8-16 chars)" required>
                                     <i class="fas fa-eye password-toggle"></i>
                                 </div>
                             </div>
@@ -166,12 +166,10 @@ include '../includes/header.php';
                         </form>
                     </div>
                 </div>
-
                 <a href="logout.php" onclick="return confirm('Are you sure you want to log out?');" class="btn-primary btn-danger" style="display:flex; justify-content:center; align-items:center; gap:10px; text-decoration:none;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </div>
-
         </div>
     </div>
 </div>

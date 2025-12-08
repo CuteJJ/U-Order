@@ -234,10 +234,10 @@ include '../includes/header.php';
                         <?php
                         // Disable if NOT 'ASAP' AND (Time >= 18:00 OR Time < 09:00)
                         $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
-
+                        
                         // Set styles based on boolean
-                        $disabledClass = $isOutOfBounds ? 'disabled' : '';
-                        $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                        // $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                        // $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
                         ?>
 
                         <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"
