@@ -31,7 +31,6 @@ if (empty($selectedIds)) {
 }
 
 // --- STRIPE CONFIGURATION ---
-$stripeSecretKey = 'sk_test_51SX1myLUKR77BP7mgdSB4tbZntbk0afXLgSwXjRGGx5t4Y2JC78aUiSVQtjLAz1kv3w4P0jr5um3zELNzLeW62Dp00kYhqlxks';
 // Helper: Create Checkout Session
 function createStripeSession($amount, $secretKey, $methodTypes)
 {

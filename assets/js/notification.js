@@ -142,7 +142,7 @@ $(document).ready(function() {
     // Fetch notifications from server
     function fetchNotifications() {
         $.ajax({
-            url: '../ajax/get_notifications.php',
+            url: '../order/get_notifications.php',
             type: 'GET',
             data: { userId: USER_ID },
             dataType: 'json',
