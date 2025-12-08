@@ -93,6 +93,8 @@ include_once __DIR__ . '/db_cart.php';
 <div id="order-slip-wrapper">
     <?php include __DIR__ . '/../order/order_slip.php'; ?>
 </div>
+<link rel="stylesheet" href="/U-Order/assets/css/order_slip.css">
+
 <script src="/U-Order/assets/js/orderslip.js"></script>
 
 <script src="/U-Order/assets/js/app.js"></script>

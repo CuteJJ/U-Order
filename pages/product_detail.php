@@ -185,7 +185,7 @@ include '../includes/header.php';
             <button class="carousel-arrow arrow-next" aria-label="Next Slide">
                 <i class="fas fa-chevron-right"></i>
             </button>
-        <?php endif; ?>
+        <?php endif; ?> 
 
         <a href="../index.php" class="back-overlay-btn">
             <i class="fas fa-arrow-left"></i>

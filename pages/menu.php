@@ -266,6 +266,7 @@ include '../includes/header.php';
                 <h1><?php echo htmlspecialchars($stallName); ?></h1>
                 <p>Browsing Menu</p>
             </div>
+            <h2>Menu</h2>
         </div>
 
         <form id="menu-filter-form" class="menu-controls">
