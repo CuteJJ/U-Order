@@ -3,6 +3,8 @@ include '../configs/db.php';
 include '../includes/functions.php';
 include '../includes/email_helper.php';
 
+$stripeSecretKey = getenv('STRIPE_SECRET_KEY');
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit;
@@ -33,13 +35,14 @@ if (empty($selectedIds)) {
 // --- STRIPE CONFIGURATION ---
 
 // Helper: Create Checkout Session
-function createStripeSession($amount, $secretKey, $methodTypes) {
+function createStripeSession($amount, $secretKey, $methodTypes)
+{
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $host = $_SERVER['HTTP_HOST'];
-    
+
     // SUCCESS URL: Points to the NEW callback file to insert data
     $successUrl = "$protocol://$host/U-Order/pages/payment_callback.php?session_id={CHECKOUT_SESSION_ID}";
-    
+
     // CANCEL URL: Points back to cart or payment page (No DB changes)
     $cancelUrl  = "$protocol://$host/U-Order/pages/payment.php?error=cancelled";
 
@@ -51,7 +54,7 @@ function createStripeSession($amount, $secretKey, $methodTypes) {
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-        'payment_method_types' => $methodTypes, 
+        'payment_method_types' => $methodTypes,
         'line_items' => [[
             'price_data' => [
                 'currency' => 'myr',
@@ -72,7 +75,7 @@ function createStripeSession($amount, $secretKey, $methodTypes) {
     if (isset($response['error'])) {
         throw new Exception("Stripe Session Error: " . $response['error']['message']);
     }
-    
+
     return $response['url'];
 }
 
@@ -81,17 +84,17 @@ $paymentMethodInput = $_POST['payment_method'] ?? 'cash';
 
 // Map Inputs
 switch ($paymentMethodInput) {
-    case 'stripe': 
-        $dbPaymentMethod = 'card'; 
-        $stripeMethods = ['card','fpx']; 
+    case 'stripe':
+        $dbPaymentMethod = 'card';
+        $stripeMethods = ['card', 'fpx'];
         break;
-    case 'ewallet': 
-        $dbPaymentMethod = 'e-wallet'; 
-        $stripeMethods = ['grabpay']; 
+    case 'ewallet':
+        $dbPaymentMethod = 'e-wallet';
+        $stripeMethods = ['grabpay'];
         break;
-    default: 
-        $dbPaymentMethod = 'cash'; 
-        $stripeMethods = []; 
+    default:
+        $dbPaymentMethod = 'cash';
+        $stripeMethods = [];
         break;
 }
 
@@ -108,7 +111,7 @@ try {
             JOIN products p ON ci.ProductId = p.ProductId
             WHERE c.UserId = :uid 
               AND ci.CartItemId IN ($selectedIdsStr)";
-              
+
     $stmt = $db->prepare($sql);
     $stmt->execute([':uid' => $userId]);
     $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -136,7 +139,7 @@ try {
         // 2. Redirect to Stripe
         $redirectUrl = createStripeSession($totalAmount, $stripeSecretKey, $stripeMethods);
         header("Location: " . $redirectUrl);
-        exit; 
+        exit;
         // STOP HERE. DB insertion happens in 'payment_callback.php'
     }
 
@@ -153,13 +156,29 @@ try {
     $paymentId = $db->lastInsertId();
 
     // Insert Orders & Items
-    $ordersByStall = [];
-    foreach ($cartItems as $item) { $ordersByStall[$item['StallId']][] = $item; }
+    // New Logic: Group by BOTH StallId AND PickupTime
+    $ordersGrouped = [];
+
+    foreach ($cartItems as $item) {
+        // We create a unique key combining Stall ID and Time
+        // Example Key: "5_16:00:00" (Stall 5 at 4pm)
+        // Use 'default' if no pickup time is set to prevent errors
+        $timeKey = !empty($item['PickupTime']) ? $item['PickupTime'] : ($pickupTime ?? 'default');
+
+        // Create a composite key
+        $compositeKey = $item['StallId'] . '|' . $timeKey;
+
+        $ordersGrouped[$compositeKey][] = $item;
+    }
 
     $sqlDeduct = "UPDATE products SET Stock = Stock - :qty WHERE ProductId = :pid AND IsUnlimitedStock = 0 AND Stock >= :qty";
     $stmtDeduct = $db->prepare($sqlDeduct);
 
-    foreach ($ordersByStall as $stallId => $items) {
+    foreach ($ordersGrouped as $compositeKey => $items) {
+        // Extract StallId from the items (all items in this group have the same StallId)
+        $stallId = $items[0]['StallId'];
+
+        // INSERT ORDER
         $sql = "INSERT INTO orders (PaymentId, UserId, StallId, Status, Notes, CreatedAt) VALUES (:pid, :uid, :sid, 'pending', :notes, NOW())";
         $stmt = $db->prepare($sql);
         $stmt->execute([':pid' => $paymentId, ':uid' => $userId, ':sid' => $stallId, ':notes' => $finalNote]);
@@ -169,13 +188,15 @@ try {
         $stmtList = $db->prepare($sqlList);
 
         foreach ($items as $item) {
+            $pTime = !empty($item['PickupTime']) ? $item['PickupTime'] : $pickupTime;
+
             $stmtList->execute([
-                ':oid' => $orderId, 
-                ':prod' => $item['ProductId'], 
-                ':qty' => $item['Quantity'], 
+                ':oid' => $orderId,
+                ':prod' => $item['ProductId'],
+                ':qty' => $item['Quantity'],
                 ':sub' => ($item['UnitPrice'] * $item['Quantity']),
                 ':note' => $item['Note'],
-                ':time' => !empty($item['PickupTime']) ? $item['PickupTime'] : $pickupTime
+                ':time' => $pTime
             ]);
             $stmtDeduct->execute([':qty' => $item['Quantity'], ':pid' => $item['ProductId']]);
         }
@@ -195,12 +216,10 @@ try {
     // }
     header("Location: order_success.php?payment_id=" . $paymentId);
     exit;
-
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
-    error_log("Payment Error: " . $e->getMessage()); 
+    error_log("Payment Error: " . $e->getMessage());
     flash('error', 'Payment Failed: ' . $e->getMessage());
     header("Location: payment.php");
     exit;
 }
-?>
