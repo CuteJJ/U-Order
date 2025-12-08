@@ -171,13 +171,11 @@ try {
     $sqlDeduct = "UPDATE products SET Stock = Stock - :qty WHERE ProductId = :pid AND IsUnlimitedStock = 0 AND Stock >= :qty";
     $stmtDeduct = $db->prepare($sqlDeduct);
 
-    // Loop through the NEW grouped array
     foreach ($ordersGrouped as $compositeKey => $items) {
         // Extract StallId from the items (all items in this group have the same StallId)
         $stallId = $items[0]['StallId'];
 
         // INSERT ORDER
-        // Note: We create a specific Order row for this specific Time + Stall combination
         $sql = "INSERT INTO orders (PaymentId, UserId, StallId, Status, Notes, CreatedAt) VALUES (:pid, :uid, :sid, 'pending', :notes, NOW())";
         $stmt = $db->prepare($sql);
         $stmt->execute([':pid' => $paymentId, ':uid' => $userId, ':sid' => $stallId, ':notes' => $finalNote]);
@@ -194,7 +192,7 @@ try {
                 ':prod' => $item['ProductId'],
                 ':qty' => $item['Quantity'],
                 ':sub' => ($item['UnitPrice'] * $item['Quantity']),
-                ':note' => $item['Note'], // Item-specific note (e.g., "no scallions")
+                ':note' => $item['Note'],
                 ':time' => $pTime
             ]);
             $stmtDeduct->execute([':qty' => $item['Quantity'], ':pid' => $item['ProductId']]);
