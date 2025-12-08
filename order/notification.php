@@ -1,124 +1,176 @@
 <?php
 session_start();
-require_once '../config/connection.php';
+require_once __DIR__ . '/../configs/db.php';
 
 // Check if user is logged in
-if (!isset($_SESSION['UserId'])) {
-    header('Location: ../login.php');
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../pages/login.php");
     exit();
 }
 
-$userId = $_SESSION['UserId'];
-$userName = $_SESSION['Name'] ?? 'User';
+$userId = $_SESSION['user_id'];
 
-// Fetch notifications
-$query = "SELECT 
-            o.OrderId,
-            o.Status,
-            o.CreatedAt,
-            o.Notes,
-            s.StallName,
-            p.TotalAmount
-          FROM orders o
-          INNER JOIN payments p ON o.PaymentId = p.PaymentId
-          INNER JOIN stalls s ON o.StallId = s.StallId
-          WHERE o.UserId = ?
-          ORDER BY o.CreatedAt DESC
-          LIMIT 50";
+/* ============================================================
+    FETCH ORDERS (EXCLUDE COMPLETED)
+============================================================ */
+$sql = "
+    SELECT 
+        o.OrderId,
+        o.Status,
+        o.CreatedAt,
+        s.StallName,
+        p.TotalAmount
+    FROM orders o
+    JOIN stalls s ON o.StallId = s.StallId
+    JOIN payments p ON o.PaymentId = p.PaymentId
+    WHERE o.UserId = :uid
+      AND o.Status != 'complete'
+    ORDER BY o.CreatedAt DESC
+";
 
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$result = $stmt->get_result();
-$notifications = $result->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+$stmt = $db->prepare($sql);
+$stmt->execute(['uid' => $userId]);
+$orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* ============================================================
+    HELPER FUNCTIONS
+============================================================ */
+function getStatusMessage($s)
+{
+    return [
+        'pending'   => 'Your order is pending confirmation',
+        'preparing' => 'Your order is being prepared',
+        'ready'     => 'Your order is ready for pickup!',
+        'cancelled' => 'Order was cancelled'
+    ][$s] ?? 'Processing your order';
+}
+
+function timeAgo($dt)
+{
+    $ts = strtotime($dt);
+    $diff = time() - $ts;
+
+    if ($diff < 60) return "Just now";
+    if ($diff < 3600) return floor($diff / 60) . "m ago";
+    if ($diff < 86400) return floor($diff / 3600) . "h ago";
+    return floor($diff / 86400) . "d ago";
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - Canteen Pre-Order</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- App CSS -->
-    <link rel="stylesheet" href="/U-Order/assets/css/app.css">
-    <link rel="stylesheet" href="/U-Order/assets/css/notification.css">
-    <!-- jQuery  -->
+
+    <!-- Notification CSS -->
+    <link rel="stylesheet" href="../assets/css/notification.css">
+
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+
 <body>
-    <!-- Main Content Wrapper -->
-    <div class="app-wrapper">
-        
-        <!-- Header -->
-        <header class="notification-header">
-            <div class="container">
-                <div class="header-content">
-                    <div class="header-left">
-                        <a href="../index.php" class="back-btn">
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
-                        <div class="header-title">
-                            <h1>Notifications</h1>
-                            <p>Stay updated with your orders</p>
-                        </div>
-                    </div>
-                    
-                    <div class="header-right">
-                        <i class="fas fa-bell"></i>
-                        <span id="notificationCount" class="notification-badge d-none">0</span>
-                    </div>
-                </div>
-            </div>
-        </header>
 
-        <!-- Notifications Container -->
-        <main class="notification-main">
-            <div class="container">
-                <div id="notificationsContainer" class="notifications-list">
-                    <!-- Notifications will be loaded here by JS -->
-                </div>
+    <!-- Header -->
+  <header class="notif-header glass-nav">
+    <a href="../index.php" class="nav-back-btn">
+        <i class="fas fa-chevron-left"></i>
+    </a>
 
-                <!-- Loading State -->
-                <div id="loadingState" class="loading-state">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Loading notifications...</p>
-                </div>
+    <h1 class="nav-title">Notifications</h1>
 
-                <!-- Empty State -->
-                <div id="emptyState" class="empty-state d-none">
+    <div class="nav-placeholder"></div>
+</header>
+
+    <!-- Main Container -->
+    <main class="notif-container">
+        <div id="notificationsContainer" class="notifications-list">
+            <?php if (empty($orders)): ?>
+                <div class="empty-center" id="emptyState">
                     <div class="empty-icon">
-                        <i class="fas fa-bell"></i>
+                        <i class="fas fa-bell-slash"></i>
                     </div>
                     <h2>No notifications yet</h2>
-                    <p>We'll notify you when there are updates to your orders</p>
+                    <p>Your order notifications will appear here</p>
                 </div>
-            </div>
-        </main>
+            <?php else: ?>
+                <?php foreach ($orders as $o): ?>
+                    <div class="notif-card" data-order-id="<?= $o['OrderId'] ?>" data-status="<?= $o['Status'] ?>">
+                        <div class="notif-icon <?= $o['Status'] ?>">
+                            <?php
+                            $icons = [
+                                'pending' => 'fa-clock',
+                                'preparing' => 'fa-fire',
+                                'ready' => 'fa-box-open',
+                                'cancelled' => 'fa-times-circle'
+                            ];
+                            $icon = $icons[$o['Status']] ?? 'fa-circle-notch';
+                            ?>
+                            <i class="fas <?= $icon ?>"></i>
+                        </div>
 
+                        <div class="notif-content">
+                            <div class="notif-header-row">
+                                <div class="notif-title">
+                                    <h3>Order #<?= $o['OrderId'] ?></h3>
+                                    <p class="stall-name"><?= htmlspecialchars($o['StallName']) ?></p>
+                                </div>
+
+                                <?php if ($o['Status'] !== 'ready'): ?>
+                                    <span class="notif-status-pill <?= $o['Status'] ?>">
+                                        <?= ucfirst($o['Status']) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+
+                            <p class="status-message">
+                                <?= getStatusMessage($o['Status']) ?>
+                            </p>
+
+                            <div class="notif-footer">
+                                <span class="notif-time">
+                                    <i class="far fa-clock"></i>
+                                    <?= timeAgo($o['CreatedAt']) ?>
+                                </span>
+
+                                <a href="order_detail.php?id=<?= $o['OrderId'] ?>" class="view-order-btn">
+                                    <i class="fas fa-eye"></i> View Order
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state d-none">
+            <div class="spinner"></div>
+            <p>Checking for updates...</p>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="notificationToast" class="notification-toast">
+        <i class="fas fa-bell"></i>
+        <span>New order update!</span>
     </div>
 
-    <!-- Pass PHP data to JavaScript -->
     <script>
-        const USER_ID = <?php echo $userId; ?>;
-        const INITIAL_NOTIFICATIONS = <?php echo json_encode($notifications); ?>;
+        const USER_ID = <?= $userId ?>;
+        const INITIAL_NOTIFICATIONS = <?= json_encode($orders) ?>;
     </script>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Notification JS -->
-    <script src="/U-Order/js/notification.js"></script>
+
+    <script src="../assets/js/notification.js"></script>
 </body>
+
 </html>

@@ -655,3 +655,17 @@ section { padding: 1.5rem; }
 /* Animations */
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes fadeInZoom { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+.notif-dot {
+    display: none;
+    background: #ef4444;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    position: absolute;
+    margin-top: -4px;
+    margin-left: 4px;
+}
+.nav-notification-link {
+    position: relative;
+}

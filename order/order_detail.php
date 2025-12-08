@@ -54,7 +54,18 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_status') {
     exit;
 }
 
+// ================================================================
+// CONFIRM PICKUP — UPDATE STATUS TO COMPLETE
+// ================================================================
+if (isset($_GET['action']) && $_GET['action'] === 'confirm_pickup') {
+    $sql = "UPDATE orders SET Status = 'complete' WHERE OrderId = :orderId";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([':orderId' => $orderId]);
 
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true]);
+    exit;
+}
 // ================================================================
 // GET ORDER ITEMS
 // ================================================================
@@ -635,6 +646,34 @@ if (!$order) die("Order not found.");
         .updating {
             animation: pulse 1.5s ease-in-out infinite;
         }
+        .confirm-btn {
+    width: 100%;
+    padding: 14px;
+    background: #10B981;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+    transition: all 0.25s ease;
+}
+
+.confirm-btn:hover {
+    background: #0e9f6e;
+    transform: translateY(-2px);
+}
+
+.confirm-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
     </style>
 </head>
 
@@ -791,6 +830,15 @@ if (!$order) die("Order not found.");
                         </div>
                     </div>
                 </div>
+<!-- CONFIRM PICKUP BUTTON -->
+<?php if (strtolower($order['Status']) === 'ready'): ?>
+<div class="section" id="confirm-pickup-section">
+    <button class="confirm-btn" id="confirmPickupBtn">
+        <i class="fas fa-check-circle"></i>
+        Confirm Pickup
+    </button>
+</div>
+<?php endif; ?>
 
             </div>
         </div>
@@ -887,6 +935,33 @@ if (!$order) die("Order not found.");
                     }
                 });
             }, 5000);
+
+            $(document).on("click", "#confirmPickupBtn", function () {
+    const btn = $(this);
+    btn.addClass("loading").html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+
+    $.ajax({
+        url: `./order_detail.php?action=confirm_pickup&id=${ORDER_ID}`,
+        method: "GET",
+        dataType: "json",
+        success: function (res) {
+            if (res.success) {
+                // Force UI update immediately
+                updateOrderStatus("complete", lastPaymentStatus);
+
+                // Remove button
+                $("#confirm-pickup-section").fadeOut(300, function () {
+                    $(this).remove();
+                });
+            }
+        },
+        error: function () {
+            btn.removeClass("loading").html("Confirm Pickup");
+            alert("Failed to update order. Try again.");
+        }
+    });
+});
+
         });
     </script>
 </body>

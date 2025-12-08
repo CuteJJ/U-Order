@@ -89,7 +89,7 @@ if ($order['Status'] === 'ready') {
     <div class="slip-left">
         <div class="slip-label">
             <?php if ($totalActiveOrders > 1): ?>
-                <span class="multi-count"><?= $totalActiveOrders ?></span> Active Orders
+                <span class="multi-count"></span> Active Orders
             <?php else: ?>
                 Active Order
             <?php endif; ?>

@@ -226,7 +226,18 @@ include 'includes/header.php';
 
         <nav class="desktop-nav">
             <a href="index.php" class="active">Home</a>
-            <a href="#">Notification</a>
+           <a href="order/notification.php" id="navNotificationLink" class="nav-notification-link">
+    Notification
+    <span id="notifDot" class="notif-dot" style="
+        display:none; 
+        width:10px; 
+        height:10px; 
+        background:#e74c3c; 
+        border-radius:50%;
+        margin-left:6px;
+    "></span>
+</a>
+
 
             <?php 
             // DYNAMIC LINK BASED ON ROLE
@@ -436,6 +447,18 @@ if (!empty($search) && $totalResultCount == 0): ?>
 
 <!-- POLLING SCRIPT -->
 <script src="assets/js/index.js"></script>
+<script>
+setInterval(() => {
+    $.get('/U-Order/order/get_notifications.php', res => {
+        if (res.success && res.count > 0) {
+            $("#notifDot").show();
+        } else {
+            $("#notifDot").hide();
+        }
+    });
+}, 4000);
+
+</script>
 
 </body>
 </html>

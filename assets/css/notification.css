@@ -1,0 +1,530 @@
+/* ============================================================
+   NOTIFICATION PAGE STYLES - Beautiful & Modern Design
+============================================================ */
+
+:root {
+    --primary-blue: #4C6EF5;
+    --primary-green: #10B981;
+    --preparing-blue: #3B82F6;
+    --pending-yellow: #F59E0B;
+    --cancelled-red: #EF4444;
+    --bg-light: #F9FAFB;
+    --card-bg: #FFFFFF;
+    --text-dark: #111827;
+    --text-muted: #6B7280;
+    --border-color: #E5E7EB;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+.d-none {
+    display: none !important;
+}
+
+/* ============================================================
+   HEADER SECTION
+============================================================ */
+/* ===========================================
+   iOS 18 STYLE GLASS NAVIGATION BAR
+=========================================== */
+
+.glass-nav {
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+
+/* Center Title */
+.nav-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: #111;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Back Button */
+.nav-back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+
+    color: #222;
+    text-decoration: none;
+    font-size: 18px;
+
+    transition: all .25s ease;
+}
+
+.nav-back-btn:hover {
+    background: rgba(240,240,255,0.9);
+    transform: scale(1.05);
+}
+
+/* Placeholder keeps title centered */
+.nav-placeholder {
+    width: 40px;
+}
+
+/* ============================================================
+   MAIN CONTAINER
+============================================================ */
+
+.notif-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ============================================================
+   NOTIFICATION CARDS
+============================================================ */
+
+.notif-card {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 22px;
+    padding: 22px;
+    display: flex;
+    gap: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255,255,255,0.45);
+    transition: all 0.35s ease;
+    position: relative;
+}
+.notif-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 45px rgba(0,0,0,0.12);
+}
+
+
+.notif-card.new-notification {
+    border-left: 4px solid var(--primary-blue);
+    background: linear-gradient(to right, rgba(76, 110, 245, 0.05) 0%, white 10%);
+}
+/* UPDATED EFFECT - CARD SLIDE UP + HIGHLIGHT */
+.notif-card.updated {
+    animation: highlightMove 0.55s ease forwards;
+    background-color: #fff7d1 !important;
+}
+
+@keyframes highlightMove {
+    0% {
+        transform: translateY(25px);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.notif-card.slide-in {
+    animation: slideIn 0.4s ease-out;
+}
+
+/* Notification Icon */
+.notif-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: inset 0 0 18px rgba(255,255,255,0.35),
+                0 6px 16px rgba(0,0,0,0.15);
+}
+
+
+.notif-icon.pending {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+}
+
+.notif-icon.preparing {
+    background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+}
+
+.notif-icon.ready {
+    background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+}
+
+.notif-icon.cancelled {
+    background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+}
+
+/* Notification Content */
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.notif-title h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 4px 0;
+}
+
+.notif-title .stall-name {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Status Pills */
+.notif-status-pill {
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+
+.notif-status-pill.pending {
+    background: rgba(255, 193, 7, 0.25);
+    color: #b98000;
+}
+
+.notif-status-pill.preparing {
+    background: rgba(59, 130, 246, 0.25);
+    color: #2264d7;
+}
+
+.notif-status-pill.ready {
+    background: rgba(16, 185, 129, 0.25);
+    color: #0e8f63;
+}
+
+
+.notif-status-pill.cancelled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #DC2626;
+}
+
+/* Status Message */
+.status-message {
+    font-size: 15px;
+    color: var(--text-dark);
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+}
+
+/* Footer */
+.notif-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.notif-time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.notif-time i {
+    font-size: 12px;
+}
+
+/* View Order Button */
+.view-order-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #5C7CFA 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(76, 110, 245, 0.3);
+}
+
+.view-order-btn:hover {
+    background: linear-gradient(135deg, #3B5BDB 0%, var(--primary-blue) 100%);
+    box-shadow: 0 6px 16px rgba(76, 110, 245, 0.4);
+    transform: translateY(-1px);
+    color: white;
+}
+
+.view-order-btn i {
+    font-size: 14px;
+}
+
+/* New Badge */
+.new-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 4px rgba(76, 110, 245, 0.2);
+    animation: pulse 2s infinite;
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.empty-center {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.empty-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+    background: var(--bg-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-icon i {
+    font-size: 48px;
+    color: var(--text-muted);
+}
+
+.empty-center h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 8px 0;
+}
+
+.empty-center p {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ============================================================
+   LOADING STATE
+============================================================ */
+
+.loading-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-state p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+============================================================ */
+
+.notification-toast {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    background: var(--primary-blue);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(400px);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 9999;
+    font-weight: 600;
+}
+
+.notification-toast.show {
+    transform: translateX(0);
+}
+
+.notification-toast i {
+    font-size: 20px;
+}
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+============================================================ */
+
+@media (max-width: 768px) {
+    .notif-container {
+        padding: 16px;
+    }
+
+    .notif-header {
+        padding: 16px;
+    }
+
+    .header-info h1 {
+        font-size: 20px;
+    }
+
+    .notif-card {
+        padding: 16px;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notif-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .notif-header-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .notif-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .view-order-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .notification-toast {
+        right: 16px;
+        left: 16px;
+        transform: translateY(-100px);
+    }
+
+    .notification-toast.show {
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .header-info h1 {
+        font-size: 18px;
+    }
+
+    .header-info p {
+        font-size: 12px;
+    }
+
+    .notif-title h3 {
+        font-size: 16px;
+    }
+
+    .status-message {
+        font-size: 14px;
+    }
+}
