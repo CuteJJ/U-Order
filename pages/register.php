@@ -105,7 +105,7 @@ include '../includes/header.php';
                 <div class="form-group">
                     <div class="input-wrapper">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" name="password" required placeholder="Password (8-16 chars)">
+                        <input type="password" name="password" required style="font-family: Arial, Helvetica, sans-serif;" placeholder="Password (8-16 chars)">
                         <i class="fas fa-eye password-toggle"></i>
                     </div>
                 </div>
@@ -113,7 +113,7 @@ include '../includes/header.php';
                 <div class="form-group">
                     <div class="input-wrapper">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" name="confirm_password" required placeholder="Confirm Password">
+                        <input type="password" name="confirm_password" required style="font-family: Arial, Helvetica, sans-serif;" placeholder="Confirm Password">
                     </div>
                 </div>
                 

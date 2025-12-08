@@ -68,7 +68,7 @@ include '../includes/header.php';
                 <div class="form-group">
                     <div class="input-wrapper">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" name="password" id="password" required placeholder="Password">
+                        <input type="password" name="password" id="password" style="font-family: Arial, Helvetica, sans-serif;" required placeholder="Password">
                         <i class="fas fa-eye password-toggle"></i>
                     </div>
                 </div>
