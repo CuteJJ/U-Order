@@ -4,32 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Load .env file
-function loadEnv($path) {
-    if (!is_file($path)) return;
-
-    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        $line = trim($line);
-
-        // Skip comments
-        if ($line === '' || str_starts_with($line, '#')) continue;
-
-        // Parse KEY=VALUE
-        [$key, $value] = array_map('trim', explode('=', $line, 2));
-
-        // Remove surrounding quotes if any
-        $value = trim($value, "'\"");
-
-        // Set environment variables
-        putenv("$key=$value");
-        $_ENV[$key] = $value;
-        $_SERVER[$key] = $value;
-    }
-}
-
-// Load .env from root
-loadEnv(__DIR__ . '/../.env');
-
 // Helper to get env variable
 function env($key, $default = null) {
     return $_ENV[$key] ?? $default;

@@ -3,6 +3,8 @@ include '../configs/db.php';
 include '../includes/functions.php';
 include '../includes/email_helper.php';
 
+$stripeSecretKey = getenv('STRIPE_SECRET_KEY');
+
 if (!isLoggedIn()) {
     header("Location: login.php");
     exit;
