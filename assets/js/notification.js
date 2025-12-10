@@ -132,12 +132,18 @@ $(document).ready(function () {
 
 function showToast(orderId) {
     const toast = $("#notificationToast");
+
     toast.find("span").text(`New update on Order #${orderId}`);
+
+    toast.removeClass("show");
+    void toast[0].offsetWidth; // 🔥 reset animation
+
     toast.addClass("show");
 
     setTimeout(() => {
         toast.removeClass("show");
-    }, 3000);
+        void toast[0].offsetWidth; // 🔥 修复手机端卡住不消失
+    }, 2500);
 }
 
 

@@ -461,55 +461,36 @@ body {
 ============================================================ */
 
 @media (max-width: 768px) {
-    .notif-container {
-        padding: 16px;
-    }
+  .notification-toast {
+    position: fixed;
+    top: 80px; /* 🔥 Header 下方刚刚好 */
+    left: 50%;
+    transform: translateX(-50%) translateY(-30px); /* 初始隐藏，上方一点 */
+    background: #3C6FF7;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 9999;
 
-    .notif-header {
-        padding: 16px;
-    }
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-    .header-info h1 {
-        font-size: 20px;
-    }
+    opacity: 0;
+    pointer-events: none;
 
-    .notif-card {
-        padding: 16px;
-        flex-direction: column;
-        gap: 12px;
-    }
+    transition: opacity .35s ease, transform .35s ease;
+  }
 
-    .notif-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 20px;
-    }
-
-    .notif-header-row {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .notif-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .view-order-btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .notification-toast {
-        right: 16px;
-        left: 16px;
-        transform: translateY(-100px);
-    }
-
-    .notification-toast.show {
-        transform: translateY(0);
-    }
+  .notification-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* 🔥 平滑掉下来 */
+    pointer-events: auto;
+  }
 }
+
+
 
 @media (max-width: 480px) {
     .header-info h1 {

@@ -171,6 +171,7 @@ function timeAgo($dt)
     </script>
 
     <script src="../assets/js/notification.js"></script>
+    <?php include '../includes/footer.php'; ?>
 </body>
 
 </html>

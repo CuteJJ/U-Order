@@ -85,7 +85,7 @@ include_once __DIR__ . '/db_cart.php';
                 <i class="fas fa-home"></i>
                 <span>Home</span>
             </a>
-            <a href="#" class="nav-item"><i class="fas fa-bell"></i><span>Notify</span></a>
+            <a href="/U-Order/order/notification.php" class="nav-item"><i class="fas fa-bell"></i><span>Notify</span></a>
             <a href="/U-Order/pages/order_history.php" class="nav-item"><i class="fas fa-clock"></i><span>Activity</span></a>
             <a href="/U-Order/pages/profile.php" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
         </nav>
