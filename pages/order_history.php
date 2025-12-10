@@ -203,10 +203,10 @@ include __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
                     </div>
                     <div class="card-actions">
-                        <a href="/U-Order/order/order_detail.php?id=<?php echo $order['OrderId']; ?>" class="view-details-btn">
-                            <i class="fas fa-file-invoice"></i>
-                            View Details
-                        </a>
+                       <a href="/U-Order/pages/reorder.php?orderid=<?= $order['OrderId'] ?>" class="reorder-link">
+    <i class="fas fa-redo"></i> Order Again
+</a>
+
                         <a href="/U-Order/pages/menu.php?stallid=<?php echo htmlspecialchars($order['StallId']); ?>" class="reorder-link">
                             <i class="fas fa-store"></i>
                             View Stall
