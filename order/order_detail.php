@@ -55,15 +55,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_status') {
 }
 
 // ================================================================
-// CONFIRM PICKUP — UPDATE STATUS TO COMPLETE
+// CONFIRM PICKUP — UPDATE ORDER AND ALL ITEMS TO COMPLETE
 // ================================================================
 if (isset($_GET['action']) && $_GET['action'] === 'confirm_pickup') {
-    $sql = "UPDATE orders SET Status = 'complete' WHERE OrderId = :orderId";
-    $stmt = $db->prepare($sql);
-    $stmt->execute([':orderId' => $orderId]);
+    try {
+        $db->beginTransaction();
 
-    header('Content-Type: application/json');
-    echo json_encode(['success' => true]);
+        // 1. Update Main Order Status
+        $sqlOrder = "UPDATE orders SET Status = 'complete' WHERE OrderId = :orderId";
+        $stmtOrder = $db->prepare($sqlOrder);
+        $stmtOrder->execute([':orderId' => $orderId]);
+
+        // 2. Update All Items Status
+        $sqlItems = "UPDATE orderitems SET Status = 'complete' WHERE OrderId = :orderId";
+        $stmtItems = $db->prepare($sqlItems);
+        $stmtItems->execute([':orderId' => $orderId]);
+
+        $db->commit();
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+
+    } catch (Exception $e) {
+        $db->rollBack();
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
     exit;
 }
 

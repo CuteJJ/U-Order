@@ -174,12 +174,17 @@ $(document).ready(function() {
         // Step 1: Show loading spinner
         btn.addClass("loading");
         btn.html('<div class="btn-spinner"></div><span>Processing...</span>');
+        
+        console.log(" initiating AJAX request for Order ID:", ORDER_ID);
 
         $.ajax({
             url: `./order_detail.php?action=confirm_pickup&id=${ORDER_ID}`,
             method: "GET",
             dataType: "json",
             success: function(res) {
+                
+                console.log("Server Response:", res);
+
                 if (res.success) {
                     // Step 2: Show success checkmark
                     btn.removeClass("loading").addClass("success");
@@ -197,9 +202,20 @@ $(document).ready(function() {
                             });
                         }, 800);
                     }, 600);
-                }
+                } 
+                else {
+                 // [DEBUG] Logic reached server but returned success: false
+                console.error("Server returned success: false", res);
+                alert("Server Error: " + (res.error || "Unknown error"));
+                btn.removeClass("loading"); // Reset button
+            }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+            // [DEBUG] This is where most local environment errors show up
+            console.error("AJAX Request Failed!");
+            console.error("Status:", status);
+            console.error("Error:", error);
+            console.log("Raw Response Text (check for HTML PHP errors):", xhr.responseText);
                 // Reset button on error
                 btn.removeClass("loading success");
                 btn.html('<i class="fas fa-check-circle"></i><span>Confirm Pickup</span>');

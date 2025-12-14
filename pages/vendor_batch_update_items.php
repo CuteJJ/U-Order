@@ -103,14 +103,19 @@ try {
         }
     }
 
-    // 更新主訂單狀態
-    foreach ($affectedOrderIds as $oid) {
-        $stmtCheckOrder->execute([$oid]);
-        $notReadyCount = $stmtCheckOrder->fetchColumn();
-        if ($notReadyCount == 0) {
-            $stmtUpdateOrder->execute([$oid]);
-        }
-    }
+    // NEW LOGIC: Use the helper function to calculate correct status
+foreach ($affectedOrderIds as $oid) {
+    syncOrderStatus($db, $oid);
+}
+
+    // // 更新主訂單狀態
+    // foreach ($affectedOrderIds as $oid) {
+    //     $stmtCheckOrder->execute([$oid]);
+    //     $notReadyCount = $stmtCheckOrder->fetchColumn();
+    //     if ($notReadyCount == 0) {
+    //         $stmtUpdateOrder->execute([$oid]);
+    //     }
+    // }
 
     $db->commit();
     

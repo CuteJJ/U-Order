@@ -147,4 +147,40 @@ function get_mail() {
 
     return $m;
 }
+
+/**
+ * Synchronizes the Main Order Status based on its individual Items.
+ * 1. If ANY item is 'pending'   -> Order is 'pending'
+ * 2. If ANY item is 'preparing' -> Order is 'preparing' (unless one is pending)
+ * 3. If ALL items are 'ready'   -> Order is 'ready'
+ */
+function syncOrderStatus($db, $orderId) {
+    // 1. Get all statuses for this order's items
+    $stmt = $db->prepare("SELECT Status FROM orderitems WHERE OrderId = ?");
+    $stmt->execute([$orderId]);
+    $statuses = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    if (empty($statuses)) return;
+
+    // 2. Logic: The "Slowest Runner" Rule
+    $newStatus = 'ready'; // Start optimistic
+    
+    if (in_array('pending', $statuses)) {
+        $newStatus = 'pending';
+    } elseif (in_array('preparing', $statuses)) {
+        $newStatus = 'preparing';
+    }
+
+    // 3. Update the main Order
+    // Only update if not already complete/cancelled to be safe
+    $check = $db->prepare("SELECT Status FROM orders WHERE OrderId = ?");
+    $check->execute([$orderId]);
+    $current = $check->fetchColumn();
+
+    if ($current !== 'complete' && $current !== 'cancelled') {
+        $update = $db->prepare("UPDATE orders SET Status = ? WHERE OrderId = ?");
+        $update->execute([$newStatus, $orderId]);
+    }
+}
+
 ?>
