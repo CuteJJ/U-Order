@@ -86,22 +86,6 @@ for ($i = 0; $i < 4; $i++) {
     ];
 }
 
-function fixAssetUrl($path)
-{
-    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg";
-    if (strpos($path, 'http') === 0) return $path;
-    $clean = ltrim($path, '/');
-    return "/U-Order/assets/" . $clean;
-}
-
-function fixImageUrl($path)
-{
-    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg"; // Placeholder
-    if (strpos($path, 'http') === 0) return $path;
-    $clean = ltrim($path, '/');
-    return "../assets/" . $clean;
-}
-
 $stallLogoUrl = fixAssetUrl($product['LogoURL']);
 
 include '../includes/header.php';
@@ -173,11 +157,11 @@ include '../includes/header.php';
         </div>
 
         <?php if (count($images) > 1): ?>
-            <div class="carousel-indicators">
-                <?php foreach ($images as $i => $img): ?>
-                    <div class="indicator <?php echo $i === 0 ? 'active' : ''; ?>" data-index="<?php echo $i; ?>"></div>
-                <?php endforeach; ?>
-            </div>
+            <div class="custom-dots-container">
+    <?php foreach ($images as $i => $img): ?>
+        <div class="custom-dot <?php echo $i === 0 ? 'active' : ''; ?>" data-index="<?php echo $i; ?>"></div>
+    <?php endforeach; ?>
+</div>
 
             <button class="carousel-arrow arrow-prev" aria-label="Previous Slide">
                 <i class="fas fa-chevron-left"></i>
@@ -236,8 +220,8 @@ include '../includes/header.php';
                         $isOutOfBounds = ($slot['value'] !== 'ASAP' && ($slot['value'] >= '18:00' || $slot['value'] < '09:00'));
                         
                         // Set styles based on boolean
-                        // $disabledClass = $isOutOfBounds ? 'disabled' : '';
-                        // $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
+                        $disabledClass = $isOutOfBounds ? 'disabled' : '';
+                        $disabledStyle = $isOutOfBounds ? 'pointer-events: none; opacity: 0.5; cursor: not-allowed; background-color: #eee; color: #aaa;' : '';
                         ?>
 
                         <div class="time-pill <?php echo $slot['selected'] . ' ' . $disabledClass; ?>"

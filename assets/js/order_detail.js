@@ -7,7 +7,7 @@ const BTN_CONFIRM_PICKUP = `
 `;
 
 const BTN_ORDER_AGAIN = `
-    <a href="/U-Order/pages/reorder.php?orderid=${ORDER_ID}" 
+    <a href="/U-Order/index.php" 
        class="confirm-btn"
        style="background:#4C6EF5; text-decoration: none;">
         <i class="fas fa-redo"></i>

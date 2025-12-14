@@ -28,8 +28,8 @@ $stallId = (int)$stall['StallId'];
 
 // --- Logo ---
 $logo = (!empty($stall['LogoUrl']))
-    ? $stall['LogoUrl']
-    : "/images/default-stall.png";
+    ?  "../assets/" . $stall['LogoUrl']
+    : "../assets/images/default-stall.png";
 
 
 // ========== KPI（即时状态，不看日期） ==========

@@ -22,16 +22,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_id'] = $user['UserId'];
         $_SESSION['role'] = $user['Role'];
         $_SESSION['name'] = $user['Name'];
-
-        if ($remember) {
-            // NOTE: Replace 'YOUR_SECRET_KEY' with a real env variable in production
-            $secret = "YOUR_SECRET_KEY";
-            $token = $user['UserId'] . ':' . hash_hmac('sha256', $user['UserId'], $secret);
-            setcookie('remember_token', $token, time() + (86400 * 30), "/");
-        }
         flash('success', 'Welcome back, ' . $user['Name']);
-        header("Location: profile.php");
-        exit;
+        if ($user['Role'] === 'admin') {
+            header("Location: admin_dashboard.php");
+            exit;
+        }
+        elseif ($user['Role'] === 'vendor') {
+            header("Location: vendor_dashboard.php");
+            exit;
+        }
+        else {
+            header("Location: profile.php");
+            exit;
+        }
     } else {
         flash('error', 'Invalid ID/Email or Password.');
     }

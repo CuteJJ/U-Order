@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     const track = document.querySelector('.carousel-track');
     const slides = document.querySelectorAll('.carousel-slide');
-    const indicators = document.querySelectorAll('.indicator');
+    const indicators = document.querySelectorAll('.custom-dot');
     const carouselContainer = document.querySelector('.product-carousel');
     // Get the new arrow buttons
     const prevBtn = document.querySelector('.arrow-prev');

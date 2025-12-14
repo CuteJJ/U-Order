@@ -129,7 +129,6 @@ $(document).ready(function () {
 
     function showToast(orderId) {
         const toast = $("#notificationToast");
-
         toast.find("span").text(`New update on Order #${orderId}`);
 
         toast.removeClass("show");

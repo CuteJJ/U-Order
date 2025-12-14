@@ -48,239 +48,134 @@ $stmt = $db->prepare($sql);
 $stmt->execute([':uid' => $userId]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalAmount = $result['Total'] ?? 0;
-    
+
 if ($totalAmount == 0) {
     flash('error', 'Selected items have a total of 0 or represent an invalid selection.');
     header("Location: ../cart/cart.php");
     exit;
 }
+
+$sqlDetails = "SELECT p.ProductName, p.UnitPrice, ci.Quantity 
+               FROM cartitems ci
+               JOIN products p ON ci.ProductId = p.ProductId
+               WHERE ci.CartItemId IN ($selectedIdsStr)";
+$stmtDetails = $db->query($sqlDetails);
+$items = $stmtDetails->fetchAll(PDO::FETCH_ASSOC);
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Secure Payment</title>
-    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
-    <!-- Stripe JS Library -->
-    <script src="https://js.stripe.com/v3/"></script>
-    
-    <style>
-        body { background-color: #f4f7f6; }
-        .payment-container { max-width: 550px; margin: 50px auto; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .payment-header { background: #6772e5; color: white; padding: 20px; text-align: center; } /* Stripe Purple */
-        .payment-header h3 { margin: 0; font-weight: 500; }
-        
-        .payment-body { padding: 30px; }
-        .amount-display { text-align: center; font-size: 2.2em; font-weight: bold; color: #333; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        
-        /* Payment Method Tabs */
-        .payment-methods { display: flex; gap: 10px; margin-bottom: 25px; }
-        .method-card { flex: 1; border: 2px solid #eee; border-radius: 8px; padding: 15px 5px; text-align: center; cursor: pointer; transition: all 0.2s; color: #555; }
-        .method-card:hover { border-color: #6772e5; background: #f6f9fc; }
-        .method-card.active { border-color: #6772e5; background: #eef2ff; color: #6772e5; font-weight: bold; }
-        .method-icon { font-size: 24px; display: block; margin-bottom: 5px; }
-        
-        /* Stripe Element Container */
-        .StripeElement {
-            box-sizing: border-box;
-            height: 40px;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: white;
-            box-shadow: 0 1px 3px 0 #e6ebf1;
-            -webkit-transition: box-shadow 150ms ease;
-            transition: box-shadow 150ms ease;
-            margin-bottom: 15px;
-        }
-        .StripeElement--focus { box-shadow: 0 1px 3px 0 #cfd7df; }
-        .StripeElement--invalid { border-color: #fa755a; }
-        .StripeElement--webkit-autofill { background-color: #fefde5 !important; }
+<link rel="stylesheet" href="/U-Order/assets/css/payment.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/U-Order/assets/css/payment.css">
 
-        /* Info Boxes */
-        .info-box { background: #f8f9fa; padding: 15px; border-radius: 5px; font-size: 0.9em; color: #666; margin-bottom: 20px; display: none; border-left: 4px solid #ccc; }
-        
-        .btn-pay { width: 100%; background: #6772e5; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; font-weight: bold; transition: background 0.3s; }
-        .btn-pay:hover { background: #5469d4; }
+<div class="checkout-wrapper">
+    <div class="checkout-container">
 
-        /* Loading Overlay */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #6772e5; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
+        <div class="summary-section">
+            <div class="summary-header">
+                <h3><i class="fa-solid fa-receipt"></i> Order Summary</h3>
+                <span class="item-count"><?php echo count($items); ?> items</span>
+            </div>
 
-<div class="payment-container">
-    <div class="payment-header">
-        <h3>Secure Checkout</h3>
-    </div>
-    <div class="payment-body">
-        <div class="amount-display">
-            <small style="font-size: 0.4em; vertical-align: middle;">RM</small> <?php echo number_format($totalAmount, 2); ?>
+            <div class="order-items-scroll">
+                <?php foreach ($items as $item): ?>
+                    <div class="summary-item">
+                        <div class="item-info">
+                            <span class="item-qty">x<?php echo $item['Quantity']; ?></span>
+                            <span class="item-name"><?php echo htmlspecialchars($item['ProductName']); ?></span>
+                        </div>
+                        <span class="item-price">RM <?php echo number_format($item['UnitPrice'] * $item['Quantity'], 2); ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="summary-total">
+                <span>Total to pay</span>
+                <span class="total-amount">RM <?php echo number_format($totalAmount, 2); ?></span>
+            </div>
         </div>
-        <form id="paymentForm" action="process_payment.php" method="POST">
-            <!-- 3. PASS SELECTED ITEMS TO NEXT PAGE -->
-            <?php foreach ($selectedIds as $id): ?>
-                <input type="hidden" name="selected_items[]" value="<?= htmlspecialchars($id) ?>">
-            <?php endforeach; ?>
 
-            <label style="font-weight:bold; display:block; margin-bottom:10px;">Select Payment Method</label>
-            
-            <div class="payment-methods">
-                <!-- Stripe Option -->
-                <div class="method-card active" onclick="selectMethod('stripe')">
-                    <span class="method-icon">💳</span>
-                    Card
+        <div class="payment-section">
+            <div class="secure-badge">
+                <i class="fa-solid fa-lock"></i> Secure SSL Checkout
+            </div>
+
+            <h2 class="payment-title">Payment Method</h2>
+
+            <form id="paymentForm" action="process_payment.php" method="POST">
+                <?php foreach ($selectedIds as $id): ?>
+                    <input type="hidden" name="selected_items[]" value="<?= htmlspecialchars($id) ?>">
+                <?php endforeach; ?>
+                <input type="hidden" name="payment_method" id="selectedMethod" value="stripe">
+
+                <div class="method-grid">
+                    <div class="method-option active" data-method="stripe">
+                        <div class="icon-circle">
+                            <i class="fa-regular fa-credit-card"></i>
+                        </div>
+                        <span class="method-name">Card</span>
+                        <div class="check-mark"><i class="fa-solid fa-check"></i></div>
+                    </div>
+
+                    <div class="method-option" data-method="ewallet">
+                        <div class="icon-circle">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <span class="method-name">E-Wallet</span>
+                        <div class="check-mark"><i class="fa-solid fa-check"></i></div>
+                    </div>
+
+                    <div class="method-option" data-method="cash">
+                        <div class="icon-circle">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+                        <span class="method-name">Cash</span>
+                        <div class="check-mark"><i class="fa-solid fa-check"></i></div>
+                    </div>
                 </div>
-                <!-- E-Wallet Option -->
-                <div class="method-card" onclick="selectMethod('ewallet')">
-                    <span class="method-icon">📱</span>
-                    E-Wallet
+
+                <div class="payment-details-window">
+                    <div id="view-stripe" class="method-view active">
+                        <div class="wallet-placeholder">
+                            <div class="wallet-icons">
+                                <i class="fa-brands fa-stripe"></i>
+                            </div>
+                            <p>You will be redirected to Stripe payment gateway.</p>
+                        </div>
+                    </div>
+
+                    <div id="view-ewallet" class="method-view">
+                        <div class="wallet-placeholder">
+                            <div class="wallet-icons">
+                                <i class="fa-brands fa-google-pay"></i>
+                                <span style="font-weight:800; font-size:1.2rem;">TNG</span>
+                                <span style="font-weight:800; font-size:1.2rem; color:#00b140;">Grab</span>
+                            </div>
+                            <p>You will be redirected to the secure gateway login.</p>
+                        </div>
+                    </div>
+
+                    <div id="view-cash" class="method-view">
+                        <div class="cash-placeholder">
+                            <div class="cash-icon-lg">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+                            <p>Pay at the counter when you pick up your order.</p>
+                        </div>
+                    </div>
                 </div>
-                <!-- Cash Option -->
-                <div class="method-card" onclick="selectMethod('cash')">
-                    <span class="method-icon">💵</span>
-                    Cash
-                </div>
-            </div>
-            
-            <input type="hidden" name="payment_method" id="selectedMethod" value="stripe">
-            
-            <!-- STRIPE Section -->
-            <div id="section-stripe" class="info-box">
-                <strong>💳 Card Payment</strong><br>
-                You will be redirected to the Card / Online Banking simulator to complete your payment.
-            </div>
 
-            <!-- E-WALLET Section -->
-            <div id="section-ewallet" class="info-box">
-                <strong>📲 E-Wallet Payment</strong><br>
-                You will be redirected to the Touch 'n Go / GrabPay simulator to complete your payment.
-            </div>
-
-            <!-- CASH Section -->
-            <div id="section-cash" class="info-box" style="border-left-color: #28a745;">
-                <strong>💵 Pay on Pickup</strong><br>
-                Please pay cash at the counter when you collect your food. <br>
-                <small>Your order status will be 'Pending' until payment is received.</small>
-            </div>
-
-            <button type="submit" class="btn-pay" id="submitButton">Pay RM <?php echo number_format($totalAmount, 2); ?></button>
-        </form>
+                <button type="submit" class="pay-btn" id="submitButton">
+                    <span class="btn-text">Confirm Payment</span>
+                    <span class="btn-amount">RM <?php echo number_format($totalAmount, 2); ?></span>
+                    <div class="btn-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- Processing Overlay -->
-<div class="overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <h3 id="loadingText">Processing Payment...</h3>
-    <p>Please do not close this window.</p>
-</div>
-
-<script>
-    // 1. Initialize Stripe
-    var stripe = Stripe('pk_test_51SX1myLUKR77BP7mQd7X6amafGv985Qn9UGbOcA0RVRSbE2cIfCiTXkDbfXifnKfJRYs2IvkBWrZF6Smi1LRMS2l00bfmNBJee'); 
-    var elements = stripe.elements();
-
-    // Style the Stripe Element
-    var style = {
-        base: {
-            color: '#32325d',
-            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-            fontSmoothing: 'antialiased',
-            fontSize: '16px',
-            '::placeholder': { color: '#aab7c4' }
-        },
-        invalid: { color: '#fa755a', iconColor: '#fa755a' }
-    };
-
-    // Create and mount the card element
-    var card = elements.create('card', {style: style});
-    card.mount('#card-element');
-
-    // Handle real-time validation errors
-    card.on('change', function(event) {
-        var displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-
-    // 2. Payment Method Selection Logic
-    function selectMethod(method) {
-        // Visual updates
-        document.querySelectorAll('.method-card').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById('selectedMethod').value = method;
-        
-        // Toggle Sections
-        document.getElementById('section-stripe').style.display = (method === 'stripe') ? 'block' : 'none';
-        document.getElementById('section-ewallet').style.display = (method === 'ewallet') ? 'block' : 'none';
-        document.getElementById('section-cash').style.display = (method === 'cash') ? 'block' : 'none';
-
-        // Update Button Text
-        const btn = document.getElementById('submitButton');
-        if (method === 'cash') {
-            btn.innerText = "Place Order (Pay Cash)";
-            btn.style.backgroundColor = "#28a745"; // Green for Cash
-        } else {
-            btn.innerText = "Pay RM <?php echo number_format($totalAmount, 2); ?>";
-            btn.style.backgroundColor = "#6772e5"; // Stripe Purple
-        }
-    }
-
-    // 3. Form Submission Logic
-    var form = document.getElementById('paymentForm');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        var method = document.getElementById('selectedMethod').value;
-
-        if (method === 'stripe') {
-            // -- STRIPE FLOW --
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            document.getElementById('loadingText').innerText = "Contacting Stripe...";
-
-            stripe.createToken(card).then(function(result) {
-                if (result.error) {
-                    // Inform the user if there was an error.
-                    var errorElement = document.getElementById('card-errors');
-                    errorElement.textContent = result.error.message;
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                } else {
-                    // Send the token to your server.
-                    stripeTokenHandler(result.token);
-                }
-            });
-        } else {
-            // -- CASH / EWALLET FLOW --
-            document.getElementById('loadingOverlay').style.display = 'flex';
-            if(method === 'ewallet') document.getElementById('loadingText').innerText = "Connecting to E-Wallet...";
-            if(method === 'cash') document.getElementById('loadingText').innerText = "Placing Order...";
-            
-            // Simulate delay for realism
-            setTimeout(() => {
-                form.submit();
-            }, 1500);
-        }
-    });
-
-    // Submit the token to the server
-    function stripeTokenHandler(token) {
-        var form = document.getElementById('paymentForm');
-        var hiddenInput = document.createElement('input');
-        hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'stripeToken');
-        hiddenInput.setAttribute('value', token.id);
-        form.appendChild(hiddenInput);
-        
-        // Submit the form
-        form.submit();
-    }
-</script>
-
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/U-Order/assets/js/payment.js"></script>
 </body>
 </html>

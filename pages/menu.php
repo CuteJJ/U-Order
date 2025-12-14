@@ -2,21 +2,6 @@
 include '../configs/db.php';
 include '../includes/functions.php';
 
-function fixAssetUrl($path)
-{
-    if (!$path) return "../assets/images/products/placeholder_food.png";
-    if (strpos($path, 'http') === 0) return $path;
-
-    $cleanPath = ltrim($path, '/');
-
-    // 如果本来就是 images/... 就补上 ../assets/
-    if (strpos($cleanPath, 'images/') === 0) {
-        return "../assets/" . $cleanPath;
-    }
-    // 否则直接拼到 ../assets 下
-    return "../assets/" . $cleanPath;
-}
-
 $stallId = $_GET['stallid'] ?? null;
 if (!$stallId) {
     die("Stall ID missing.");
@@ -209,6 +194,7 @@ include '../includes/header.php';
 
     /* PRODUCT GRID */
     #menu-grid {
+        margin-left: 20px;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 20px;
@@ -255,6 +241,29 @@ include '../includes/header.php';
     /* Empty State */
     .menu-empty-state { grid-column: 1/-1; text-align: center; padding: 50px; color: var(--nord3); }
     .menu-empty-emoji { font-size: 3rem; margin-bottom: 15px; }
+
+/* Back to Menu Button */
+.back-pill {
+    margin-left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: var(--nord6); 
+    color: var(--nord0);      
+    border: 1px solid var(--nord4);
+}
+
+.back-pill:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
 </style>
 
 <div class="app-wrapper">
@@ -266,9 +275,7 @@ include '../includes/header.php';
                 <h1><?php echo htmlspecialchars($stallName); ?></h1>
                 <p>Browsing Menu</p>
             </div>
-            <h2>Menu</h2>
         </div>
-
         <form id="menu-filter-form" class="menu-controls">
             <input type="hidden" id="category-hidden" value="<?php echo htmlspecialchars($categoryFilter); ?>">
             
@@ -287,6 +294,10 @@ include '../includes/header.php';
             </div>
         </form>
     </div>
+
+        <a href="/U-Order/index.php" class="back-pill">
+            <i class="fas fa-arrow-left"></i> Back to Menu
+        </a>
 
     <section class="section-categories">
         <div class="section-header">

@@ -111,7 +111,7 @@ if (isset($_FILES['product_images'])) {
                     $destPath = $uploadDir . $newFileName;
 
                     if (move_uploaded_file($tmpName, $destPath)) {
-                        $dbPath = 'assets/images/products/' . $newFileName;
+                        $dbPath = '../assets/images/products/' . $newFileName; 
                         $uploadedImages[] = $dbPath;
                     } else {
                         $errors[] = "Failed to move uploaded file: " . $fileName;
@@ -178,6 +178,19 @@ if (count($errors) === 0) {
 
 // 7. 錯誤處理
 if (count($errors) > 0) {
+    // Get the specific system error (e.g., "Permission denied" or "No such file")
+    $phpError = error_get_last(); 
+    $sysMsg = $phpError ? $phpError['message'] : 'Unknown system error';
+    
+    // Check if the directory is actually writable by the server
+    $dirStatus = is_writable($uploadDir) ? 'Writable' : 'NOT Writable (Permission Issue)';
+    
+    // Append detailed debug info to the errors array
+    $errors[] = "Failed to move file '{$fileName}'. <br>" .
+                "<strong>System says:</strong> {$sysMsg} <br>" .
+                "<strong>Target Path:</strong> {$destPath} <br>" .
+                "<strong>Folder Status:</strong> {$dirStatus}";
+
     $_SESSION['error_msg'] = implode('<br>', $errors);
     $_SESSION['form_data'] = $_POST;
     header('Location: add_product.php');

@@ -95,6 +95,29 @@ function isLoggedIn() {
 }
 
 /**
+ * Fix asset URL to ensure correct path
+ */
+function fixAssetUrl($path)
+{
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg";
+    if (strpos($path, 'http') === 0) return $path;
+    $clean = ltrim($path, '/');
+    return "../assets/" . $clean;
+}
+
+/**
+ * Fix image URL to ensure correct path
+ */
+function fixImageUrl($path)
+{
+    if (!$path) return "https://thumbs.dreamstime.com/b/food-stall-line-icon-food-stall-line-icon-outline-vector-sign-linear-style-pictogram-isolated-white-symbol-logo-illustration-100240476.jpg"; // Placeholder
+    if (strpos($path, 'http') === 0) return $path;
+    $clean = ltrim($path, '/');
+    return "../assets/" . $clean;
+}
+
+
+/**
  * Helper to check "Remember Me" cookie if session is expired
  */
 function checkRememberMe($db) {

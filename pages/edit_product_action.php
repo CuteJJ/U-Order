@@ -161,7 +161,7 @@ try {
                     $destPath = $uploadDir . $newFileName;
 
                     if (move_uploaded_file($tmpName, $destPath)) {
-                        $dbPath = 'assets/images/products/' . $newFileName;
+                        $dbPath = '../assets/images/products/' . $newFileName;
                         
                         // 寫入 DB
                         $stmtImg = $db->prepare("INSERT INTO productimages (ProductId, ImageURL) VALUES (?, ?)");

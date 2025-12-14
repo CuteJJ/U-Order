@@ -14,8 +14,9 @@ $stmt = $db->prepare($sql);
 $stmt->execute([$userId]);
 $stall = $stmt->fetch(PDO::FETCH_OBJ);
 
-$logo = $stall->LogoUrl ?? "/images/default-stall.png";
+$logo = "../assets/" . ($stall->LogoUrl ?? "images/default-stall.png");
 $stallName = $stall->StallName ?? "My Stall";
+
 ?>
 
 <link rel="stylesheet" href="../assets/css/vendor_layout.css">

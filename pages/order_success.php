@@ -1,45 +1,81 @@
 <?php
+// order_success.php
 include '../configs/db.php';
 include '../includes/functions.php';
 
-if (!isLoggedIn()) { header("Location: login.php"); exit; }
+if (!isLoggedIn()) {
+    header("Location: login.php");
+    exit;
+}
 
-$paymentId = $_GET['payment_id'] ?? 0;
+$paymentId = $_GET['payment_id'] ?? 'Unknown';
+
+flash('success', 'Payment Successful!');
+
+include '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Order Successful</title>
-    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
-    <style>
-        .success-container { text-align: center; padding: 60px 20px; max-width: 600px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .check-icon { 
-            width: 80px; height: 80px; line-height: 80px; 
-            background: #A3BE8C; color: white; 
-            border-radius: 50%; font-size: 40px; 
-            margin: 0 auto 20px; 
-            box-shadow: 0 4px 15px rgba(163, 190, 140, 0.4);
-        }
-        h1 { color: #2E3440; margin-bottom: 10px; }
-        p { color: #4C566A; margin-bottom: 30px; font-size: 1.1rem; }
-        
-        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .btn-home { padding: 12px 25px; background: #5E81AC; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s; }
-        .btn-home:hover {transform: translateY(-2px); }
-    </style>
-</head>
-<body>
-    <div class="success-container">
-        <div class="check-icon">✓</div>
-        <h1>Payment Successful!</h1>
-        <p>Your payment (ID: #<?php echo htmlspecialchars($paymentId); ?>) has been processed successfully.</p>
-        <p style="font-size: 0.95rem; color: #888;">Your orders have been sent to the respective stalls.</p>
-        
-        <div class="btn-group">
-            <a href="../order/notification.php" class="btn-home">View My Orders</a>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/U-Order/assets/css/order_success.css">
+
+<div class="success-wrapper">
+    <div class="success-card">
+        <div class="icon-container">
+            <div class="success-circle-border"></div>
+            <div class="success-circle">
+                <i class="fa-solid fa-check"></i>
+            </div>
+        </div>
+
+        <h1 class="title">Payment Successful!</h1>
+        <p class="subtitle">Your transaction has been completed.</p>
+
+        <div class="order-details-box">
+            <div class="detail-row">
+                <span>Transaction ID</span>
+                <strong>#<?php echo htmlspecialchars($paymentId); ?></strong>
+            </div>
+            <div class="detail-row">
+                <span>Status</span>
+                <span class="status-badge">Paid</span>
+            </div>
+            <div class="divider"></div>
+            <p class="info-text">
+                Your order has been sent to the stall.<br>
+                Please wait for your number to be called.
+            </p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="../order/notification.php" class="btn btn-primary">
+                View My Orders
+            </a>
+            <a href="../index.php" class="btn btn-secondary">
+                Back to Home
+            </a>
+        </div>
+
+        <div class="redirect-timer">
+            Redirecting to orders in <span id="countdown">10</span>s...
         </div>
     </div>
+</div>
+
+<script>
+    // Auto Redirect Logic
+    let seconds = 10;
+    const countdownEl = document.getElementById('countdown');
+    
+    const timer = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(timer);
+            window.location.href = '../order/notification.php';
+        }
+    }, 1000);
+</script>
+
 </body>
 </html>

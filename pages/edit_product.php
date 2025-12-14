@@ -103,7 +103,7 @@ try {
                         <div class="preview-grid" id="imagePreviewGrid" style="<?= count($existingImages) > 0 ? 'display:grid' : 'display:none' ?>">
                              <?php foreach ($existingImages as $img): ?>
                                 <div class="preview-item existing-item" data-existing-id="<?= $img['ImageId'] ?>">
-                                    <img src="../<?= htmlspecialchars($img['ImageURL']) ?>" alt="Product Image">
+                                    <img src="<?= htmlspecialchars($img['ImageURL']) ?>" alt="Product Image">
                                     <button type="button" class="remove-btn">×</button>
                                 </div>
                             <?php endforeach; ?>
