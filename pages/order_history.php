@@ -36,60 +36,6 @@ include __DIR__ . '/../includes/header.php';
 
 <link rel="stylesheet" href="/U-Order/assets/css/order_history.css">
 
-<style>
-/* Additional styles for the card actions */
-.card-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    align-items: center;
-    padding-top: 12px;
-}
-
-.view-details-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #6B8DB8 0%, #5a7ba6 100%);
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(107, 141, 184, 0.3);
-}
-
-.view-details-btn:hover {
-    background: linear-gradient(135deg, #5a7ba6 0%, #4a6a96 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 141, 184, 0.4);
-    color: white;
-}
-
-.reorder-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: #f3f4f6;
-    color: #6B8DB8;
-    text-decoration: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
-}
-
-.reorder-link:hover {
-    background: #e5e7eb;
-    color: #5a7ba6;
-    transform: translateY(-2px);
-}
-</style>
-
 <div class="order-history-wrapper">
     <div class="history-nav">
         <a href="/U-Order/index.php" class="back-pill">
@@ -104,8 +50,8 @@ include __DIR__ . '/../includes/header.php';
     </div>
 
     <?php if (empty($orders)): ?>
-        <div class="no-orders">
-            <div class="icon-box">
+        <div class="empty-center">
+            <div class="empty-icon">
                 <i class="fas fa-receipt"></i>
             </div>
             <h3>No completed orders yet</h3>

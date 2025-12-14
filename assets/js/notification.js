@@ -48,12 +48,12 @@ $(document).ready(function () {
         return `${days}d ago`;
     }
 
- function createNotificationCard(n) {
-    const cfg = statusConfig[n.Status] || statusConfig.pending;
-    const created = new Date(n.CreatedAt).getTime();
-    const isNew = created > lastCheckTime;
+    function createNotificationCard(n) {
+        const cfg = statusConfig[n.Status] || statusConfig.pending;
+        const created = new Date(n.CreatedAt).getTime();
+        const isNew = created > lastCheckTime;
 
-    return `
+        return `
         <div class="notif-card ${isNew ? 'new-notification' : ''}" data-order-id="${n.OrderId}" data-status="${n.Status}">
             <div class="notif-icon ${cfg.colorClass}">
                 <i class="fas ${cfg.icon}"></i>
@@ -65,12 +65,9 @@ $(document).ready(function () {
                         <h3>Order #${n.OrderId}</h3>
                         <p class="stall-name">${n.StallName}</p>
                     </div>
-
-                    ${n.Status !== 'ready' ? `
                         <span class="notif-status-pill ${cfg.colorClass}">
                             ${cfg.label}
                         </span>
-                    ` : ''}
                 </div>
 
                 <p class="status-message">${cfg.message}</p>
@@ -90,7 +87,7 @@ $(document).ready(function () {
             ${isNew ? '<div class="new-badge"></div>' : ''}
         </div>
     `;
-}
+    }
 
 
     function renderNotifications(list) {
@@ -130,83 +127,83 @@ $(document).ready(function () {
         }
     }
 
-function showToast(orderId) {
-    const toast = $("#notificationToast");
+    function showToast(orderId) {
+        const toast = $("#notificationToast");
 
-    toast.find("span").text(`New update on Order #${orderId}`);
+        toast.find("span").text(`New update on Order #${orderId}`);
 
-    toast.removeClass("show");
-    void toast[0].offsetWidth; // 🔥 reset animation
-
-    toast.addClass("show");
-
-    setTimeout(() => {
         toast.removeClass("show");
-        void toast[0].offsetWidth; // 🔥 修复手机端卡住不消失
-    }, 2500);
-}
+        void toast[0].offsetWidth; // 🔥 reset animation
+
+        toast.addClass("show");
+
+        setTimeout(() => {
+            toast.removeClass("show");
+            void toast[0].offsetWidth; // 🔥 修复手机端卡住不消失
+        }, 2500);
+    }
 
 
-function fetchNotifications() {
-    if (!isPolling) return;
+    function fetchNotifications() {
+        if (!isPolling) return;
 
-    $.ajax({
-        url: "../order/get_notifications.php",
-        type: "GET",
-        dataType: "json",
-        success: function (response) {
-            if (!response.success) return;
+        $.ajax({
+            url: "../order/get_notifications.php",
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                if (!response.success) return;
 
-            const newNotifications = response.notifications;
+                const newNotifications = response.notifications;
 
-            let changedOrderId = null;
+                let changedOrderId = null;
 
-            // 检查差异
-            newNotifications.forEach(newNotif => {
-                const old = currentNotifications.find(o => o.OrderId == newNotif.OrderId);
-                if (!old || old.Status !== newNotif.Status) {
-                    changedOrderId = newNotif.OrderId;
+                // 检查差异
+                newNotifications.forEach(newNotif => {
+                    const old = currentNotifications.find(o => o.OrderId == newNotif.OrderId);
+                    if (!old || old.Status !== newNotif.Status) {
+                        changedOrderId = newNotif.OrderId;
+                    }
+                });
+
+                // 更新记忆体
+                currentNotifications = newNotifications;
+                renderNotifications(currentNotifications);
+
+                if (changedOrderId) {
+                    showToast(changedOrderId);
+
+                    // === 强制将这个卡片移动到最顶 ===
+                    const card = $(`.notif-card[data-order-id="${changedOrderId}"]`);
+                    const container = $("#notificationsContainer");
+
+                    // 从原来位置移除
+                    card.detach();
+
+                    // 插入容器最上面
+                    container.prepend(card);
+
+                    // 播放动画
+                    card.addClass("updated");
+
+                    setTimeout(() => card.removeClass("updated"), 800);
                 }
-            });
 
-            // 更新记忆体
-            currentNotifications = newNotifications;
-            renderNotifications(currentNotifications);
-
-            if (changedOrderId) {
-                showToast(changedOrderId);
-
-                // === 强制将这个卡片移动到最顶 ===
-                const card = $(`.notif-card[data-order-id="${changedOrderId}"]`);
-                const container = $("#notificationsContainer");
-
-                // 从原来位置移除
-                card.detach();
-
-                // 插入容器最上面
-                container.prepend(card);
-
-                // 播放动画
-                card.addClass("updated");
-
-                setTimeout(() => card.removeClass("updated"), 800);
+                updateNotificationCount(currentNotifications);
             }
-
-            updateNotificationCount(currentNotifications);
-        }
-    });
-}
+        });
+    }
 
 
 
-    $(document).on("click", ".view-order-btn", function() {
+    $(document).on("click", ".view-order-btn", function () {
         const orderId = $(this).closest(".notif-card").data("order-id");
         $(`.notif-card[data-order-id="${orderId}"]`).removeClass("new-notification");
     });
 
     renderNotifications(currentNotifications);
     updateNotificationCount(currentNotifications);
-fetchNotifications();
+    fetchNotifications();
     const pollingInterval = setInterval(fetchNotifications, 5000);
 
     document.addEventListener("visibilitychange", () => {
@@ -222,7 +219,7 @@ fetchNotifications();
         clearInterval(pollingInterval);
     });
 
-    $(".header-bell").on("click", function() {
+    $(".header-bell").on("click", function () {
         lastCheckTime = Date.now();
         localStorage.setItem("notif_last_seen", lastCheckTime);
         fetchNotifications();

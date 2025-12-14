@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../configs/db.php';
-
+require __DIR__ . '/../includes/functions.php';
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../pages/login.php");
@@ -55,123 +55,99 @@ function timeAgo($dt)
     if ($diff < 86400) return floor($diff / 3600) . "h ago";
     return floor($diff / 86400) . "d ago";
 }
+include '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<link rel="stylesheet" href="../assets/css/notification.css">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications - Canteen Pre-Order</title>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Notification CSS -->
-    <link rel="stylesheet" href="../assets/css/notification.css">
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-
-<body>
-
-    <!-- Header -->
-  <header class="notif-header glass-nav">
-    <a href="../index.php" class="nav-back-btn">
-        <i class="fas fa-chevron-left"></i>
-    </a>
-
-    <h1 class="nav-title">Notifications</h1>
-
-    <div class="nav-placeholder"></div>
-</header>
-
-    <!-- Main Container -->
-    <main class="notif-container">
-        <div id="notificationsContainer" class="notifications-list">
-            <?php if (empty($orders)): ?>
-                <div class="empty-center" id="emptyState">
-                    <div class="empty-icon">
-                        <i class="fas fa-bell-slash"></i>
-                    </div>
-                    <h2>No notifications yet</h2>
-                    <p>Your order notifications will appear here</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($orders as $o): ?>
-                    <div class="notif-card" data-order-id="<?= $o['OrderId'] ?>" data-status="<?= $o['Status'] ?>">
-                        <div class="notif-icon <?= $o['Status'] ?>">
-                            <?php
-                            $icons = [
-                                'pending' => 'fa-clock',
-                                'preparing' => 'fa-fire',
-                                'ready' => 'fa-box-open',
-                                'cancelled' => 'fa-times-circle'
-                            ];
-                            $icon = $icons[$o['Status']] ?? 'fa-circle-notch';
-                            ?>
-                            <i class="fas <?= $icon ?>"></i>
-                        </div>
-
-                        <div class="notif-content">
-                            <div class="notif-header-row">
-                                <div class="notif-title">
-                                    <h3>Order #<?= $o['OrderId'] ?></h3>
-                                    <p class="stall-name"><?= htmlspecialchars($o['StallName']) ?></p>
-                                </div>
-
-                                <?php if ($o['Status'] !== 'ready'): ?>
-                                    <span class="notif-status-pill <?= $o['Status'] ?>">
-                                        <?= ucfirst($o['Status']) ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-
-                            <p class="status-message">
-                                <?= getStatusMessage($o['Status']) ?>
-                            </p>
-
-                            <div class="notif-footer">
-                                <span class="notif-time">
-                                    <i class="far fa-clock"></i>
-                                    <?= timeAgo($o['CreatedAt']) ?>
-                                </span>
-
-                                <a href="order_detail.php?id=<?= $o['OrderId'] ?>" class="view-order-btn">
-                                    <i class="fas fa-eye"></i> View Order
-                                </a>
-
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingState" class="loading-state d-none">
-            <div class="spinner"></div>
-            <p>Checking for updates...</p>
-        </div>
-    </main>
-
-    <!-- Toast Notification -->
-    <div id="notificationToast" class="notification-toast">
-        <i class="fas fa-bell"></i>
-        <span>New order update!</span>
+<div class="notification-wrapper">
+    <div class="page-nav-row">
+        <a href="/U-Order/index.php" class="back-pill">
+            <i class="fas fa-arrow-left"></i> Back to Menu
+        </a>
     </div>
 
-    <script>
-        const USER_ID = <?= $userId ?>;
-        const INITIAL_NOTIFICATIONS = <?= json_encode($orders) ?>;
-    </script>
+    <div class="page-header">
+        <h1>Notifications</h1>
+        <p>Real-time updates on your active orders</p>
+    </div>
 
-    <script src="../assets/js/notification.js"></script>
-    <?php include '../includes/footer.php'; ?>
-</body>
+    <div id="notificationsContainer" class="notifications-list">
+        <?php if (empty($orders)): ?>
+            <div class="empty-center">
+                <div class="empty-icon">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <h2>No notifications yet</h2>
+                <p>Your order notifications will appear here</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($orders as $o): ?>
+                <div class="notif-card" data-order-id="<?= $o['OrderId'] ?>" data-status="<?= $o['Status'] ?>">
 
-</html>
+                    <div class="status-strip <?= $o['Status'] ?>"></div>
+
+                    <div class="notif-body">
+                        <div class="notif-top-row">
+                            <div class="stall-info">
+                                <span class="order-id">#<?= $o['OrderId'] ?></span>
+                                <h3 class="stall-name"><?= htmlspecialchars($o['StallName']) ?></h3>
+                            </div>
+                            <span class="time-tag">
+                                <i class="far fa-clock"></i> <?= timeAgo($o['CreatedAt']) ?>
+                            </span>
+                        </div>
+
+                        <div class="notif-message-row">
+                            <div class="icon-bubble <?= $o['Status'] ?>">
+                                <?php
+                                $icons = [
+                                    'pending' => 'fa-hourglass-half',
+                                    'preparing' => 'fa-fire-alt',
+                                    'ready' => 'fa-utensils',
+                                    'cancelled' => 'fa-times'
+                                ];
+                                $icon = $icons[$o['Status']] ?? 'fa-circle';
+                                ?>
+                                <i class="fas <?= $icon ?>"></i>
+                            </div>
+                            <div class="message-text">
+                                <span class="status-title"><?= ucfirst($o['Status']) ?></span>
+                                <p>
+                                    <?php
+                                    if ($o['Status'] == 'pending') echo "Waiting for stall to confirm.";
+                                    elseif ($o['Status'] == 'preparing') echo "The chef is preparing your meal.";
+                                    elseif ($o['Status'] == 'ready') echo "It's ready! Please pick it up now.";
+                                    else echo "Order status has been updated.";
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="notif-actions">
+                            <a href="order_detail.php?id=<?= $o['OrderId'] ?>" class="btn-view-details">
+                                View Details <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div id="notificationToast">
+    <div class="toast-icon"><i class="fas fa-bell"></i></div>
+    <div class="toast-content">
+        <span class="toast-title">Order Update!</span>
+        <span class="toast-desc">Status changed.</span>
+    </div>
+</div>
+
+<script>
+    const USER_ID = <?= $userId ?>;
+    const INITIAL_NOTIFICATIONS = <?= json_encode($orders) ?>;
+</script>
+<script src="../assets/js/notification.js"></script>
+
+
+<?php include __DIR__ . '/../includes/footer.php'; ?>

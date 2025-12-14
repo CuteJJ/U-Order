@@ -3,8 +3,10 @@
 // CONFIG
 // ================================================================
 require __DIR__ . '/../configs/db.php';
+require __DIR__ . '/../includes/functions.php';
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+$hideNav = false;
 
 // Get order ID
 $orderId = isset($_GET['id']) ? (int)$_GET['id'] : die('Order ID required.');
@@ -75,7 +77,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'confirm_pickup') {
 
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
-
     } catch (Exception $e) {
         $db->rollBack();
         header('Content-Type: application/json');
@@ -111,196 +112,152 @@ $order = getOrderDetail($db, $orderId);
 $items = getOrderItems($db, $orderId);
 
 if (!$order) die("Order not found.");
+
+include '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order #<?= $orderId ?></title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/U-Order/assets/css/order_detail.css">
-</head>
+<link rel="stylesheet" href="/U-Order/assets/css/order_detail.css">
 
-<body>
+<div class="detail-wrapper">
+    <div class="order-card">
+        
+        <div class="card-header">
+            <a href="javascript:history.back()" class="back-btn-hero">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
 
-    <div class="container">
-        <div class="order-card">
-            <!-- HEADER -->
-            <div class="card-header">
-                <button class="back-btn" onclick="history.back()">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Back to Menu</span>
-                </button>
-
-                <div class="header-icon">🍽️</div>
-                <div class="header-title">U-ORDER</div>
-                <div class="header-subtitle">Thanks for ordering!</div>
-                <div class="header-subtitle">Your order details below</div>
+            <div class="header-icon">
+                <i class="fas fa-utensils"></i>
             </div>
-
-            <!-- BODY -->
-            <div class="card-body">
-
-                <!-- ORDER INFORMATION -->
-                <div class="section">
-                    <div class="section-title">Order Information</div>
-                    <div class="info-badge">
-                        <i class="fas fa-receipt"></i>
-                        <span>Order #<?= $orderId ?></span>
-                    </div>
-                    <div class="info-row">
-                        <i class="fas fa-calendar"></i>
-                        <span><?= date("M d, Y", strtotime($order['CreatedAt'])) ?></span>
-                        <span>•</span>
-                        <i class="fas fa-clock"></i>
-                        <span><?= date("h:i A", strtotime($order['CreatedAt'])) ?></span>
-                    </div>
-                    <?php if (!empty($order['StallName'])): ?>
-                        <div class="info-row">
-                            <i class="fas fa-store"></i>
-                            <span><?= htmlspecialchars($order['StallName']) ?></span>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- ORDER ITEMS -->
-                <div class="section">
-                    <div class="section-title">Order Items</div>
-                    <div class="items-container">
-                        <?php
-                        $totalAmount = 0;
-                        foreach ($items as $item):
-                            $totalAmount += $item['Subtotal'];
-                        ?>
-                            <div class="item">
-                                <div class="item-details">
-                                    <div class="item-header">
-                                        <span class="item-qty"><?= $item['Quantity'] ?>×</span>
-                                        <span class="item-name"><?= htmlspecialchars($item['ProductName']) ?></span>
-                                    </div>
-                                    <?php if (!empty($item['Note'])): ?>
-                                        <div class="item-note">
-                                            <i class="fas fa-comment"></i>
-                                            <span><?= htmlspecialchars($item['Note']) ?></span>
-                                        </div>
-                                    <?php endif; ?>
-                                    
-                                    <!-- SHOW PICKUP TIME -->
-                                    <?php if (!empty($item['PickupTime'])): ?>
-                                        <div class="item-note">
-                                            <i class="fas fa-clock"></i>
-                                            <span>Pickup: <?= date("h:i A", strtotime($item['PickupTime'])) ?></span>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="item-price">
-                                    RM <?= number_format($item['Subtotal'], 2) ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- ORDER PROGRESS -->
-                <div class="section">
-                    <div class="section-title">Order Progress</div>
-                    <div class="status-container">
-                        <div class="status-header">
-                            <span class="status-label">Current Status</span>
-                            <span class="status-badge <?= strtolower($order['Status']) ?>" id="status-badge">
-                                <i class="fas fa-circle"></i>
-                                <span id="status-text"><?= ucfirst($order['Status']) ?></span>
-                            </span>
-                        </div>
-
-                        <div class="progress-wrapper">
-                            <div class="progress-track"></div>
-                            <div class="progress-fill <?= strtolower($order['Status']) ?>" id="progress-fill"></div>
-                            <div class="progress-steps" id="progress-steps">
-                                <?php
-                                $steps = ["pending", "preparing", "ready", "complete"];
-                                $current = strtolower($order["Status"]);
-                                $currentRank = array_search($current, $steps);
-                                if ($currentRank === false) $currentRank = 0;
-
-                                foreach ($steps as $i => $s):
-                                    $active = $i <= $currentRank ? "active" : "";
-                                    $currentStep = $i == $currentRank ? "current" : "";
-                                    $statusClass = $i <= $currentRank ? $s : "";
-                                ?>
-                                    <div class="step <?= $active ?> <?= $currentStep ?> <?= $statusClass ?>" data-status="<?= $s ?>">
-                                        <div class="step-circle">
-                                            <?php if ($i < $currentRank): ?>
-                                                <i class="fas fa-check"></i>
-                                            <?php elseif ($i == $currentRank): ?>
-                                                <i class="fas fa-circle"></i>
-                                            <?php else: ?>
-                                                <?= $i + 1 ?>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="step-label"><?= ucfirst($s) ?></div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAYMENT SUMMARY -->
-                <div class="section">
-                    <div class="section-title">Payment Summary</div>
-                    <div class="summary-container">
-                        <div class="summary-row divider">
-                            <span class="summary-label">Subtotal</span>
-                            <span>RM <?= number_format($totalAmount, 2) ?></span>
-                        </div>
-                        <?php if (!empty($order['PaymentMethod'])): ?>
-                            <div class="summary-row">
-                                <span class="summary-label">Payment Method</span>
-                                <span><?= htmlspecialchars($order['PaymentMethod']) ?></span>
-                            </div>
-                        <?php endif; ?>
-                        <div class="summary-row">
-                            <span class="summary-label">Payment Status</span>
-                            <span class="payment-status <?= strtolower($order['PaymentStatus'] ?? 'pending') ?>" id="payment-status-badge">
-                                <i class="fas fa-circle"></i>
-                                <span id="payment-status-text"><?= ucfirst($order['PaymentStatus'] ?? 'Pending') ?></span>
-                            </span>
-                        </div>
-                        <div class="summary-row total">
-                            <span>Total</span>
-                            <span>RM <?= number_format($totalAmount, 2) ?></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DYNAMIC ACTION SECTION -->
-                <div class="section" id="dynamic-action-section"></div>
-
-                <!-- CONFIRM PICKUP BUTTON - Only show if status is "ready" on page load -->
-                <?php if (strtolower($order['Status']) === 'ready'): ?>
-                <div class="section" id="confirm-pickup-section">
-                    <button class="confirm-btn" id="confirmPickupBtn">
-                        <i class="fas fa-check-circle"></i>
-                        Confirm Pickup
-                    </button>
-                </div>
-                <?php endif; ?>
-
+            <div class="header-title">Order #<?= $orderId ?></div>
+            <div class="header-subtitle">
+                <?= htmlspecialchars($order['StallName']) ?> • <?= date("d M, h:i A", strtotime($order['CreatedAt'])) ?>
             </div>
         </div>
+
+        <div class="card-body">
+
+            <div class="section">
+                <div class="section-title">Order Status</div>
+                <div class="status-container">
+                    <div class="status-header">
+                        <span class="status-label">Current Status</span>
+                        <span class="status-badge <?= strtolower($order['Status']) ?>" id="status-badge">
+                            <?= ucfirst($order['Status']) ?>
+                        </span>
+                    </div>
+
+                    <div class="progress-wrapper">
+                        <div class="progress-track"></div>
+                        <div class="progress-fill <?= strtolower($order['Status']) ?>" id="progress-fill"></div>
+                        <div class="progress-steps" id="progress-steps">
+                            <?php
+                            $steps = ["pending", "preparing", "ready", "complete"];
+                            $current = strtolower($order["Status"]);
+                            $currentRank = array_search($current, $steps);
+                            if ($currentRank === false) $currentRank = 0;
+
+                            foreach ($steps as $i => $s):
+                                $active = $i <= $currentRank ? "active" : "";
+                                $currentStep = $i == $currentRank ? "current" : "";
+                                $statusClass = $i <= $currentRank ? $s : "";
+                            ?>
+                                <div class="step <?= $active ?> <?= $currentStep ?> <?= $statusClass ?>" data-status="<?= $s ?>">
+                                    <div class="step-circle">
+                                        <?php if ($i < $currentRank): ?>
+                                            <i class="fas fa-check"></i>
+                                        <?php elseif ($i == $currentRank): ?>
+                                            <i class="fas fa-circle"></i>
+                                        <?php else: ?>
+                                            <?= $i + 1 ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="step-label"><?= ucfirst($s) ?></div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Your Items</div>
+                <div class="items-container">
+                    <?php
+                    $totalAmount = 0;
+                    foreach ($items as $item):
+                        $totalAmount += $item['Subtotal'];
+                    ?>
+                        <div class="item">
+                            <div style="flex:1;">
+                                <div style="display:flex; align-items:center;">
+                                    <span class="item-qty"><?= $item['Quantity'] ?>x</span>
+                                    <span class="item-name"><?= htmlspecialchars($item['ProductName']) ?></span>
+                                </div>
+                                <?php if (!empty($item['Note'])): ?>
+                                    <span class="item-note">"<?= htmlspecialchars($item['Note']) ?>"</span>
+                                <?php endif; ?>
+                                <?php if (!empty($item['PickupTime'])): ?>
+                                    <span class="item-note">
+                                        <i class="far fa-clock"></i> Pickup: <?= date("h:i A", strtotime($item['PickupTime'])) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="item-price">
+                                RM <?= number_format($item['Subtotal'], 2) ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Payment Details</div>
+                <div class="summary-container">
+                    <div class="summary-row divider">
+                        <span>Subtotal</span>
+                        <span>RM <?= number_format($totalAmount, 2) ?></span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Method</span>
+                        <span style="font-weight:700;"><?= htmlspecialchars($order['PaymentMethod'] ?? 'Cash') ?></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Status</span>
+                        <span class="payment-status <?= strtolower($order['PaymentStatus'] ?? 'pending') ?>" id="payment-status-badge">
+                            <?= ucfirst($order['PaymentStatus'] ?? 'Pending') ?>
+                        </span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total Paid</span>
+                        <span>RM <?= number_format($totalAmount, 2) ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="dynamic-action-section"></div>
+
+            <?php if (strtolower($order['Status']) === 'ready'): ?>
+            <div class="section" id="confirm-pickup-section">
+                <button class="confirm-btn" id="confirmPickupBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Pickup
+                </button>
+            </div>
+            <?php endif; ?>
+
+        </div>
     </div>
+</div>
 
-    <script>
-        // Pass PHP data to JavaScript
-        const ORDER_ID = <?= $orderId ?>;
-        const INITIAL_STATUS = "<?= strtolower($order['Status']) ?>";
-        const INITIAL_PAYMENT_STATUS = "<?= strtolower($order['PaymentStatus'] ?? 'pending') ?>";
-    </script>
-    <script src="/U-Order/assets/js/order_detail.js"></script>
-</body>
+<script>
+    const ORDER_ID = <?= $orderId ?>;
+    const INITIAL_STATUS = "<?= strtolower($order['Status']) ?>";
+    const INITIAL_PAYMENT_STATUS = "<?= strtolower($order['PaymentStatus'] ?? 'pending') ?>";
+</script>
+<script src="/U-Order/assets/js/order_detail.js"></script>
 
-</html>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

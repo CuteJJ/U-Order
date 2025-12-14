@@ -37,8 +37,8 @@ $paymentId = $_GET['payment_id'] ?? 0;
         <p>Your payment (ID: #<?php echo htmlspecialchars($paymentId); ?>) has been processed successfully.</p>
         <p style="font-size: 0.95rem; color: #888;">Your orders have been sent to the respective stalls.</p>
         
-        <div class="btn-group">      
-            <a href="../order/order.php" class="btn-home">View My Orders</a>
+        <div class="btn-group">
+            <a href="../order/notification.php" class="btn-home">View My Orders</a>
         </div>
     </div>
 </body>
