@@ -160,13 +160,51 @@ foreach ($affectedOrderIds as $oid) {
                     $mail->addAddress($task['email'], $task['name']);
                     $mail->isHTML(true);
                     $mail->Subject = "Order Ready & Payment Confirmed #" . $task['pid'];
-                    $mail->Body = "
-                        <h3>Hello " . htmlspecialchars($task['name']) . ",</h3>
-                        <p>Your cash order is now <strong>READY</strong>.</p>
-                        <p><strong>Payment Status Updated: PAID</strong></p>
-                        <p>Order ID: #" . $task['pid'] . "<br>Total: RM " . number_format($task['amount'], 2) . "</p>
-                        <p><a href='$link' style='background:#6772e5;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;'>View Receipt</a></p>
-                    ";
+                    $body = '
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; background-color: #f4f7f6; padding: 20px; }
+                            .container { max-width: 500px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; }
+                            .header { margin-bottom: 20px; }
+                            .header h2 { color: #6772e5; margin: 0; }
+                            .btn { 
+                                display: inline-block; 
+                                background-color: #6772e5; 
+                                color: #ffffff; 
+                                text-decoration: none; 
+                                padding: 12px 24px; 
+                                border-radius: 5px; 
+                                font-weight: bold; 
+                                margin-top: 20px; 
+                                margin-bottom: 20px;
+                            }
+                            .btn:hover { background-color: #5469d4; }
+                            .footer { font-size: 12px; color: #999; margin-top: 20px; }
+                            .link-text { font-size: 12px; color: #666; word-break: break-all; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h2>Payment Successful</h2>
+                            </div>
+                            
+                            <p>Hi <strong>' . htmlspecialchars($task['name']) . '</strong>,</p>
+                            <p>Your order is <strong>READY</strong>.</p>
+                            <p>We have updated your payment status to <strong>PAID</strong> (RM ' . number_format($task['amount'], 2) . ').</p>
+                            
+                            <a href="' . $link . '" class="btn">View Receipt</a>
+                            
+                            <p class="footer">
+                                If the button above does not work, please copy and paste the following link into your browser:<br>
+                                <a href="' . $link . '" class="link-text">' . $link . '</a>
+                            </p>
+                        </div>
+                    </body>
+                    </html>';
+                    $mail->Body = $body;
                     $mail->send();
                     error_log("Background Mail Sent to: " . $task['email']);
                     
