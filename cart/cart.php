@@ -153,9 +153,9 @@ include __DIR__ . '/../includes/header.php';
             <!-- LEFT COLUMN: Items -->
             <section class="order-main">
                 <?php if (empty($stalls)) : ?>
-                    <div style="text-align: center; padding: 60px; color: var(--nord3);">
+                    <div style="text-align: center; padding: 60px; color: var(--text-muted);">
                         <i class="fas fa-shopping-basket" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
-                        <p>Your cart is empty.</p>
+                        <p class="cart-empty-message">Your cart is empty.</p>
                         <a href="../index.php" class="btn-secondary" style="display:inline-block; width:auto; margin-top:10px;">Go to Menu</a>
                     </div>
                 <?php else: ?>

@@ -18,13 +18,13 @@
 
 .history-header h1 {
     font-size: 1.8rem;
-    color: var(--nord1);
+    color: var(--text-main);
     margin-bottom: 5px;
     font-weight: 800;
 }
 
 .history-header p {
-    color: var(--nord3);
+    color: var(--text-muted);
     font-size: 0.95rem;
     margin: 0;
 }
@@ -41,10 +41,10 @@
 /* Card Styling */
 .history-card {
     position: relative; 
-    background: #fff;
+    background: var(--bg-card);
     border-radius: 16px;
-    border: 1px solid var(--nord6);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
     padding: 20px;
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
@@ -54,8 +54,8 @@
 
 .history-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    border-color: var(--nord8);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
 }
 
 /* Card Top Section */
@@ -69,13 +69,13 @@
 .stall-info h3 {
     margin: 0;
     font-size: 1.1rem;
-    color: var(--nord0);
+    color: var(--text-main);
     font-weight: 700;
 }
 
 .order-date {
     font-size: 0.8rem;
-    color: var(--nord3);
+    color: var(--text-muted);
     margin-top: 4px;
     display: block;
 }
@@ -91,52 +91,83 @@
 }
 
 /* Specific Colors based on Nord */
+/* Status Badges (Default / Light Mode) */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .status-pending {
-    background-color: rgba(235, 203, 139, 0.2); /* Nord13 light */
-    color: #9e824c; /* Darker version of Nord13 for text readability */
+    background-color: rgba(235, 203, 139, 0.2); 
+    color: #9e824c; 
     border: 1px solid rgba(235, 203, 139, 0.4);
 }
 
 .status-completed, .status-ready {
-    background-color: rgba(163, 190, 140, 0.2); /* Nord14 light */
+    background-color: rgba(163, 190, 140, 0.2); 
     color: #6a8b54;
     border: 1px solid rgba(163, 190, 140, 0.4);
 }
 
 .status-cancelled {
-    background-color: rgba(191, 97, 106, 0.15); /* Nord11 light */
+    background-color: rgba(191, 97, 106, 0.15); 
     color: var(--nord11);
     border: 1px solid rgba(191, 97, 106, 0.3);
 }
 
+/* DARK MODE OVERRIDES FOR BADGES */
+[data-theme="dark"] .status-pending {
+    background-color: rgba(235, 203, 139, 0.1); 
+    color: var(--nord13); /* Bright Yellow */
+    border-color: var(--nord13);
+}
+
+[data-theme="dark"] .status-completed,
+[data-theme="dark"] .status-ready {
+    background-color: rgba(163, 190, 140, 0.1); 
+    color: var(--nord14); /* Bright Green */
+    border-color: var(--nord14);
+}
+
+[data-theme="dark"] .status-cancelled {
+    background-color: rgba(191, 97, 106, 0.1); 
+    color: #ff8585; /* Bright Red */
+    border-color: #ff8585;
+}
+
 .card-divider {
     height: 1px;
-    background: var(--nord6);
+    background: var(--border-color);
     margin-bottom: 15px;
     width: 100%;
 }
 
 /* Product List Inside Card */
 .order-items-list {
-    background-color: var(--nord6); /* Light grey background */
+    background-color: var(--bg-input);
     padding: 12px;
     border-radius: 8px;
     margin-bottom: 15px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    border: 1px solid var(--border-color); 
 }
 
 .item-row {
     display: flex;
     gap: 10px;
     font-size: 0.9rem;
-    color: var(--nord1);
+    color: var(--text-main);
 }
 
 .item-qty {
     font-weight: 700;
-    color: var(--nord10); /* Blue color for quantity */
+    color: var(--primary); /* Blue color for quantity */
     min-width: 25px;
 }
 
@@ -162,10 +193,17 @@
 }
 
 .detail-item i {
-    color: var(--nord9); /* Nord9 Icon */
+    color: var(--primary); /* FIXED */
     font-size: 1rem;
     width: 20px;
     text-align: center;
+}
+
+.detail-item label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted); /* FIXED */
+    font-weight: 600;
 }
 
 .detail-item div {
@@ -173,16 +211,9 @@
     flex-direction: column;
 }
 
-.detail-item label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    color: var(--nord3);
-    font-weight: 600;
-}
-
 .detail-item span {
     font-size: 0.9rem;
-    color: var(--nord1);
+    color: var(--text-main);
     font-weight: 600;
 }
 
@@ -254,7 +285,7 @@
 /* Total Price Styling */
 .order-total-price {
     font-weight: 800;
-    color: var(--nord10);
+    color: var(--primary);
     font-size: 1.1rem;
 }
 
@@ -284,7 +315,7 @@
 
 .item-price {
     font-size: 0.9rem;
-    color: var(--nord2);
+    color: var(--text-main);
     font-weight: 600;
 }
 
@@ -328,21 +359,21 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #6B8DB8 0%, #5a7ba6 100%);
-    color: white;
+    background: var(--primary);
+    color: #fff;
     text-decoration: none;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(107, 141, 184, 0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .view-details-btn:hover {
-    background: linear-gradient(135deg, #5a7ba6 0%, #4a6a96 100%);
+    filter: brightness(1.1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 141, 184, 0.4);
-    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    color: #fff;
 }
 
 .reorder-link {
@@ -350,18 +381,19 @@
     align-items: center;
     gap: 6px;
     padding: 8px 16px;
-    background: #f3f4f6;
-    color: #6B8DB8;
+    background: var(--bg-input); 
+    color: var(--text-muted);    
     text-decoration: none;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color); 
 }
 
 .reorder-link:hover {
-    background: #e5e7eb;
-    color: #5a7ba6;
+    background: var(--bg-body);
+    color: var(--primary);
+    border-color: var(--primary);
     transform: translateY(-2px);
 }

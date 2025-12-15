@@ -27,33 +27,33 @@ include_once __DIR__ . '/db_cart.php';
                         <div style="text-align: center; padding: 20px;">
                             <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--nord4); margin-bottom: 10px;"></i>
                             <p style="color: var(--nord3);">Please log in first.</p>
-                            <a href="/U-Order/pages/login.php" class="btn btn-primary" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Login/Register Here</a>
+                            <a href="/U-Order/pages/login.php" class="cart-empty-state-btn" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Login/Register Here</a>
                         </div>
                     </div>
                 <?php elseif (empty($cartItems)): ?>
                     <div class="cart-empty-state">
                         <div style="text-align: center; padding: 20px;">
                             <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--nord4); margin-bottom: 10px;"></i>
-                            <p style="color: var(--nord3);">Your cart is empty.</p>
-                            <a href="/U-Order/index.php" class="btn btn-primary" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Browse Menu</a>
+                            <p style="color: var(--text-muted);">Your cart is empty.</p>
+                            <a href="/U-Order/index.php" class="cart-empty-state-btn" style="margin-top: 10px; display: inline-block; background-color: var(--nord9); border: none;">Browse Menu</a>
                         </div>
                     </div>
                 <?php else: ?>
                     <?php foreach ($cartItems as $item): ?>
                         <div class="cart-item">
                             <div style="flex-grow: 1;">
-                                <strong style="color: var(--nord0);"><?php echo htmlspecialchars($item['ProductName']); ?></strong><br>
-                                <small style="color: var(--nord3);">
+                                <strong style="color: var(--text-main);"><?php echo htmlspecialchars($item['ProductName']); ?></strong><br>
+                                <small style="color: var(--text-muted);">
                                     <?php echo $item['Quantity']; ?> x RM <?php echo number_format($item['UnitPrice'], 2); ?>
                                 </small>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <span style="font-weight: bold; color: var(--nord10);">RM <?php echo number_format($item['Subtotal'], 2); ?></span>
+                                <span style="font-weight: bold; color: var(--primary);">RM <?php echo number_format($item['Subtotal'], 2); ?></span>
                                 <!-- Delete Action (Form for simplicity) -->
                                 <form action="/U-Order/pages/cart_action.php" method="POST" style="margin:0;">
                                     <input type="hidden" name="action" value="remove">
                                     <input type="hidden" name="item_id" value="<?php echo $item['CartItemId']; ?>">
-                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--nord11); padding: 5px;">
+                                    <button type="submit" style="background:none; border:none; cursor:pointer; padding: 5px;">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

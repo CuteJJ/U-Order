@@ -158,14 +158,32 @@ include '../includes/header.php';
                             <div class="modern-input-group">
                                 <label>New Password</label>
                                 <div class="input-wrapper">
-                                    <input type="password" name="new_password" class="modern-input" style="font-family: Arial, Helvetica, sans-serif;"  placeholder="Enter new password (8-16 chars)" required>
+                                    <input type="password" name="new_password" class="modern-input" style="font-family: Arial, Helvetica, sans-serif;" placeholder="Enter new password (8-16 chars)" required>
                                     <i class="fas fa-eye password-toggle"></i>
                                 </div>
                             </div>
-                            <button type="submit" name="change_password" class="btn-primary" style="background:var(--text-muted);">Save Password</button>
+                            <button type="submit" name="change_password" class="btn-primary" style="">Save Password</button>
                         </form>
                     </div>
                 </div>
+                <div class="info-list" style="margin-top: 20px; border-top: 1px solid var(--nord4); padding-top: 20px;">
+                    <div class="info-item" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <label style="display:block; font-weight:700; color:var(--text-main); margin-bottom:4px;">App Appearance</label>
+                            <span style="font-size:0.85rem; color:var(--text-muted);">Switch between Light and Dark mode</span>
+                        </div>
+
+                        <label class="theme-switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider round">
+                                <i class="fas fa-sun sun-icon"></i>
+                                <i class="fas fa-moon moon-icon"></i>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <script src="/U-Order/assets/js/theme.js"></script>
                 <a href="logout.php" onclick="return confirm('Are you sure you want to log out?');" class="btn-primary btn-danger" style="display:flex; justify-content:center; align-items:center; gap:10px; text-decoration:none;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
@@ -174,7 +192,6 @@ include '../includes/header.php';
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="/U-Order/assets/js/auth.js"></script>
 
 <script>
