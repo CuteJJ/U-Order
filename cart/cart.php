@@ -124,7 +124,6 @@ include __DIR__ . '/../includes/header.php';
             <h1>My Cart</h1>
             <p>Review items, adjust quantities, or add notes.</p>
         </div>
-        <div class="order-step-pill">Review</div>
     </div>
 
     <!-- Unavailable Item Banner -->
