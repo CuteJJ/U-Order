@@ -104,7 +104,7 @@ include '../includes/header.php';
         background: #f0f0f0;
         border: 1px solid #ddd;
         text-decoration: none;
-        color: inherit;
+        color: var(--nord2)
     }
 
     .stall-badge:hover {
