@@ -136,7 +136,9 @@ $search = $_GET['search'] ?? '';
 /* ============================================================
    CATEGORIES
 ============================================================ */
-$catSql = "SELECT * FROM categories ORDER BY CategoryId ASC";
+$catSql = "SELECT DISTINCT c.* FROM categories c
+           JOIN products p ON c.CategoryId = p.CategoryId
+           ORDER BY c.CategoryId ASC";
 $catStmt = $db->prepare($catSql);
 $catStmt->execute();
 $categories = $catStmt->fetchAll(PDO::FETCH_ASSOC);
