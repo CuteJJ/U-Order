@@ -1,8 +1,7 @@
 // /assets/js/product.js
-
 document.addEventListener("DOMContentLoaded", () => {
     // =========================
-    // 基本 DOM 引用
+    // DOM References
     // =========================
     const hiddenQty  = document.getElementById("final-qty");
     const hiddenTime = document.getElementById("final-time");
@@ -10,41 +9,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const unitPriceEl = document.getElementById("unit-price");
     const productIdInput = document.querySelector('[name="product_id"]');
     const orderForm = document.getElementById("order-form");
-
+    
     if (!hiddenQty || !hiddenTime || !hiddenNote || !unitPriceEl || !productIdInput || !orderForm) {
         console.warn("product.js: required elements missing, abort init.");
         return;
     }
-
+    
     const unitPrice = parseFloat(unitPriceEl.value) || 0;
     const productId = productIdInput.value;
-
+    
     const inlineErrDesktop = document.getElementById("inline-error");
     const inlineErrMobile  = document.getElementById("inline-error-mobile");
-
     const qtyDisplays   = document.querySelectorAll(".qty-display");
     const displayTotals = document.querySelectorAll(".display-total");
     const submitButtons = document.querySelectorAll(".submit-order-btn");
-
+    
     // =========================
-    // Modal 弹窗
+    // Modal Popup
     // =========================
     const modal      = document.getElementById("error-modal");
     const modalCard  = document.getElementById("modal-card");
     const modalMsg   = document.getElementById("error-modal-message");
     const modalOk    = document.getElementById("error-modal-ok");
-
+    
     function showModal(msg) {
         if (!modal || !modalCard || !modalMsg || !modalOk) return;
-
         modalMsg.textContent = msg || "Error";
-
         modal.style.display = "flex";
         requestAnimationFrame(() => {
             modal.classList.add("active");
             modalCard.classList.add("pop");
         });
-
         modalOk.onclick = () => {
             modalCard.classList.remove("pop");
             modal.classList.remove("active");
@@ -53,9 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 200);
         };
     }
-
+    
     // =========================
-    // Inline Error 处理
+    // Inline Error Handling
     // =========================
     function setInlineError(msg) {
         if (inlineErrDesktop) {
@@ -67,11 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
             inlineErrMobile.textContent = msg || "";
         }
     }
-
+    
     function clearInlineError() {
         setInlineError("");
     }
-
+    
     function setButtonsDisabled(disabled) {
         submitButtons.forEach(btn => {
             if (!btn) return;
@@ -83,85 +78,89 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
+    
     // =========================
-    // 数量 & 金额
+    // Quantity & Price
     // =========================
     let currentQty = parseInt(hiddenQty.value, 10) || 1;
-    let serverStock = null; // 从 verifyProduct 拿到的库存
-
+    let serverStock = null; // Stock from server
+    let isUnlimitedStock = false; // Whether product has unlimited stock
+    
     function refreshQtyDisplays() {
         qtyDisplays.forEach(el => {
             if (el) el.textContent = currentQty;
         });
         hiddenQty.value = currentQty;
     }
-
+    
     function refreshTotal() {
         const total = (currentQty * unitPrice).toFixed(2);
         displayTotals.forEach(el => {
             if (el) el.textContent = total;
         });
     }
-
+    
     function changeQty(delta) {
         let nextQty = currentQty + delta;
         if (nextQty < 1) nextQty = 1;
-
-        // 如果已知库存，则不允许超过库存
-        if (serverStock !== null && serverStock > 0 && nextQty > serverStock) {
-            // 给一个温和提示，不用弹窗
-            setInlineError(`Only ${serverStock} left in stock.`);
-            nextQty = serverStock;
-        } else {
-            // 如果数量回到正常范围，清除之前的库存错误
-            if (serverStock !== null) {
+        
+        // Only check stock limit if NOT unlimited stock
+        if (!isUnlimitedStock && serverStock !== null) {
+            if (serverStock <= 0) {
+                // Stock is 0 or negative, prevent any quantity increase
+                setInlineError("Out of stock.");
+                return; // Don't change quantity
+            } else if (nextQty > serverStock) {
+                // Quantity exceeds available stock
+                setInlineError(`Only ${serverStock} left in stock.`);
+                nextQty = serverStock;
+            } else {
+                // Quantity is within range
                 clearInlineError();
             }
+        } else {
+            // Unlimited stock or no stock check needed
+            clearInlineError();
         }
-
+        
         currentQty = nextQty;
         refreshQtyDisplays();
         refreshTotal();
     }
-
+    
     document.querySelectorAll(".qty-minus").forEach(btn => {
         btn.addEventListener("click", () => {
             changeQty(-1);
         });
     });
-
+    
     document.querySelectorAll(".qty-plus").forEach(btn => {
         btn.addEventListener("click", () => {
             changeQty(1);
         });
     });
-
-    // 初始化显示
+    
+    // Initialize display
     refreshQtyDisplays();
     refreshTotal();
-
+    
     // =========================
-    // Pickup Time 选择
+    // Pickup Time Selection
     // =========================
     const timePills = document.querySelectorAll(".time-pill");
-
     timePills.forEach(pill => {
         pill.addEventListener("click", () => {
             const val = pill.dataset.time || "";
-
             timePills.forEach(x => x.classList.remove("selected"));
             pill.classList.add("selected");
-
             hiddenTime.value = val;
         });
     });
-
+    
     // =========================
-    // Note 同步 (Desktop + Mobile)
+    // Note Sync (Desktop + Mobile)
     // =========================
     const noteInputs = document.querySelectorAll(".note-input");
-
     noteInputs.forEach(input => {
         input.addEventListener("input", () => {
             const val = input.value;
@@ -171,15 +170,15 @@ document.addEventListener("DOMContentLoaded", () => {
             hiddenNote.value = val;
         });
     });
-
+    
     // =========================
-    // Mobile Bottom Sheet 打开/关闭
+    // Mobile Bottom Sheet
     // =========================
     const sheet       = document.querySelector(".bottom-sheet");
     const sheetOverlay = document.querySelector(".sheet-overlay");
     const triggerSheetBtn = document.getElementById("trigger-sheet-btn");
     const closeSheetBtn   = document.querySelector(".close-sheet");
-
+    
     function openSheet() {
         if (!sheet || !sheetOverlay) return;
         sheetOverlay.style.display = "block";
@@ -189,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
             sheet.classList.add("active");
         });
     }
-
+    
     function closeSheet() {
         if (!sheet || !sheetOverlay) return;
         sheetOverlay.classList.remove("active");
@@ -199,34 +198,33 @@ document.addEventListener("DOMContentLoaded", () => {
             sheet.style.display = "none";
         }, 200);
     }
-
+    
     triggerSheetBtn?.addEventListener("click", openSheet);
     sheetOverlay?.addEventListener("click", closeSheet);
     closeSheetBtn?.addEventListener("click", closeSheet);
-
+    
     // =========================
     // AJAX Verify Product
     // =========================
     async function verifyProduct(options = {}) {
         const {
-            showPopup       = false,  // 是否弹 modal
-            affectButtons   = false,  // 是否根据结果启用/禁用按钮
-            softInlineError = false   // true: 只提示，不强行 disable
+            showPopup       = false,  // Show modal popup
+            affectButtons   = false,  // Enable/disable buttons based on result
+            softInlineError = false   // Only show warning, don't disable
         } = options;
-
+        
         try {
             const res = await fetch(`check_product.php?id=${encodeURIComponent(productId)}&t=${Date.now()}`, {
                 cache: "no-store"
             });
-
+            
             if (!res.ok) {
                 throw new Error("HTTP " + res.status);
             }
-
+            
             const data = await res.json();
-
             const asNumber = v => (typeof v === "string" ? parseInt(v, 10) : Number(v));
-
+            
             if (!data || data.status !== "ok") {
                 const msg = "Unable to verify product.";
                 if (softInlineError) {
@@ -239,75 +237,67 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 return false;
             }
-
+            
             const stallOpen   = asNumber(data.stall_open);
             const productOpen = asNumber(data.product_open);
             const stock       = data.stock != null ? asNumber(data.stock) : null;
-
-            serverStock = stock; // 保存下来给数量限制用
-
+            const unlimited   = asNumber(data.is_unlimited_stock);
+            
+            // Update global state
+            serverStock = stock;
+            isUnlimitedStock = unlimited === 1;
+            
+            // Check 1: Stall closed
             if (stallOpen === 0) {
-                const msg = "This stall is currently CLOSED.";
-                if (softInlineError) {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(false);
-                } else {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(true);
-                    if (showPopup) showModal(msg);
-                }
+                const msg = "This stall is currently closed. You cannot place orders at this time.";
+                setInlineError(msg);
+                if (affectButtons) setButtonsDisabled(true);
+                if (showPopup) showModal(msg);
                 return false;
             }
-
+            
+            // Check 2: Product unavailable
             if (productOpen === 0) {
                 const msg = "This item is unavailable.";
-                if (softInlineError) {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(false);
-                } else {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(true);
-                    if (showPopup) showModal(msg);
-                }
+                setInlineError(msg);
+                if (affectButtons) setButtonsDisabled(true);
+                if (showPopup) showModal(msg);
                 return false;
             }
-
-            if (stock !== null && stock <= 0) {
+            
+            // Check 3: Out of stock (ONLY if IsUnlimitedStock = 0)
+            if (!isUnlimitedStock && stock !== null && stock <= 0) {
                 const msg = "Out of stock.";
-                if (softInlineError) {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(false);
-                } else {
-                    setInlineError(msg);
-                    if (affectButtons) setButtonsDisabled(true);
-                    if (showPopup) showModal(msg);
-                }
+                setInlineError(msg);
+                if (affectButtons) setButtonsDisabled(true);
+                if (showPopup) showModal(msg);
                 return false;
             }
-
-            if (stock !== null && currentQty > stock) {
+            
+            // Check 4: Quantity exceeds stock (ONLY if IsUnlimitedStock = 0)
+            if (!isUnlimitedStock && stock !== null && stock > 0 && currentQty > stock) {
                 const msg = `Only ${stock} left in stock.`;
                 setInlineError(msg);
-
-                // 自动把数量拉回 stock
+                
+                // Auto-adjust quantity to max available
                 currentQty = stock;
                 refreshQtyDisplays();
                 refreshTotal();
-
+                
                 if (!softInlineError && affectButtons && showPopup) {
                     showModal(msg);
                 }
-
-                // 不算致命错误，只是不让超过库存，所以返回 true
+                
+                // Not a critical error, just limit the quantity
                 if (affectButtons) setButtonsDisabled(false);
                 return true;
             }
-
-            // 一切正常
+            
+            // ✅ All checks passed - ALWAYS clear error and enable buttons
             clearInlineError();
             if (affectButtons) setButtonsDisabled(false);
             return true;
-
+            
         } catch (err) {
             console.error("verifyProduct error:", err);
             const msg = "Network error. Please try again.";
@@ -322,45 +312,44 @@ document.addEventListener("DOMContentLoaded", () => {
             return false;
         }
     }
-
+    
     // =========================
-    // 页面加载 & Polling
+    // Page Load & Polling
     // =========================
-
-    // 页面加载时做一次“软检查”
+    // Initial soft check on page load
     verifyProduct({ showPopup: false, affectButtons: false, softInlineError: true });
-
-    // 每 3 秒轮询一次
+    
+    // Poll every 3 seconds
     setInterval(() => {
         verifyProduct({ showPopup: false, affectButtons: false, softInlineError: true });
     }, 3000);
-
+    
     // =========================
-    // Submit 逻辑
+    // Submit Logic
     // =========================
     submitButtons.forEach(btn => {
         btn.addEventListener("click", async e => {
             e.preventDefault();
-
+            
             if (!hiddenTime.value) {
                 showModal("Please select pickup time.");
                 return;
             }
-
-            // 这里是“硬检查”
+            
+            // Hard check before submit
             const ok = await verifyProduct({
                 showPopup: true,
                 affectButtons: true,
                 softInlineError: false
             });
-
+            
             if (!ok) return;
-
-            // 通过验证，提交表单
+            
+            // All validations passed, submit form
             orderForm.submit();
         });
     });
-
+    
     // ==========================================
     // CAROUSEL LOGIC
     // ==========================================
@@ -368,27 +357,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const slides = document.querySelectorAll('.carousel-slide');
     const indicators = document.querySelectorAll('.custom-dot');
     const carouselContainer = document.querySelector('.product-carousel');
-    // Get the new arrow buttons
     const prevBtn = document.querySelector('.arrow-prev');
     const nextBtn = document.querySelector('.arrow-next');
-
-    // Only run if we actually have slides
+    
     if (track && slides.length > 0 && carouselContainer) {
         let slideIndex = 0;
         const totalSlides = slides.length;
-
-        // 1. Update Position
+        
         function updateCarousel() {
             const slideWidth = carouselContainer.getBoundingClientRect().width;
             track.style.transform = `translateX(-${slideIndex * slideWidth}px)`;
-
-            // Update dots
+            
             indicators.forEach((dot, index) => {
                 dot.classList.toggle('active', index === slideIndex);
             });
         }
-
-        // 2. Click Indicators
+        
         indicators.forEach(dot => {
             dot.addEventListener('click', (e) => {
                 const idx = parseInt(e.target.dataset.index);
@@ -398,50 +382,43 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         });
-
-        // 3. Arrow Click Events (NEW)
+        
         if (prevBtn && nextBtn) {
             prevBtn.addEventListener('click', () => {
-                // Go to previous, or loop to last
                 slideIndex = (slideIndex > 0) ? slideIndex - 1 : totalSlides - 1;
                 updateCarousel();
             });
-
+            
             nextBtn.addEventListener('click', () => {
-                // Go to next, or loop to first
                 slideIndex = (slideIndex < totalSlides - 1) ? slideIndex + 1 : 0;
                 updateCarousel();
             });
         }
-
-        // 4. Resize Listener
+        
         window.addEventListener('resize', updateCarousel);
-
-        // 5. Touch / Swipe Support
+        
+        // Touch/Swipe Support
         let startX = 0;
         let endX = 0;
-
+        
         carouselContainer.addEventListener('touchstart', (e) => {
             startX = e.changedTouches[0].screenX;
         }, { passive: true });
-
+        
         carouselContainer.addEventListener('touchend', (e) => {
             endX = e.changedTouches[0].screenX;
             handleSwipe();
         }, { passive: true });
-
+        
         function handleSwipe() {
-            const threshold = 50; 
+            const threshold = 50;
             if (endX < startX - threshold) {
-                // Swiped Left -> Next
-                nextBtn ? nextBtn.click() : null; // Reuse click logic
+                nextBtn ? nextBtn.click() : null;
             } else if (endX > startX + threshold) {
-                // Swiped Right -> Prev
-                prevBtn ? prevBtn.click() : null; // Reuse click logic
+                prevBtn ? prevBtn.click() : null;
             }
         }
-
-        // Initialize once
+        
         setTimeout(updateCarousel, 50);
     }
 });

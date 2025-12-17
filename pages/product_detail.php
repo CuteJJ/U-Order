@@ -74,10 +74,15 @@ for ($i = 0; $i < 4; $i++) {
     $value = date('H:i', $ts);
 
     $selected = '';
-    if ($existing && date('H:i', strtotime($existing['PickupTime'])) == $value) {
-        $selected = 'selected';
-        $timeSlots[0]['selected'] = '';
-    }
+   if (
+    $existing &&
+    !empty($existing['PickupTime']) &&
+    date('H:i', strtotime($existing['PickupTime'])) === $value
+) {
+    $selected = 'selected';
+    $timeSlots[0]['selected'] = '';
+}
+
 
     $timeSlots[] = [
         'label' => $label,

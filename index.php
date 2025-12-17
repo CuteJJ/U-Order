@@ -82,7 +82,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'search') {
             <div class="horizontal-scroll">
                 <?php foreach ($stallProducts as $product): ?>
                     <?php
-                    $cleanedImgUrl = fixAssetUrl($product['ImageURL']);
+                    // ⭐ FIX: Apply same image URL cleaning as normal page load
+                    $imgUrl = $product['ImageURL'];
+                    if (strpos($imgUrl, '../') === 0) {
+                        $cleanedImgUrl = str_replace('../', '', $imgUrl);
+                    } else {
+                        $cleanedImgUrl = $imgUrl;
+                    }
                     $isUnavailable = ($product['IsAvailable'] == 0 || $stallClosed);
                     ?>
 
@@ -93,7 +99,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'search') {
                             data-category-id="<?php echo htmlspecialchars($product['CategoryId']); ?>">
 
                             <div class="product-image">
-                                <img src="<?php echo $cleanedImgUrl; ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
+                                <img src="<?php echo htmlspecialchars($cleanedImgUrl); ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
                                 <div class="unavailable-layer <?php echo $isUnavailable ? '' : 'hidden-unavailable'; ?>">
                                     <img src="assets/images/unavailable.png" alt="Unavailable">
                                 </div>
@@ -323,7 +329,7 @@ include 'includes/header.php';
                         data-category-id="<?php echo htmlspecialchars($product['CategoryId']); ?>">
 
                         <div class="product-image" style="position:relative;">
-                            <img src="<?php echo $cleanedImgUrl; ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
+                            <img src="<?php echo htmlspecialchars($cleanedImgUrl); ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
                             <div class="unavailable-layer <?php echo $isUnavailable ? '' : 'hidden-unavailable'; ?>">
                                 <img src="assets/images/unavailable.png" alt="Unavailable">
                             </div>
@@ -399,14 +405,14 @@ include 'includes/header.php';
                 <div class="horizontal-scroll">
                     <?php foreach ($stallProducts as $product): ?>
                         <?php
-                $imgUrl = $product['ImageURL'];
-                
-                if (strpos($imgUrl, '../') === 0) {
-                    $cleanedImgUrl = str_replace('../', '', $imgUrl);
-                } else {
-                    // If it doesn't start with '../', keep the original path
-                    $cleanedImgUrl = $imgUrl;
-                }
+                        $imgUrl = $product['ImageURL'];
+                        
+                        if (strpos($imgUrl, '../') === 0) {
+                            $cleanedImgUrl = str_replace('../', '', $imgUrl);
+                        } else {
+                            // If it doesn't start with '../', keep the original path
+                            $cleanedImgUrl = $imgUrl;
+                        }
                         $isUnavailable = ($product['IsAvailable'] == 0 || $stallClosed);
                         ?>
 
@@ -418,7 +424,7 @@ include 'includes/header.php';
                                 style="min-width:260px;width:260px;">
 
                                 <div class="product-image" style="height:140px;position:relative;">
-                                    <img src="<?php echo $cleanedImgUrl; ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
+                                    <img src="<?php echo htmlspecialchars($cleanedImgUrl); ?>" alt="<?php echo htmlspecialchars($product['ProductName']); ?>">
                                     <div class="unavailable-layer <?php echo $isUnavailable ? '' : 'hidden-unavailable'; ?>">
                                         <img src="assets/images/unavailable.png" alt="Unavailable">
                                     </div>

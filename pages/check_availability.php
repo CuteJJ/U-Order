@@ -11,31 +11,37 @@ header('Content-Type: application/json; charset=utf-8');
 // ------------------------------------------------------
 try {
     $sqlStalls = "SELECT StallId, IsAvailable 
-                  FROM stalls";
+                FROM stalls";
     $stmtStalls = $db->prepare($sqlStalls);
     $stmtStalls->execute();
     $stalls = $stmtStalls->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to fetch stalls'
+        'message' => 'Failed to fetch stalls: ' . $e->getMessage()
     ]);
     exit;
 }
 
 // ------------------------------------------------------
-// 2. Fetch all products (ProductId, StallId, IsAvailable)
+// 2. Fetch all products (ProductId, StallId, IsAvailable, Stock, IsUnlimitedStock)
 // ------------------------------------------------------
 try {
-    $sqlProducts = "SELECT ProductId, StallId, IsAvailable
+    $sqlProducts = "SELECT ProductId, StallId, IsAvailable, Stock, IsUnlimitedStock
                     FROM products";
     $stmtProducts = $db->prepare($sqlProducts);
     $stmtProducts->execute();
     $products = $stmtProducts->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Convert Stock and IsUnlimitedStock to integer for consistency
+    foreach ($products as &$product) {
+        $product['Stock'] = isset($product['Stock']) ? (int)$product['Stock'] : 0;
+        $product['IsUnlimitedStock'] = isset($product['IsUnlimitedStock']) ? (int)$product['IsUnlimitedStock'] : 0;
+    }
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to fetch products'
+        'message' => 'Failed to fetch products: ' . $e->getMessage()
     ]);
     exit;
 }
@@ -47,5 +53,5 @@ echo json_encode([
     'success'  => true,
     'stalls'   => $stalls,
     'products' => $products
-]);
+], JSON_PRETTY_PRINT); // Optional: makes debugging easier
 exit;

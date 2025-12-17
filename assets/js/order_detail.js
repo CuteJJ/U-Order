@@ -6,14 +6,6 @@ const BTN_CONFIRM_PICKUP = `
     </button>
 `;
 
-const BTN_ORDER_AGAIN = `
-    <a href="/U-Order/index.php" 
-       class="confirm-btn"
-       style="background:#4C6EF5; text-decoration: none;">
-        <i class="fas fa-redo"></i>
-        <span>Order Again</span>
-    </a>
-`;
 
 $(document).ready(function() {
     const STEPS = ["pending", "preparing", "ready", "complete"];
@@ -110,37 +102,31 @@ $(document).ready(function() {
         }
         
         // When status changes to "complete", stop polling and show order again button
-        if (newStatus === 'complete' && oldStatus !== 'complete') {
-            // Add celebration animation to status container
-            $(".status-container").addClass("completing");
-            
-            // Add pop animation to complete step
-            $(".step[data-status='complete']").addClass("completing");
-            
-            setTimeout(() => {
-                $(".status-container").removeClass("completing");
-                $(".step[data-status='complete']").removeClass("completing");
-            }, 600);
-            
-            // Stop polling
-            if (pollingInterval) {
-                clearInterval(pollingInterval);
-                pollingInterval = null;
-                console.log('Polling stopped - Order complete');
-            }
-            
-            // Remove confirm pickup button if exists (whether from PHP or dynamic)
-            $("#confirm-pickup-section").fadeOut(300, function() {
-                $(this).remove();
-            });
-            
-            // Show order again button in dynamic section
-            const dynamicSection = $("#dynamic-action-section");
-            if (!dynamicSection.find("a[href*='reorder']").length) {
-                dynamicSection.html(BTN_ORDER_AGAIN).hide().fadeIn(400);
-                console.log('Order Again button shown - Status changed to complete');
-            }
-        }
+     if (newStatus === 'complete' && oldStatus !== 'complete') {
+    $(".status-container").addClass("completing");
+    $(".step[data-status='complete']").addClass("completing");
+
+    setTimeout(() => {
+        $(".status-container").removeClass("completing");
+        $(".step[data-status='complete']").removeClass("completing");
+    }, 600);
+
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+        console.log('Polling stopped - Order complete');
+    }
+
+    // 移除 Confirm Pickup（如果有）
+    $("#confirm-pickup-section").fadeOut(300, function () {
+        $(this).remove();
+    });
+
+    // 确保 dynamic action 区域是空的
+    $("#dynamic-action-section").empty();
+}
+
+        
     }
 
     /**
@@ -228,14 +214,9 @@ $(document).ready(function() {
     updateOrderStatus(lastStatus, lastPaymentStatus);
 
     // Handle initial button display based on current status
-    if (lastStatus === 'complete') {
-        console.log('Order is complete - polling not started');
-        // Show order again button immediately if already complete
-        const dynamicSection = $("#dynamic-action-section");
-        if (!dynamicSection.find("a[href*='reorder']").length) {
-            dynamicSection.html(BTN_ORDER_AGAIN);
-            console.log('Order Again button shown - Initial status is complete');
-        }
+if (lastStatus === 'complete') {
+    console.log('Order is complete - polling not started');
+    $("#dynamic-action-section").empty();
     } else {
         // Start polling only if order is not complete
         pollingInterval = setInterval(pollOrderStatus, 5000);

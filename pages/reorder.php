@@ -1,100 +1,158 @@
 <?php
-// ================================================================
-// REORDER - Add previous order items to cart
-// ================================================================
+/**
+ * REORDER
+ * 将已完成订单的 items 加回当前用户的 cart（数据库版）
+ * Updated: Now sets PickupTime to ASAP by default
+ */
+
 session_start();
 require __DIR__ . '/../configs/db.php';
+require __DIR__ . '/../includes/functions.php';
 
-// Get order ID
-$orderId = isset($_GET['orderid']) ? (int)$_GET['orderid'] : null;
+/* -------------------------------------------------
+   1. Auth & basic validation
+-------------------------------------------------- */
+if (!isLoggedIn()) {
+    header("Location: /U-Order/pages/login.php");
+    exit;
+}
 
-if (!$orderId) {
-    $_SESSION['error'] = 'Invalid order ID';
+$userId  = (int)($_SESSION['user_id'] ?? 0);
+$orderId = isset($_GET['orderid']) ? (int)$_GET['orderid'] : 0;
+
+if ($userId <= 0 || $orderId <= 0) {
+    $_SESSION['error'] = 'Invalid reorder request.';
     header('Location: /U-Order/cart/cart.php');
     exit;
 }
 
-// Get order items with all details
-function getOrderItemsForReorder(PDO $db, int $orderId): array
-{
-    $sql = "
-        SELECT 
-            oi.ProductId,
-            oi.Quantity,
-            oi.Note,
-            p.ProductName,
-            p.UnitPrice,
-            p.StallId
-        FROM orderitems oi
-        JOIN products p ON oi.ProductId = p.ProductId
-        WHERE oi.OrderId = :orderId
-    ";
+/* -------------------------------------------------
+   2. Calculate ASAP Pickup Time (matching cart_action.php logic)
+-------------------------------------------------- */
+date_default_timezone_set('Asia/Kuala_Lumpur');
 
-    $stmt = $db->prepare($sql);
-    $stmt->execute([':orderId' => $orderId]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+// ASAP = current time + 15 min buffer, rounded up to nearest 5 min
+$bufferTime = time() + (15 * 60);
+$roundedTime = ceil($bufferTime / 300) * 300;
+$pickupDateTime = date('Y-m-d H:i:00', $roundedTime);
+
+/* -------------------------------------------------
+   3. Fetch order items (must exist)
+-------------------------------------------------- */
+$sqlOrderItems = "
+    SELECT 
+        oi.ProductId,
+        oi.Quantity,
+        oi.Note
+    FROM orderitems oi
+    JOIN orders o ON oi.OrderId = o.OrderId
+    WHERE oi.OrderId = :oid
+      AND o.UserId  = :uid
+      AND o.Status  = 'complete'
+";
+
+$stmt = $db->prepare($sqlOrderItems);
+$stmt->execute([
+    ':oid' => $orderId,
+    ':uid' => $userId
+]);
+$orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if (empty($orderItems)) {
+    $_SESSION['error'] = 'No items found in this order.';
+    header('Location: /U-Order/cart/cart.php');
+    exit;
 }
 
 try {
-    // Get all items from the previous order
-    $orderItems = getOrderItemsForReorder($db, $orderId);
-    
-    if (empty($orderItems)) {
-        $_SESSION['error'] = 'No items found in this order';
-        header('Location: /U-Order/cart/cart.php');
-        exit;
+    /* -------------------------------------------------
+       4. Find or create cart for user
+    -------------------------------------------------- */
+    $stmt = $db->prepare("SELECT CartId FROM carts WHERE UserId = :uid LIMIT 1");
+    $stmt->execute([':uid' => $userId]);
+    $cartId = $stmt->fetchColumn();
+
+    if (!$cartId) {
+        $stmt = $db->prepare("INSERT INTO carts (UserId) VALUES (:uid)");
+        $stmt->execute([':uid' => $userId]);
+        $cartId = (int)$db->lastInsertId();
     }
 
-    // Initialize cart if it doesn't exist
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
+    /* -------------------------------------------------
+       5. Insert / update cartitems with ASAP pickup time
+    -------------------------------------------------- */
+    $db->beginTransaction();
 
-    // Add each item to the cart
     $addedCount = 0;
+
     foreach ($orderItems as $item) {
-        $productId = $item['ProductId'];
-        
-        // Create cart key (using product ID)
-        $cartKey = $productId;
-        
-        // Check if item already exists in cart
-        if (isset($_SESSION['cart'][$cartKey])) {
-            // Add to existing quantity
-            $_SESSION['cart'][$cartKey]['quantity'] += $item['Quantity'];
-            
-            // Append note if there's a new one
-            if (!empty($item['Note'])) {
-                $existingNote = $_SESSION['cart'][$cartKey]['note'] ?? '';
-                if (!empty($existingNote)) {
-                    $_SESSION['cart'][$cartKey]['note'] = $existingNote . ' | ' . $item['Note'];
-                } else {
-                    $_SESSION['cart'][$cartKey]['note'] = $item['Note'];
-                }
-            }
+        $productId = (int)$item['ProductId'];
+        $qty       = (int)$item['Quantity'];
+        $note      = $item['Note'] ?? '';
+
+        // Check if product already exists in cart with same pickup time and note
+        $check = $db->prepare("
+            SELECT CartItemId, Quantity
+            FROM cartitems
+            WHERE CartId = :cid 
+              AND ProductId = :pid
+              AND PickupTime = :ptime
+              AND Note = :note
+            LIMIT 1
+        ");
+        $check->execute([
+            ':cid' => $cartId,
+            ':pid' => $productId,
+            ':ptime' => $pickupDateTime,
+            ':note' => $note
+        ]);
+
+        $existing = $check->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            // Merge quantity (same product, same pickup time, same note)
+            $newQty = (int)$existing['Quantity'] + $qty;
+
+            $upd = $db->prepare("
+                UPDATE cartitems
+                SET Quantity = :q
+                WHERE CartItemId = :id
+            ");
+            $upd->execute([
+                ':q'  => $newQty,
+                ':id' => $existing['CartItemId']
+            ]);
         } else {
-            // Add new item to cart
-            $_SESSION['cart'][$cartKey] = [
-                'product_id' => $productId,
-                'product_name' => $item['ProductName'],
-                'unit_price' => $item['UnitPrice'],
-                'quantity' => $item['Quantity'],
-                'note' => $item['Note'] ?? '',
-                'stall_id' => $item['StallId']
-            ];
+            // Insert new cart item with ASAP pickup time
+            $ins = $db->prepare("
+                INSERT INTO cartitems (CartId, ProductId, Quantity, PickupTime, Note)
+                VALUES (:cid, :pid, :q, :ptime, :n)
+            ");
+            $ins->execute([
+                ':cid' => $cartId,
+                ':pid' => $productId,
+                ':q'   => $qty,
+                ':ptime' => $pickupDateTime,
+                ':n'   => $note
+            ]);
         }
-        
+
         $addedCount++;
     }
 
-    // Set success message
-    $_SESSION['success'] = "Successfully added {$addedCount} item(s) from your previous order to cart!";
-    
+    $db->commit();
+
+    $_SESSION['success'] = "Successfully added {$addedCount} item(s) back to your cart.";
+
 } catch (Exception $e) {
-    $_SESSION['error'] = 'Failed to reorder: ' . $e->getMessage();
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    $_SESSION['error'] = 'Reorder failed: ' . $e->getMessage();
 }
 
-// Redirect to cart page
+/* -------------------------------------------------
+   6. Redirect back to cart
+-------------------------------------------------- */
 header('Location: /U-Order/cart/cart.php');
 exit;
-?>

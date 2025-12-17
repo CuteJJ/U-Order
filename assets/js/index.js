@@ -4,25 +4,26 @@
 const POLL_URL = "pages/check_availability.php";
 const POLL_INTERVAL = 5000;
 
-/* 保存每个 stall 当前是否 open（给产品用） */
+/* Store stall and product status */
 const stallStatus = {};
+const productStatus = {}; // NEW: Store product-specific status
 
-/* 当前选中的分类 */
+/* Current selected category */
 let currentCategoryId = "all";
 
-/* 当前搜索词 */
+/* Current search term */
 let currentSearchTerm = "";
 
-/* AJAX 防抖 */
+/* AJAX debounce */
 let searchTimeout = null;
 
 /* =====================================================
-   AJAX 搜索功能
+   AJAX SEARCH FUNCTIONALITY
 ===================================================== */
 function setupAjaxSearch() {
   const searchForm = document.getElementById("searchForm");
   const searchInput = document.getElementById("searchInput");
-  const searchBtn = document.querySelector(".search-btn"); // ⭐新增 click 搜索
+  const searchBtn = document.querySelector(".search-btn");
   const loadingSpinner = document.getElementById("loadingSpinner");
   const stallsContainer = document.getElementById("stallsContainer");
   const topSection = document.querySelector(".section-products");
@@ -30,7 +31,7 @@ function setupAjaxSearch() {
 
   if (!searchForm || !searchInput) return;
 
-  // 表单提交
+  // Form submission
   searchForm.addEventListener("submit", function (e) {
     e.preventDefault();
     performSearch();
@@ -47,7 +48,7 @@ function setupAjaxSearch() {
     const searchTerm = searchInput.value.trim();
     currentSearchTerm = searchTerm;
 
-    // 显示加载
+    // Show loading
     if (loadingSpinner) loadingSpinner.classList.add("active");
     if (stallsContainer) stallsContainer.style.opacity = "0.5";
 
@@ -61,31 +62,28 @@ function setupAjaxSearch() {
       const data = await response.json();
 
       if (data.success) {
-        // 更新 URL 但不刷新页面
+        // Update URL without page refresh
         const newUrl = searchTerm
-          ? `${window.location.pathname}?search=${encodeURIComponent(
-              searchTerm
-            )}`
+          ? `${window.location.pathname}?search=${encodeURIComponent(searchTerm)}`
           : window.location.pathname;
         window.history.pushState({}, "", newUrl);
 
-        // 隐藏/显示 Top Sellers 和 Categories
-        // 隐藏/显示 Top Sellers
+        // Hide/Show Top Sellers
         if (searchTerm) {
           if (topSection) topSection.style.display = "none";
         } else {
           if (topSection) topSection.style.display = "";
         }
 
-        // ⭐ Category 永远显示
+        // Category always visible
         if (categoriesSection) categoriesSection.style.display = "";
 
-        // 更新内容
+        // Update content
         if (stallsContainer) {
           if (data.hasResults) {
             stallsContainer.innerHTML = data.html;
 
-            // 添加淡入动画
+            // Add fade-in animation
             setTimeout(() => {
               document
                 .querySelectorAll(".section-stalls")
@@ -94,16 +92,19 @@ function setupAjaxSearch() {
                   section.style.animationDelay = `${index * 0.1}s`;
                 });
             }, 50);
+
+            // Re-apply current availability status after search
+            applyCurrentAvailabilityStatus();
           } else {
-            // 没有结果
+            // No results
             stallsContainer.innerHTML = `
-                            <div class="no-results-box">
-                                <div class="emoji">🥺🔍</div>
-                                <h2>No results found</h2>
-                                <p>Try another keyword?</p>
-                                <a href="#" class="clear-btn" onclick="clearSearch(); return false;">Clear Search</a>
-                            </div>
-                        `;
+              <div class="no-results-box">
+                <div class="emoji">🥺🔍</div>
+                <h2>No results found</h2>
+                <p>Try another keyword?</p>
+                <a href="#" class="clear-btn" onclick="clearSearch(); return false;">Clear Search</a>
+              </div>
+            `;
           }
         }
       }
@@ -111,15 +112,15 @@ function setupAjaxSearch() {
       console.error("Search error:", error);
       if (stallsContainer) {
         stallsContainer.innerHTML = `
-                    <div class="no-results-box">
-                        <div class="emoji">⚠️</div>
-                        <h2>Oops! Something went wrong</h2>
-                        <p>Please try again</p>
-                    </div>
-                `;
+          <div class="no-results-box">
+            <div class="emoji">⚠️</div>
+            <h2>Oops! Something went wrong</h2>
+            <p>Please try again</p>
+          </div>
+        `;
       }
     } finally {
-      // 隐藏加载
+      // Hide loading
       if (loadingSpinner) loadingSpinner.classList.remove("active");
       if (stallsContainer) stallsContainer.style.opacity = "1";
     }
@@ -127,30 +128,15 @@ function setupAjaxSearch() {
 }
 
 /* =====================================================
-   清除搜索
+   CLEAR SEARCH - RELOAD FULL PAGE
 ===================================================== */
 function clearSearch() {
-  const searchInput = document.getElementById("searchInput");
-  if (searchInput) searchInput.value = "";
-
-  currentSearchTerm = "";
-
-  // 更新 URL，不 reload
-  window.history.pushState({}, "", window.location.pathname);
-
-  // 重新载入默认首页内容（AJAX）
-  performCategorySearch("all", "");
-
-  // 让 All 高亮
-  document
-    .querySelectorAll(".cat-card")
-    .forEach((c) => c.classList.remove("active"));
-  const allCard = document.querySelector('.cat-card[data-category-id="all"]');
-  if (allCard) allCard.classList.add("active");
+  // Simply reload the page to show everything including Top Sellers
+  window.location.href = window.location.pathname;
 }
 
 /* =====================================================
-   分类筛选功能（带 AJAX）
+   CATEGORY FILTER (WITH AJAX)
 ===================================================== */
 function initCategoryFilter() {
   const categoryCards = document.querySelectorAll(".cat-card");
@@ -158,10 +144,17 @@ function initCategoryFilter() {
   if (!categoryCards.length) return;
 
   categoryCards.forEach((card) => {
-    card.addEventListener("click", async function (e) {
+    card.addEventListener("click", function (e) {
       e.preventDefault();
+      e.stopPropagation(); // Prevent event bubbling
 
       const categoryId = this.getAttribute("data-category-id");
+      
+      // Don't do anything if already active
+      if (this.classList.contains("active") && currentCategoryId === categoryId) {
+        return;
+      }
+      
       currentCategoryId = categoryId;
 
       categoryCards.forEach((c) => c.classList.remove("active"));
@@ -171,16 +164,16 @@ function initCategoryFilter() {
       const searchTerm = searchInput ? searchInput.value.trim() : "";
 
       if (searchTerm === "") {
-        // 本地 filter（不用 AJAX）
+        // Local filter (no AJAX, no reload)
         filterProducts(categoryId);
       } else {
-        // 搜索时用 AJAX filter
-        await performCategorySearch(categoryId, searchTerm);
+        // Use AJAX filter when searching
+        performCategorySearch(categoryId, searchTerm);
       }
     });
   });
 
-  // 默认 All 高亮
+  // Default "All" highlighted
   const allCard = document.querySelector('.cat-card[data-category-id="all"]');
   if (allCard && !document.querySelector(".cat-card.active")) {
     allCard.classList.add("active");
@@ -188,11 +181,12 @@ function initCategoryFilter() {
 }
 
 /* =====================================================
-   分类搜索 AJAX
+   CATEGORY SEARCH AJAX
 ===================================================== */
 async function performCategorySearch(categoryId, searchTerm) {
   const loadingSpinner = document.getElementById("loadingSpinner");
   const stallsContainer = document.getElementById("stallsContainer");
+  const topSection = document.querySelector(".section-products");
 
   if (loadingSpinner) loadingSpinner.classList.add("active");
   if (stallsContainer) stallsContainer.style.opacity = "0.5";
@@ -207,10 +201,17 @@ async function performCategorySearch(categoryId, searchTerm) {
     const data = await response.json();
 
     if (data.success && stallsContainer) {
+      // Control Top Sellers visibility based on search term
+      if (searchTerm) {
+        if (topSection) topSection.style.display = "none";
+      } else {
+        if (topSection) topSection.style.display = "";
+      }
+
       if (data.hasResults) {
         stallsContainer.innerHTML = data.html;
 
-        // 动画
+        // Animation
         setTimeout(() => {
           document
             .querySelectorAll(".section-stalls")
@@ -219,15 +220,18 @@ async function performCategorySearch(categoryId, searchTerm) {
               section.style.animationDelay = `${index * 0.1}s`;
             });
         }, 50);
+
+        // Re-apply current availability status
+        applyCurrentAvailabilityStatus();
       } else {
         stallsContainer.innerHTML = `
-                    <div class="no-results-box">
-                        <div class="emoji">🥺🔍</div>
-                        <h2>No results found</h2>
-                        <p>Try another category or keyword</p>
-                        <a href="#" class="clear-btn" onclick="clearSearch(); return false;">Clear Search</a>
-                    </div>
-                `;
+          <div class="no-results-box">
+            <div class="emoji">🥺🔍</div>
+            <h2>No results found</h2>
+            <p>Try another category or keyword</p>
+            <a href="#" class="clear-btn" onclick="clearSearch(); return false;">Clear Search</a>
+          </div>
+        `;
       }
     }
   } catch (error) {
@@ -239,20 +243,20 @@ async function performCategorySearch(categoryId, searchTerm) {
 }
 
 /* =====================================================
-   本地筛选商品（无搜索时）
+   LOCAL PRODUCT FILTER (NO SEARCH)
 ===================================================== */
 function filterProducts(categoryId) {
   const stallSections = document.querySelectorAll(".section-stalls");
   const topSection = document.querySelector(".section-products");
 
-  // 控制 Top Sellers
+  // Control Top Sellers
   if (categoryId === "all") {
     if (topSection) topSection.style.display = "";
   } else {
     if (topSection) topSection.style.display = "none";
   }
 
-  // 筛选 Stalls
+  // Filter Stalls
   stallSections.forEach((section) => {
     let visibleCount = 0;
 
@@ -270,7 +274,7 @@ function filterProducts(categoryId) {
     section.style.display = visibleCount > 0 ? "" : "none";
   });
 
-  // 动画
+  // Animation
   requestAnimationFrame(() => {
     document.querySelectorAll(".product-card").forEach((card, index) => {
       const parent = card.closest("a") || card;
@@ -286,53 +290,199 @@ function filterProducts(categoryId) {
 }
 
 /* =====================================================
-   更新档口 (stall) 状态
+   UPDATE STALL STATUS
 ===================================================== */
 function updateStallAvailability(stalls) {
   stalls.forEach((stall) => {
     const stallId = stall.StallId;
     const isOpen = stall.IsAvailable == 1;
 
+    // Store status
     stallStatus[stallId] = isOpen;
 
-    const section = document.querySelector(
+    const sections = document.querySelectorAll(
       `.section-stalls[data-stall-id="${stallId}"]`
     );
-    if (!section) return;
 
-    const header = section.querySelector(".section-header h3");
-    if (!header) return;
+    sections.forEach((section) => {
+      if (!section) return;
 
-    if (!isOpen) {
-      section.classList.add("stall-closed");
-      if (!header.querySelector(".closed-tag")) {
-        const tag = document.createElement("span");
-        tag.className = "closed-tag";
-        tag.textContent = " (Closed)";
-        header.appendChild(tag);
+      const header = section.querySelector(".section-header h3");
+      const visitLink = section.querySelector(".see-all a");
+
+      if (!header) return;
+
+      if (!isOpen) {
+        // Stall is CLOSED
+        section.classList.add("stall-closed");
+        
+        // Add closed tag
+        if (!header.querySelector(".closed-tag")) {
+          const tag = document.createElement("span");
+          tag.className = "closed-tag";
+          tag.textContent = " (Closed)";
+          header.appendChild(tag);
+        }
+
+        // Disable visit stall link
+        if (visitLink) {
+          visitLink.href = "javascript:void(0)";
+          visitLink.style.pointerEvents = "none";
+          visitLink.style.opacity = "0.5";
+          visitLink.style.cursor = "not-allowed";
+        }
+      } else {
+        // Stall is OPEN
+        section.classList.remove("stall-closed");
+        
+        // Remove closed tag
+        const tag = header.querySelector(".closed-tag");
+        if (tag) tag.remove();
+
+        // Enable visit stall link
+        if (visitLink) {
+          visitLink.href = `pages/menu.php?stallid=${stallId}`;
+          visitLink.style.pointerEvents = "";
+          visitLink.style.opacity = "";
+          visitLink.style.cursor = "";
+        }
       }
-    } else {
-      section.classList.remove("stall-closed");
-      const tag = header.querySelector(".closed-tag");
-      if (tag) tag.remove();
-    }
+    });
   });
 }
 
 /* =====================================================
-   更新商品状态
+   UPDATE PRODUCT AVAILABILITY (INCLUDING STOCK)
 ===================================================== */
 function updateProductAvailability(products) {
   products.forEach((prod) => {
     const productId = prod.ProductId;
     const productOpen = prod.IsAvailable == 1;
+    const stock = parseInt(prod.Stock) || 0;
+    const isUnlimitedStock = prod.IsUnlimitedStock == 1;
 
+    // Store product status
+    productStatus[productId] = {
+      isAvailable: productOpen,
+      stock: stock,
+      isUnlimitedStock: isUnlimitedStock,
+      stallId: prod.StallId
+    };
+
+    // Check stall status
     let stallOpen = true;
     if (prod.StallId && stallStatus.hasOwnProperty(prod.StallId)) {
       stallOpen = stallStatus[prod.StallId];
     }
 
-    const unavailable = !(productOpen && stallOpen);
+    // Check if out of stock
+    // Out of stock ONLY if: IsUnlimitedStock = 0 AND Stock <= 0
+    const outOfStock = !isUnlimitedStock && stock <= 0;
+
+    // Product is unavailable if:
+    // 1. Product itself is unavailable, OR
+    // 2. Stall is closed, OR
+    // 3. Out of stock (IsUnlimitedStock = 0 AND Stock = 0)
+    const unavailable = !productOpen || !stallOpen || outOfStock;
+
+    const cards = document.querySelectorAll(
+      `.product-card[data-product-id="${productId}"]`
+    );
+
+    cards.forEach((card) => {
+      const overlay = card.querySelector(".unavailable-layer");
+      const link = card.closest("a");
+
+      if (unavailable) {
+        // Make product unavailable
+        card.classList.add("unavailable-card");
+        if (overlay) {
+          overlay.classList.remove("hidden-unavailable");
+        }
+        if (link) {
+          link.href = "javascript:void(0)";
+          link.style.pointerEvents = "none";
+        }
+      } else {
+        // Make product available
+        card.classList.remove("unavailable-card");
+        if (overlay) {
+          overlay.classList.add("hidden-unavailable");
+        }
+        if (link) {
+          link.href = `pages/product_detail.php?id=${productId}`;
+          link.style.pointerEvents = "";
+        }
+      }
+    });
+  });
+}
+
+/* =====================================================
+   APPLY CURRENT AVAILABILITY STATUS
+   (After AJAX content reload)
+===================================================== */
+function applyCurrentAvailabilityStatus() {
+  // Re-apply stall status
+  Object.keys(stallStatus).forEach((stallId) => {
+    const isOpen = stallStatus[stallId];
+    const sections = document.querySelectorAll(
+      `.section-stalls[data-stall-id="${stallId}"]`
+    );
+
+    sections.forEach((section) => {
+      const header = section.querySelector(".section-header h3");
+      const visitLink = section.querySelector(".see-all a");
+      
+      if (!header) return;
+
+      if (!isOpen) {
+        // Stall is CLOSED
+        section.classList.add("stall-closed");
+        
+        // Add closed tag
+        if (!header.querySelector(".closed-tag")) {
+          const tag = document.createElement("span");
+          tag.className = "closed-tag";
+          tag.textContent = " (Closed)";
+          header.appendChild(tag);
+        }
+
+        // Disable visit stall link
+        if (visitLink) {
+          visitLink.href = "javascript:void(0)";
+          visitLink.style.pointerEvents = "none";
+          visitLink.style.opacity = "0.5";
+          visitLink.style.cursor = "not-allowed";
+        }
+      } else {
+        // Stall is OPEN
+        section.classList.remove("stall-closed");
+        
+        // Remove closed tag
+        const tag = header.querySelector(".closed-tag");
+        if (tag) tag.remove();
+
+        // Enable visit stall link
+        if (visitLink) {
+          visitLink.href = `pages/menu.php?stallid=${stallId}`;
+          visitLink.style.pointerEvents = "";
+          visitLink.style.opacity = "";
+          visitLink.style.cursor = "";
+        }
+      }
+    });
+  });
+
+  // Re-apply product status
+  Object.keys(productStatus).forEach((productId) => {
+    const prod = productStatus[productId];
+    const stallOpen = prod.stallId ? (stallStatus[prod.stallId] || true) : true;
+    
+    // Check if out of stock
+    const outOfStock = !prod.isUnlimitedStock && prod.stock <= 0;
+    
+    const unavailable = !prod.isAvailable || !stallOpen || outOfStock;
 
     const cards = document.querySelectorAll(
       `.product-card[data-product-id="${productId}"]`
@@ -345,18 +495,24 @@ function updateProductAvailability(products) {
       if (unavailable) {
         card.classList.add("unavailable-card");
         if (overlay) overlay.classList.remove("hidden-unavailable");
-        if (link) link.href = "javascript:void(0)";
+        if (link) {
+          link.href = "javascript:void(0)";
+          link.style.pointerEvents = "none";
+        }
       } else {
         card.classList.remove("unavailable-card");
         if (overlay) overlay.classList.add("hidden-unavailable");
-        if (link) link.href = `pages/product_detail.php?id=${productId}`;
+        if (link) {
+          link.href = `pages/product_detail.php?id=${productId}`;
+          link.style.pointerEvents = "";
+        }
       }
     });
   });
 }
 
 /* =====================================================
-   Polling
+   POLLING
 ===================================================== */
 let isPolling = false;
 
@@ -384,7 +540,7 @@ async function pollAvailability() {
 }
 
 /* =====================================================
-   CSS 动画
+   CSS ANIMATIONS
 ===================================================== */
 const style = document.createElement("style");
 style.textContent = `
@@ -411,7 +567,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 /* =====================================================
-   初始化
+   INITIALIZATION
 ===================================================== */
 function initializeAll() {
   setupAjaxSearch();
@@ -421,7 +577,7 @@ function initializeAll() {
 }
 
 /* =====================================================
-   DOM Ready
+   DOM READY
 ===================================================== */
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeAll);
@@ -430,6 +586,6 @@ if (document.readyState === "loading") {
 }
 
 /* =====================================================
-   全局函数（供 HTML 调用）
+   GLOBAL FUNCTIONS (FOR HTML)
 ===================================================== */
 window.clearSearch = clearSearch;

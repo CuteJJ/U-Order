@@ -71,7 +71,7 @@ if ((int)$row['ProductIsAvailable'] !== 1) {
 $isUnlimited = (int)$row['IsUnlimitedStock'] === 1;
 $stock       = (int)$row['Stock'];
 
-// Validate stock
+// Validate stock (ONLY if NOT unlimited stock)
 if (!$isUnlimited) {
     if ($stock <= 0) {
         echo json_encode([
@@ -89,6 +89,7 @@ if (!$isUnlimited) {
         exit;
     }
 }
+// For unlimited stock items, no stock validation needed
 
 // Update quantity
 $upd = $db->prepare("UPDATE cartitems SET Quantity = :qty WHERE CartItemId = :id");
@@ -97,4 +98,4 @@ $upd->execute([
     'id'  => $cartItemId
 ]);
 
-echo json_encode(['success' => true]);      
+echo json_encode(['success' => true]);  

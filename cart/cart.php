@@ -116,36 +116,27 @@ if (isset($_GET['action']) && $_GET['action'] === 'validate_checkout') {
             continue;
         }
         
-       // Check 3: Stock validation
-if (!$isUnlimited) {
-    if ($stock <= 0) {
-        $errors[] = [
-            'cartItemId' => $cartItemId,
-            'type' => 'out_of_stock',
-            'message' => "'{$productName}' is out of stock"
-        ];
-        continue;
-    }
-    
-    if ($quantity > $stock) {
-        $errors[] = [
-            'cartItemId' => $cartItemId,
-            'type' => 'insufficient_stock',
-            'message' => "'{$productName}' - Only {$stock} available, but you have {$quantity} in cart"
-        ];
-        continue;
-    }
-} else {
-    // ✅ ADD THIS: Even for unlimited items, ensure Stock is not 0
-    if ($stock <= 0) {
-        $errors[] = [
-            'cartItemId' => $cartItemId,
-            'type' => 'out_of_stock',
-            'message' => "'{$productName}' is currently out of stock"
-        ];
-        continue;
-    }
-}
+        // Check 3: Stock validation (ONLY if NOT unlimited stock)
+        if (!$isUnlimited) {
+            if ($stock <= 0) {
+                $errors[] = [
+                    'cartItemId' => $cartItemId,
+                    'type' => 'out_of_stock',
+                    'message' => "'{$productName}' is out of stock"
+                ];
+                continue;
+            }
+            
+            if ($quantity > $stock) {
+                $errors[] = [
+                    'cartItemId' => $cartItemId,
+                    'type' => 'insufficient_stock',
+                    'message' => "'{$productName}' - Only {$stock} available, but you have {$quantity} in cart"
+                ];
+                continue;
+            }
+        }
+        // For unlimited stock items, no stock check needed
     }
     
     // If any errors found
@@ -221,7 +212,7 @@ foreach ($rows as $r) {
 
     $subtotal = $r->UnitPrice * $r->Quantity;
 
-    // Availability Logic
+    // Availability Logic - FIXED
     $isUnavailable = false;
     $statusLabel   = '';
 
@@ -231,7 +222,8 @@ foreach ($rows as $r) {
     } elseif ((int)$r->ProductIsAvailable !== 1) {
         $isUnavailable = true;
         $statusLabel   = 'Unavailable';
-    } elseif ((int)$r->Stock <= 0) {
+    } elseif ((int)$r->IsUnlimitedStock !== 1 && (int)$r->Stock <= 0) {
+        // ✅ FIXED: Only check stock if NOT unlimited stock
         $isUnavailable = true;
         $statusLabel   = 'Out of stock';
     }

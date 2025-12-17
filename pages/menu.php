@@ -3,6 +3,7 @@ include '../configs/db.php';
 include '../includes/functions.php';
 
 $stallId = $_GET['stallid'] ?? null;
+
 if (!$stallId) {
     die("Stall ID missing.");
 }
@@ -13,7 +14,7 @@ $categoryFilter = $_GET['category'] ?? '';
 $sort           = $_GET['sort']     ?? 'default';
 
 /* ============================================================
-   取当前档口产品（显示全部，包括 unavailable）
+   Get all products from this stall (show even if stall closed)
 ============================================================ */
 $params = [':stallid' => $stallId];
 
@@ -21,6 +22,7 @@ $sql = "SELECT
             p.*,
             s.StallName,
             s.LogoUrl,
+            s.IsAvailable AS StallIsAvailable,
             c.CategoryName,
             (SELECT ImageURL 
              FROM productimages pi 
@@ -29,21 +31,20 @@ $sql = "SELECT
         FROM products p
         JOIN stalls s ON p.StallId = s.StallId
         LEFT JOIN categories c ON p.CategoryId = c.CategoryId
-        WHERE s.StallId = :stallid
-        AND s.IsAvailable = 1";
+        WHERE s.StallId = :stallid";
 
 if ($search) {
     $sql .= " AND (p.ProductName LIKE :search OR p.Description LIKE :search)";
     $params[':search'] = "%$search%";
 }
 
-// 后端 category 过滤
+// Backend category filter
 if ($categoryFilter !== '') {
     $sql .= " AND p.CategoryId = :cat";
     $params[':cat'] = $categoryFilter;
 }
 
-// 排序：默认按名字，Sort 改为按价格
+// Sorting
 switch ($sort) {
     case 'price_asc':
         $sql .= " ORDER BY p.UnitPrice ASC";
@@ -64,7 +65,7 @@ $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
    ⭐  AJAX: menu.php?ajax=1
 ============================================================ */
 if (isset($_GET['ajax'])) {
-    // 修复 ImageURL 路径
+    // Fix ImageURL path
     foreach ($products as &$p) {
         $img = $p['ImageURL'] ?? '';
         if (!$img) {
@@ -83,8 +84,7 @@ if (isset($_GET['ajax'])) {
 }
 
 /* ============================================================
-   只取【这个 stall 拥有的】category 列表
-   (Includes Logo for display)
+   Get categories for this stall (Includes Logo for display)
 ============================================================ */
 $catSql = "SELECT DISTINCT c.CategoryId, c.CategoryName, c.CategoryLogo
            FROM products p
@@ -98,6 +98,7 @@ $cats = $catStmt->fetchAll(PDO::FETCH_ASSOC);
 // Stall Info for Header
 $stallName = !empty($products) ? $products[0]['StallName'] : 'Stall Menu';
 $stallLogo = !empty($products) ? fixAssetUrl($products[0]['LogoUrl']) : '';
+$stallClosed = !empty($products) ? ($products[0]['StallIsAvailable'] == 0) : false;
 
 include '../includes/header.php';
 ?>
@@ -121,7 +122,26 @@ include '../includes/header.php';
     .stall-logo-img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--nord4); }
     .stall-text h1 { margin: 0; font-size: 1.6rem; color: var(--nord0); font-weight: 800; }
     .stall-text p { margin: 0; color: var(--nord3); font-size: 0.95rem; }
-
+    
+    /* STALL CLOSED BANNER */
+    .stall-closed-banner {
+        background: linear-gradient(135deg, #bf616a 0%, #d08770 100%);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 15px rgba(191, 97, 106, 0.3);
+    }
+    .stall-closed-banner i {
+        font-size: 1.5rem;
+    }
+    .stall-closed-banner strong {
+        font-weight: 700;
+    }
+    
     /* CONTROLS (Search & Sort) */
     .menu-controls { display: flex; gap: 12px; width: 100%; max-width: 650px; flex-wrap: wrap; }
     .search-input-wrapper { position: relative; flex-grow: 1; min-width: 200px; }
@@ -134,7 +154,7 @@ include '../includes/header.php';
         transition: 0.2s;
     }
     #search-input:focus { outline: none; border-color: var(--nord9); background: #fff; }
-
+    
     /* CUSTOM DROPDOWN CSS */
     .custom-select-wrapper {
         position: relative;
@@ -143,10 +163,10 @@ include '../includes/header.php';
     
     #sort-select {
         width: 100%;
-        appearance: none; /* Hide default arrow */
+        appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        padding: 12px 40px 12px 20px; /* Right padding for custom arrow */
+        padding: 12px 40px 12px 20px;
         border: 2px solid var(--nord4);
         border-radius: 12px;
         background: #fff;
@@ -154,26 +174,22 @@ include '../includes/header.php';
         font-weight: 600;
         color: var(--nord2);
         font-family: inherit;
-        /* Custom Chevron Icon (SVG) */
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234C566A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
         background-repeat: no-repeat;
         background-position: right 15px center;
         background-size: 16px;
     }
     #sort-select:focus { outline: none; border-color: var(--nord9); }
-
+    
     /* CATEGORIES SCROLL */
     .section-categories { margin-bottom: 30px; }
     .section-header h3 { margin: 0 0 10px 0; font-size: 1.2rem; color: var(--nord1); font-weight: 700; }
-
     #category-scroll {
         display: flex; gap: 15px; overflow-x: auto; 
-        /* Key Fix: Add padding to container so active transformation isn't clipped */
         padding: 10px 5px 20px 5px;
         scrollbar-width: none;
     }
     #category-scroll::-webkit-scrollbar { display: none; }
-
     .cat-card {
         display: flex; flex-direction: column; align-items: center; gap: 10px;
         cursor: pointer; min-width: 72px; text-decoration: none; transition: 0.2s;
@@ -182,7 +198,6 @@ include '../includes/header.php';
     .cat-card.active { opacity: 1; transform: translateY(-8px);}
     .cat-card.active .cat-box { background: var(--nord10); box-shadow: 0 8px 20px rgba(94, 129, 172, 0.4); }
     .cat-card.active .cat-box i, .cat-card.active .cat-box img {filter: brightness(0) saturate(100%) invert(100%) sepia(100%) saturate(23%) hue-rotate(229deg) brightness(105%) contrast(102%); }
-
     .cat-box {
         width: 60px; height: 60px; background: #fff; border-radius: 18px;
         display: flex; justify-content: center; align-items: center;
@@ -191,7 +206,7 @@ include '../includes/header.php';
         overflow: hidden;
     }
     .cat-label { font-size: 0.85rem; font-weight: 600; color: var(--nord2); text-align: center; }
-
+    
     /* PRODUCT GRID */
     #menu-grid {
         margin-left: 20px;
@@ -204,8 +219,8 @@ include '../includes/header.php';
     @media (min-width: 1024px) {
         #menu-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
     }
-
-    /* CARD generated by JS */
+    
+    /* CARD */
     .card {
         background: #fff; border-radius: 20px; overflow: hidden;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid var(--nord6);
@@ -218,7 +233,6 @@ include '../includes/header.php';
         height: 160px; background-size: cover; background-position: center; position: relative;
     }
     @media (min-width: 1024px) { .card-img { height: 200px; } }
-
     .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
     
     .card-title { font-size: 1.1rem; font-weight: 700; color: var(--nord0); margin-bottom: 5px; }
@@ -228,46 +242,44 @@ include '../includes/header.php';
         flex-grow: 1;
     }
     .price-tag { font-size: 1.2rem; font-weight: 800; color: var(--nord0); margin-top: auto; }
-
+    
     /* Unavailable State */
-    .card.unavailable { opacity: 0.7; filter: grayscale(1); }
+    .card.unavailable { opacity: 0.7; filter: grayscale(1); cursor: not-allowed; }
     .unavailable-layer {
         position: absolute; inset: 0; background: rgba(0,0,0,0.6);
         display: flex; align-items: center; justify-content: center;
     }
     .hidden-unavailable { display: none !important; }
     .unavailable-layer img { width: 60%; opacity: 0.8; }
-
+    
     /* Empty State */
     .menu-empty-state { grid-column: 1/-1; text-align: center; padding: 50px; color: var(--nord3); }
     .menu-empty-emoji { font-size: 3rem; margin-bottom: 15px; }
-
-/* Back to Menu Button */
-.back-pill {
-    margin-left: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    background: var(--nord6); 
-    color: var(--nord0);      
-    border: 1px solid var(--nord4);
-}
-
-.back-pill:hover {
-    background: rgba(255, 255, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+    
+    /* Back to Menu Button */
+    .back-pill {
+        margin-left: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        background: var(--nord6); 
+        color: var(--nord0);      
+        border: 1px solid var(--nord4);
+    }
+    .back-pill:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 </style>
 
 <div class="app-wrapper">
-
     <div class="stall-hero">
         <div class="stall-info">
             <img src="<?php echo htmlspecialchars($stallLogo); ?>" class="stall-logo-img">
@@ -284,7 +296,6 @@ include '../includes/header.php';
                 <input type="text" id="search-input" placeholder="Search food..." 
                        value="<?php echo htmlspecialchars($search); ?>" autocomplete="off">
             </div>
-
             <div class="custom-select-wrapper">
                 <select id="sort-select">
                     <option value="default" <?php if ($sort === 'default') echo 'selected'; ?>>Sort: Default</option>
@@ -294,16 +305,25 @@ include '../includes/header.php';
             </div>
         </form>
     </div>
-
-        <a href="/U-Order/index.php" class="back-pill">
-            <i class="fas fa-arrow-left"></i> Back to Menu
-        </a>
-
+    
+    <?php if ($stallClosed): ?>
+        <div class="stall-closed-banner">
+            <i class="fas fa-store-slash"></i>
+            <div>
+                <strong>This stall is currently closed.</strong>
+                You can browse the menu, but items cannot be ordered at this time.
+            </div>
+        </div>
+    <?php endif; ?>
+    
+    <a href="/U-Order/index.php" class="back-pill">
+        <i class="fas fa-arrow-left"></i> Back to Menu
+    </a>
+    
     <section class="section-categories">
         <div class="section-header">
             <h3>Categories</h3>
         </div>
-
         <div id="category-scroll">
             <div class="cat-card <?php echo ($categoryFilter === '') ? 'active' : ''; ?>" data-category="">
                 <div class="cat-box">
@@ -311,7 +331,6 @@ include '../includes/header.php';
                 </div>
                 <div class="cat-label">All</div>
             </div>
-
             <?php foreach ($cats as $c): ?>
                 <?php $isActive = ($categoryFilter == $c['CategoryId']); ?>
                 <div class="cat-card <?php echo $isActive ? 'active' : ''; ?>" 
@@ -329,12 +348,16 @@ include '../includes/header.php';
             <?php endforeach; ?>
         </div>
     </section>
-
+    
     <div id="menu-grid">
         <?php foreach ($products as $p): ?>
             <?php
             $img = fixAssetUrl($p['ImageURL'] ?? '');
-            $isUnavailable = ($p['IsAvailable'] == 0);
+            
+            // Product is unavailable if stall is closed OR product is unavailable
+            $stallClosed = ($p['StallIsAvailable'] == 0);
+            $productUnavailable = ($p['IsAvailable'] == 0);
+            $isUnavailable = $stallClosed || $productUnavailable;
             ?>
             <div class="card <?php echo $isUnavailable ? 'unavailable' : ''; ?>" 
                  data-id="<?php echo $p['ProductId']; ?>"
@@ -347,7 +370,6 @@ include '../includes/header.php';
                         <img src="../assets/images/unavailable.png" alt="Unavailable">
                     </div>
                 </div>
-
                 <div class="card-body">
                     <div class="card-title"><?php echo htmlspecialchars($p['ProductName']); ?></div>
                     <div class="card-desc"><?php echo htmlspecialchars($p['Description']); ?></div>
@@ -364,7 +386,6 @@ include '../includes/header.php';
             </div>
         <?php endif; ?>
     </div>
-
 </div>
 
 <script>
@@ -376,7 +397,5 @@ include '../includes/header.php';
     };
     window.MENU_CONFIG = MENU_STATE;
 </script>
-
 <script src="../assets/js/menu.js"></script>
-
-<?php include '../includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>  
