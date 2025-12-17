@@ -39,200 +39,77 @@ if ($viewMode === 'daily') {
     $endDate = $_GET['end_date'] ?? date('Y-m-d');
 }
 
-// --- LOGIC: DETERMINE LAYOUT MODE (For Web View sorting) ---
-$layoutMode = 'default'; 
-if (!empty($filterFood)) {
-    $layoutMode = 'food'; 
-} elseif (!empty($search)) {
-    $layoutMode = 'search';
-}
-
 // Base Conditions
 $baseWhere = "WHERE o.StallId = :sid AND DATE(o.CreatedAt) BETWEEN :start AND :end";
 $params = [':sid' => $stallId, ':start' => $startDate, ':end' => $endDate];
 
 // --- APPLY FILTERS (ADDITIVE) ---
-
-// 1. Search Filter
 if (!empty($search)) { 
     $baseWhere .= " AND (u.Name LIKE :search OR p.ProductName LIKE :search)"; 
     $params[':search'] = "%$search%"; 
 }
 
-// 2. Food Filter
 if (!empty($filterFood)) { 
     $baseWhere .= " AND ol.ProductId = :pid"; 
     $params[':pid'] = $filterFood;
 }
 
-// =================================================================
-//  PDF PRINT VIEW (PRODUCT SALES SUMMARY)
-//  This replaces the old detailed list with a summary table.
-// =================================================================
-if (isset($_GET['print_view'])) {
-    // 1. Aggregated Query: Group by Product
-    // We sum up quantity and subtotal for each product in the selected range
-    // NOTE: This ignores the 'search' filter usually, as summaries are typically for all products or specific food filter.
-    // If you want search to apply, keep $baseWhere.
-    
-    $sql = "SELECT p.ProductName, p.UnitPrice, 
-                   SUM(ol.Quantity) as TotalQty, 
-                   SUM(ol.Subtotal) as TotalSales
-            FROM orders o
-            JOIN orderitems ol ON o.OrderId = ol.OrderId
-            JOIN products p ON ol.ProductId = p.ProductId
-            JOIN users u ON o.UserId = u.UserId
-            $baseWhere
-            GROUP BY p.ProductId
-            ORDER BY TotalQty DESC"; // Sort by highest quantity sold
-            
-    $stmt = $db->prepare($sql);
-    $stmt->execute($params);
-    $summaryData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// ========================================
+// DETERMINE COLUMN ORDER & SORTING
+// ========================================
+$columns = [];
+$orderBy = [];
+$columnHeaders = [
+    'OrderDate' => 'Date',
+    'OrderId' => 'Order ID',
+    'CustomerName' => 'Customer',
+    'ProductName' => 'Product',
+    'Quantity' => 'Qty',
+    'Subtotal' => 'Subtotal'
+];
 
-    // 2. Prepare Data for Histogram (Product Name vs Quantity)
-    $chartLabels = [];
-    $chartValues = [];
-    $grandTotalSales = 0;
+if ($viewMode === 'daily') {
+    // TODAY: No Date column, sort by OrderId
+    $columns = ['OrderId', 'CustomerName', 'ProductName', 'Quantity', 'Subtotal'];
+    $orderBy = ['o.OrderId ASC'];
     
-    foreach($summaryData as $row) {
-        $chartLabels[] = $row['ProductName'];
-        $chartValues[] = $row['TotalQty'];
-        $grandTotalSales += $row['TotalSales'];
+} elseif (!empty($filterFood)) {
+    // FOOD FILTER: ProductName, Date, OrderId, CustomerName
+    $columns = ['ProductName', 'OrderDate', 'OrderId', 'CustomerName', 'Quantity', 'Subtotal'];
+    $orderBy = ['p.ProductName ASC', 'DATE(o.CreatedAt) ASC', 'o.OrderId ASC'];
+    
+} elseif (!empty($search)) {
+    // SEARCH: Determine if searching for customer or food
+    $searchCheck = $db->prepare("
+        SELECT 
+            SUM(CASE WHEN u.Name LIKE :search THEN 1 ELSE 0 END) as cust_matches,
+            SUM(CASE WHEN p.ProductName LIKE :search THEN 1 ELSE 0 END) as prod_matches
+        FROM orders o
+        JOIN orderitems ol ON o.OrderId = ol.OrderId
+        JOIN products p ON ol.ProductId = p.ProductId
+        JOIN users u ON o.UserId = u.UserId
+        $baseWhere
+    ");
+    $searchCheck->execute($params);
+    $matches = $searchCheck->fetch(PDO::FETCH_ASSOC);
+    
+    if ($matches['cust_matches'] > $matches['prod_matches']) {
+        // Customer Search: CustomerName, Date, OrderId, ProductName
+        $columns = ['CustomerName', 'OrderDate', 'OrderId', 'ProductName', 'Quantity', 'Subtotal'];
+        $orderBy = ['u.Name ASC', 'DATE(o.CreatedAt) ASC', 'o.OrderId ASC'];
+    } else {
+        // Food Search: ProductName, Date, OrderId, CustomerName
+        $columns = ['ProductName', 'OrderDate', 'OrderId', 'CustomerName', 'Quantity', 'Subtotal'];
+        $orderBy = ['p.ProductName ASC', 'DATE(o.CreatedAt) ASC', 'o.OrderId ASC'];
     }
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Sales Summary - <?php echo $stallName; ?></title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <style>
-            body { font-family: "Segoe UI", sans-serif; color: #333; max-width: 800px; margin: 0 auto; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-            .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
-            .header p { margin: 5px 0; font-size: 14px; color: #666; }
-            
-            .chart-box { width: 100%; height: 300px; margin-bottom: 40px; page-break-inside: avoid; }
-            
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-            th { background: #f4f4f4; border-bottom: 2px solid #333; padding: 10px; text-align: left; text-transform: uppercase; font-weight: bold; }
-            td { border-bottom: 1px solid #ddd; padding: 10px; vertical-align: middle; }
-            .text-right { text-align: right; }
-            .text-center { text-align: center; }
-            
-            .total-row { font-weight: bold; background: #eef; font-size: 15px; }
-            .total-row td { border-top: 2px solid #333; }
-            
-            @media print { .no-print { display: none; } }
-        </style>
-    </head>
-    <body onload="setTimeout(function(){window.print()}, 1000)">
-        
-        <div class="no-print" style="margin-bottom:20px; text-align:center; background:#eee; padding:10px;">
-            <p>Wait for chart to load...</p>
-        </div>
-
-        <div class="header">
-            <h1>Product Sales Summary</h1>
-            <p><strong><?php echo htmlspecialchars($stallName); ?></strong></p>
-            <p>Period: <?php echo date('d M Y', strtotime($startDate)); ?> - <?php echo date('d M Y', strtotime($endDate)); ?></p>
-        </div>
-
-        <!-- HISTOGRAM: Quantity Sold per Product -->
-        <div class="chart-box">
-            <canvas id="pdfChart"></canvas>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th width="40%">Product</th>
-                    <th width="20%" class="text-center">Qty Sold</th>
-                    <th width="20%" class="text-right">Unit Price</th>
-                    <th width="20%" class="text-right">Sub Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($summaryData)): ?>
-                    <tr><td colspan="4" class="text-center">No sales in this period.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($summaryData as $row): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($row['ProductName']); ?></td>
-                        <td class="text-center"><?php echo $row['TotalQty']; ?></td>
-                        <td class="text-right">RM <?php echo number_format($row['UnitPrice'], 2); ?></td>
-                        <td class="text-right">RM <?php echo number_format($row['TotalSales'], 2); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <tr class="total-row">
-                        <td colspan="3" class="text-right">GRAND TOTAL</td>
-                        <td class="text-right">RM <?php echo number_format($grandTotalSales, 2); ?></td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-
-        <script>
-            const ctx = document.getElementById('pdfChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: <?php echo json_encode($chartLabels); ?>,
-                    datasets: [{
-                        label: 'Quantity Sold',
-                        data: <?php echo json_encode($chartValues); ?>,
-                        backgroundColor: 'rgba(163, 190, 140, 0.7)', // Greenish
-                        borderColor: '#8FBCBB',
-                        borderWidth: 1,
-                        barPercentage: 0.6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    scales: { 
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { precision: 0 }, // Ensure whole numbers for Qty
-                            title: { display: true, text: 'Units Sold' }
-                        } 
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        title: { display: true, text: 'Top Selling Products (Qty)' }
-                    }
-                }
-            });
-        </script>
-    </body>
-    </html>
-    <?php
-    exit; // Stop here so web report code doesn't run
+    
+} else {
+    // DEFAULT (Monthly/Custom): Date, OrderId, CustomerName, ProductName
+    $columns = ['OrderDate', 'OrderId', 'CustomerName', 'ProductName', 'Quantity', 'Subtotal'];
+    $orderBy = ['DATE(o.CreatedAt) ASC', 'o.OrderId ASC'];
 }
 
-// =================================================================
-//  WEB VIEW LOGIC (Detailed List - No Changes to your Sort Logic)
-// =================================================================
-
-// --- SORTING LOGIC ---
-$sortClauses = [];
-
-// Priority 1: Filtered Food First
-if (!empty($filterFood)) {
-    $sortClauses[] = "(CASE WHEN ol.ProductId = :pid THEN 0 ELSE 1 END) ASC";
-}
-
-// Priority 2: Search Match First
-if (!empty($search)) {
-    $sortClauses[] = "(CASE WHEN (u.Name LIKE :search OR p.ProductName LIKE :search) THEN 0 ELSE 1 END) ASC";
-}
-
-// Priority 3: Standard Chronological
-$sortClauses[] = "o.CreatedAt DESC";
-$sortClauses[] = "o.OrderId DESC";
-
-$orderBy = "ORDER BY " . implode(", ", $sortClauses);
+$orderByClause = 'ORDER BY ' . implode(', ', $orderBy);
 
 // 1. Calculate Pagination
 $countSql = "SELECT COUNT(*) as total_records, SUM(ol.Subtotal) as grand_total
@@ -261,13 +138,19 @@ $offset = ($page - 1) * $limit;
 if ($offset < 0) $offset = 0;
 
 // 2. Fetch Data with LIMIT
-$sql = "SELECT o.OrderId, o.CreatedAt, p.ProductName, ol.Quantity, ol.Subtotal, u.Name as CustomerName, ol.ProductId
+$sql = "SELECT 
+            o.OrderId,
+            DATE(o.CreatedAt) as OrderDate,
+            u.Name as CustomerName,
+            p.ProductName,
+            ol.Quantity,
+            ol.Subtotal
         FROM orders o
         JOIN orderitems ol ON o.OrderId = ol.OrderId
         JOIN products p ON ol.ProductId = p.ProductId
         JOIN users u ON o.UserId = u.UserId
         $baseWhere
-        $orderBy
+        $orderByClause
         LIMIT $limit OFFSET $offset";
 
 $stmt = $db->prepare($sql);
@@ -277,13 +160,19 @@ $reportData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // EXCEL EXPORT (Detailed List)
 if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     // Re-run query without limit for export
-    $sqlExport = "SELECT o.OrderId, o.CreatedAt, p.ProductName, ol.Quantity, ol.Subtotal, u.Name as CustomerName
-            FROM orders o
-            JOIN orderitems ol ON o.OrderId = ol.OrderId
-            JOIN products p ON ol.ProductId = p.ProductId
-            JOIN users u ON o.UserId = u.UserId
-            $baseWhere
-            $orderBy";
+    $sqlExport = "SELECT 
+            o.OrderId,
+            DATE(o.CreatedAt) as OrderDate,
+            u.Name as CustomerName,
+            p.ProductName,
+            ol.Quantity,
+            ol.Subtotal
+        FROM orders o
+        JOIN orderitems ol ON o.OrderId = ol.OrderId
+        JOIN products p ON ol.ProductId = p.ProductId
+        JOIN users u ON o.UserId = u.UserId
+        $baseWhere
+        $orderByClause";
     $stmtExp = $db->prepare($sqlExport);
     $stmtExp->execute($params);
     $exportData = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
@@ -291,25 +180,27 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     header("Content-Type: application/vnd.ms-excel");
     header("Content-Disposition: attachment; filename=\"vendor_report.xls\"");
     
-    // Header changes based on mode
-    if ($layoutMode === 'food') {
-        echo "<table border='1'><thead><tr><th>Product</th><th>Date</th><th>Order ID</th><th>Customer</th><th>Qty</th><th>Amount</th></tr></thead><tbody>";
-    } elseif ($layoutMode === 'search') {
-        echo "<table border='1'><thead><tr><th>Match</th><th>Date</th><th>Order ID</th><th>Info</th><th>Qty</th><th>Amount</th></tr></thead><tbody>";
-    } else {
-        echo "<table border='1'><thead><tr><th>Date</th><th>Order ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Amount</th></tr></thead><tbody>";
+    // Dynamic header based on columns
+    echo "<table border='1'><thead><tr>";
+    foreach ($columns as $col) {
+        echo "<th>" . $columnHeaders[$col] . "</th>";
     }
+    echo "</tr></thead><tbody>";
     
     foreach ($exportData as $row) { 
-        $d = $row['CreatedAt']; $oid = $row['OrderId']; $cust = $row['CustomerName']; $prod = $row['ProductName']; $q = $row['Quantity']; $s = $row['Subtotal'];
-        
-        if ($layoutMode === 'food') {
-            echo "<tr><td>$prod</td><td>$d</td><td>$oid</td><td>$cust</td><td>$q</td><td>$s</td></tr>"; 
-        } elseif ($layoutMode === 'search') {
-            echo "<tr><td>$cust / $prod</td><td>$d</td><td>$oid</td><td>-</td><td>$q</td><td>$s</td></tr>"; 
-        } else {
-            echo "<tr><td>$d</td><td>$oid</td><td>$cust</td><td>$prod</td><td>$q</td><td>$s</td></tr>"; 
+        echo "<tr>";
+        foreach ($columns as $col) {
+            if ($col === 'OrderId') {
+                echo "<td>#" . $row[$col] . "</td>";
+            } elseif ($col === 'OrderDate') {
+                echo "<td>" . date('d/m/Y', strtotime($row[$col])) . "</td>";
+            } elseif ($col === 'Subtotal') {
+                echo "<td>" . number_format($row[$col], 2) . "</td>";
+            } else {
+                echo "<td>" . htmlspecialchars($row[$col]) . "</td>";
+            }
         }
+        echo "</tr>";
     }
     echo "</tbody></table>";
     exit;
@@ -341,7 +232,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             <a href="vendor_dashboard.php">&larr; Back</a>
             <div>
                  <a href="?<?php echo http_build_query(array_merge($_GET, ['export' => 'excel'])); ?>" class="btn" style="background:#A3BE8C; color:white;">Export Excel</a>
-                 <a href="?<?php echo http_build_query(array_merge($_GET, ['print_view' => '1'])); ?>" target="_blank" class="btn btn-secondary">🖨️ Export PDF</a>
+                 <a href="vendor_printed_report.php?<?php echo http_build_query($_GET); ?>" target="_blank" class="btn btn-secondary">🖨️ Export PDF</a>
             </div>
         </div>
         
@@ -374,80 +265,38 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             <table>
                 <thead>
                     <tr>
-                        <?php if ($layoutMode === 'food'): ?>
-                            <th width="30%">Product</th>
-                            <th width="20%">Date</th>
-                            <th width="10%">Order ID</th>
-                            <th width="20%">Customer</th>
-                        <?php elseif ($layoutMode === 'search'): ?>
-                            <th width="25%">Match (Cust/Prod)</th>
-                            <th width="20%">Date</th>
-                            <th width="10%">Order ID</th>
-                            <th width="25%">Other Info</th>
-                        <?php else: /* Default */ ?>
-                            <th width="20%">Date</th>
-                            <th width="10%">Order ID</th>
-                            <th width="20%">Customer</th>
-                            <th width="30%">Product</th>
-                        <?php endif; ?>
-                        <th width="5%">Qty</th>
-                        <th width="15%" style="text-align:right;">Subtotal</th>
+                        <?php foreach ($columns as $col): ?>
+                            <th class="<?php echo in_array($col, ['Quantity', 'Subtotal']) ? 'text-right' : ''; ?>">
+                                <?php echo $columnHeaders[$col]; ?>
+                            </th>
+                        <?php endforeach; ?>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($reportData)): ?>
-                        <tr><td colspan="6" style="text-align:center;">No records.</td></tr>
+                        <tr><td colspan="<?php echo count($columns); ?>" style="text-align:center;">No records.</td></tr>
                     <?php else: ?>
-                        <?php foreach ($reportData as $row): 
-                            $currOrder = $row['OrderId'];
-                            $currCust = $row['CustomerName'];
-                            
-                            $dateStr = date('Y-m-d H:i', strtotime($row['CreatedAt']));
-                            $custStr = htmlspecialchars($row['CustomerName']);
-                            $prodStr = htmlspecialchars($row['ProductName']);
-                            $idStr   = '#'.$currOrder;
-
-                            // Display Logic (WEB VIEW - NO GROUPING / FULL DISPLAY)
-                            // We determine column order, but display full content.
-                            
-                            if ($layoutMode === 'food') {
-                                $d1 = $prodStr; 
-                                $d2 = $dateStr;
-                                $d3 = $idStr;
-                                $d4 = $custStr;
-                            } elseif ($layoutMode === 'search') {
-                                // Search Layout: If Product matches, show Product first
-                                $matchedProd = (stripos($prodStr, $search) !== false);
-                                if ($matchedProd) {
-                                     $d1 = $prodStr;
-                                     $d4 = $custStr;
-                                } else {
-                                     $d1 = $custStr;
-                                     $d4 = $prodStr;
-                                }
-                                $d2 = $dateStr;
-                                $d3 = $idStr;
-                            } else { 
-                                // Default Layout
-                                $d1 = $dateStr;
-                                $d2 = $idStr;
-                                $d3 = $custStr;
-                                $d4 = $prodStr;
-                            }
-                        ?>
+                        <?php foreach ($reportData as $row): ?>
                         <tr>
-                            <!-- No dim-text class, display full data -->
-                            <td><?php echo $d1; ?></td>
-                            <td><?php echo $d2; ?></td>
-                            <td><?php echo $d3; ?></td>
-                            <td><?php echo $d4; ?></td>
-                            
-                            <td><?php echo $row['Quantity']; ?></td>
-                            <td style="text-align:right;">RM <?php echo number_format($row['Subtotal'], 2); ?></td>
+                            <?php foreach ($columns as $col): ?>
+                                <td class="<?php echo in_array($col, ['Quantity', 'Subtotal']) ? 'text-right' : ''; ?>">
+                                    <?php 
+                                    if ($col === 'OrderId') {
+                                        echo '#' . $row[$col];
+                                    } elseif ($col === 'OrderDate') {
+                                        echo date('d/m/Y', strtotime($row[$col]));
+                                    } elseif ($col === 'Subtotal') {
+                                        echo 'RM ' . number_format($row[$col], 2);
+                                    } else {
+                                        echo htmlspecialchars($row[$col]);
+                                    }
+                                    ?>
+                                </td>
+                            <?php endforeach; ?>
                         </tr>
                         <?php endforeach; ?>
                         <tr style="background:#B48EAD; color:white;">
-                            <td colspan="5" style="text-align:right; font-weight:bold;">TOTAL</td>
+                            <td colspan="<?php echo count($columns) - 1; ?>" style="text-align:right; font-weight:bold;">TOTAL</td>
                             <td style="font-weight:bold; text-align:right;">RM <?php echo number_format($grandTotalRevenue, 2); ?></td>
                         </tr>
                     <?php endif; ?>
