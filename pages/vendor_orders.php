@@ -2,9 +2,21 @@
 // pages/vendor_orders.php
 require_once '../configs/db.php';
 
+// 1. Session 检查
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
+}
+
+// 2. 动态读取分类 (新增部分)
+$categories = [];
+try {
+    // 按照名字排序，方便查找
+    $stmt = $db->query("SELECT CategoryId, CategoryName FROM categories ORDER BY CategoryName ASC");
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // 如果出错，暂且忽略，只是下拉菜单会是空的
+    error_log("Error fetching categories: " . $e->getMessage());
 }
 ?>
 
@@ -21,9 +33,15 @@ if (!isset($_SESSION['user_id'])) {
                 <label>Category:</label>
                 <select id="filter-category">
                     <option value="all">All Categories</option>
-                    <option value="1">Rice</option>
-                    <option value="2">Drinks</option>
-                    <option value="3">Dessert</option>
+                    
+                    <?php if (!empty($categories)): ?>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?= htmlspecialchars($cat['CategoryId']) ?>">
+                                <?= htmlspecialchars($cat['CategoryName']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    
                 </select>
             </div>
 

@@ -128,7 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Register New Stall</title>
-    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/app.css">
 </head>
 <body>
     <div class="container">
