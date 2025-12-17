@@ -1,6 +1,6 @@
 // assets/js/vendor_orders.js
 
-// 狀態管理
+// 状态管理
 const pageState = { pending: 1, preparing: 1, ready: 1 };
 let currentFilters = { category: 'all', pickup: 'all' };
 let selectedIds = new Set(); // 記錄選中的 ID
@@ -9,11 +9,12 @@ let selectedIds = new Set(); // 記錄選中的 ID
 document.addEventListener("DOMContentLoaded", () => {
     reloadAllColumns();
 
-    // 綁定過濾器
+    // 綁定過濾器 (這裡會自動抓取 PHP 生成的 value)
     document.getElementById('filter-category').addEventListener('change', (e) => {
         currentFilters.category = e.target.value;
         reloadAllColumns();
     });
+    
     document.getElementById('filter-pickup').addEventListener('change', (e) => {
         currentFilters.pickup = e.target.value;
         reloadAllColumns();
