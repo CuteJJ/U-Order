@@ -249,10 +249,6 @@ tr:last-child td {
     border-bottom: none;
 }
 
-tr:hover td {
-    background-color: #FAFAFA;
-}
-
 /* --- Flash Messages --- */
 .flash-toast {
     position: fixed;

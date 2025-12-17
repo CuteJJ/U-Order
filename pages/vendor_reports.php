@@ -112,7 +112,10 @@ if ($viewMode === 'daily') {
 $orderByClause = 'ORDER BY ' . implode(', ', $orderBy);
 
 // 1. Calculate Pagination
-$countSql = "SELECT COUNT(*) as total_records, SUM(ol.Subtotal) as grand_total
+$countSql = "SELECT 
+                COUNT(*) as total_records, 
+                SUM(ol.Subtotal) as grand_total,
+                SUM(ol.Quantity) as grand_qty
              FROM orders o
              JOIN orderitems ol ON o.OrderId = ol.OrderId
              JOIN products p ON ol.ProductId = p.ProductId
@@ -125,6 +128,7 @@ $totals = $stmtCount->fetch(PDO::FETCH_ASSOC);
 
 $totalRecords = $totals['total_records'] ?? 0;
 $grandTotalRevenue = $totals['grand_total'] ?? 0;
+$grandTotalQty = $totals['grand_qty'] ?? 0;
 
 $limit = 10; // 10 Records per page
 $totalPages = ceil($totalRecords / $limit);
@@ -212,7 +216,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
 <head>
     <meta charset="UTF-8">
     <title>Vendor Reports</title>
-    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
         .page-link { padding: 8px 12px; border: 1px solid #D8DEE9; background: white; border-radius: 4px; color: #2E3440; }
@@ -227,7 +231,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
 </head>
 <body>
     <div class="container">
-        <!-- Header & Nav -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <a href="vendor_dashboard.php">&larr; Back</a>
             <div>
@@ -236,7 +239,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             </div>
         </div>
         
-        <!-- Filter Form -->
         <form method="GET" action="" class="filter-bar">
             <input type="hidden" name="page" value="1">
             
@@ -296,8 +298,13 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
                         </tr>
                         <?php endforeach; ?>
                         <tr style="background:#B48EAD; color:white;">
-                            <td colspan="<?php echo count($columns) - 1; ?>" style="text-align:right; font-weight:bold;">TOTAL</td>
-                            <td style="font-weight:bold; text-align:right;">RM <?php echo number_format($grandTotalRevenue, 2); ?></td>
+                            <?php 
+                                // Calculate colspan: Total cols minus Quantity(1) minus Subtotal(1) = count - 2
+                                $colspan = max(1, count($columns) - 2);
+                            ?>
+                            <td colspan="<?php echo $colspan; ?>" style="text-align:right; font-weight:bold;">GRAND TOTAL</td>
+                            <td class="text-right" style="font-weight:bold;"><?php echo number_format($grandTotalQty); ?></td>
+                            <td class="text-right" style="font-weight:bold;">RM <?php echo number_format($grandTotalRevenue, 2); ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

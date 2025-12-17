@@ -29,7 +29,7 @@ $search = $_GET['search'] ?? '';
 $filterStall = $_GET['stall_id'] ?? '';
 $filterCat = $_GET['category_id'] ?? '';
 
-// Base Conditions for Product Summary
+// Base Conditions
 $baseWhere = "WHERE DATE(o.CreatedAt) BETWEEN :start AND :end";
 $params = [':start' => $startDate, ':end' => $endDate];
 
@@ -47,9 +47,41 @@ if (!empty($filterCat)) {
 }
 
 // ========================================
-// PRODUCT SALES SUMMARY QUERY
+// 1. CALCULATE TOTALS & PAGINATION
 // ========================================
-$sql = "SELECT 
+
+// Count Distinct Groups (Product + Stall) and Global Sums
+$countSql = "SELECT 
+                COUNT(DISTINCT p.ProductId, s.StallId) as total_records,
+                SUM(ol.Quantity) as grand_qty,
+                SUM(ol.Subtotal) as grand_total
+             FROM orders o
+             JOIN orderitems ol ON o.OrderId = ol.OrderId
+             JOIN products p ON ol.ProductId = p.ProductId
+             JOIN stalls s ON o.StallId = s.StallId
+             LEFT JOIN categories c ON p.CategoryId = c.CategoryId
+             $baseWhere";
+
+$stmtCount = $db->prepare($countSql);
+$stmtCount->execute($params);
+$totals = $stmtCount->fetch(PDO::FETCH_ASSOC);
+
+$totalRecords = $totals['total_records'] ?? 0;
+$grandTotalQty = $totals['grand_qty'] ?? 0;
+$grandTotalSales = $totals['grand_total'] ?? 0;
+
+// Pagination vars
+$limit = 10; 
+$totalPages = ceil($totalRecords / $limit);
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+if ($page > $totalPages && $totalPages > 0) $page = $totalPages;
+$offset = ($page - 1) * $limit;
+if ($offset < 0) $offset = 0;
+
+// ========================================
+// 2. MAIN QUERY (With LIMIT)
+// ========================================
+$sqlBase = "SELECT 
             p.ProductName,
             s.StallName,
             c.CategoryName,
@@ -65,16 +97,12 @@ $sql = "SELECT
         GROUP BY p.ProductId, s.StallId
         ORDER BY TotalSales DESC";
 
-$stmt = $db->prepare($sql);
-$stmt->execute($params);
-$reportData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Calculate Grand Total
-$grandTotalQty = array_sum(array_column($reportData, 'TotalQty'));
-$grandTotalSales = array_sum(array_column($reportData, 'TotalSales'));
-
-// EXCEL EXPORT
+// EXCEL EXPORT (Run without Limit)
 if (isset($_GET['export']) && $_GET['export'] === 'excel') {
+    $stmtExp = $db->prepare($sqlBase);
+    $stmtExp->execute($params);
+    $reportData = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
+
     header("Content-Type: application/vnd.ms-excel");
     header("Content-Disposition: attachment; filename=\"product_sales_summary.xls\"");
     
@@ -93,6 +121,12 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     echo "</tbody></table>";
     exit;
 }
+
+// WEB VIEW (Run with Limit)
+$sql = $sqlBase . " LIMIT $limit OFFSET $offset";
+$stmt = $db->prepare($sql);
+$stmt->execute($params);
+$reportData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -100,7 +134,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
 <head>
     <meta charset="UTF-8">
     <title>Product Sales Report</title>
-    <link rel="stylesheet" href="../assets/css/aurora_theme.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <style>
         .stats-grid {
             display: grid;
@@ -109,8 +143,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             margin-bottom: 30px;
         }
         .stat-card {
-            background: linear-gradient(135deg, #88C0D0 0%, #5E81AC 100%);
-            color: white;
+            background: white;
+            color: black;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -143,6 +177,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             color: white;
             border-color: #88C0D0;
         }
+        /* Pagination Styles */
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
+        .page-link { padding: 8px 12px; border: 1px solid #D8DEE9; background: white; border-radius: 4px; color: #2E3440; text-decoration: none; }
+        .page-link.active { background: #B48EAD; color: white; border-color: #B48EAD; }
+        .page-link.disabled { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -159,23 +198,21 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             </div>
         </div>
 
-        <!-- Quick Stats -->
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Total Products Sold</h3>
                 <p class="value"><?php echo number_format($grandTotalQty); ?></p>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #A3BE8C 0%, #8FBCBB 100%);">
+            <div class="stat-card" style="background: white;">
                 <h3>Total Revenue</h3>
                 <p class="value">RM <?php echo number_format($grandTotalSales, 2); ?></p>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg, #B48EAD 0%, #D08770 100%);">
+            <div class="stat-card" style="background: white;">
                 <h3>Unique Products</h3>
-                <p class="value"><?php echo count($reportData); ?></p>
+                <p class="value"><?php echo $totalRecords; ?></p>
             </div>
         </div>
         
-        <!-- Filters -->
         <form method="GET" action="" class="filter-bar">
             <input type="hidden" name="page" value="1">
             
@@ -241,6 +278,20 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
                 </tbody>
             </table>
         </div>
+
+        <?php if ($totalPages > 1): ?>
+        <div class="pagination">
+            <?php 
+                // Build link params
+                $params = $_GET; 
+                unset($params['page']);
+                $qs = http_build_query($params);
+            ?>
+            <a href="?<?php echo $qs; ?>&page=<?php echo $page - 1; ?>" class="page-link <?php echo ($page <= 1) ? 'disabled' : ''; ?>">&larr; Prev</a>
+            <span style="padding: 8px 12px;">Page <?php echo $page; ?> of <?php echo $totalPages; ?></span>
+            <a href="?<?php echo $qs; ?>&page=<?php echo $page + 1; ?>" class="page-link <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">Next &rarr;</a>
+        </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>
