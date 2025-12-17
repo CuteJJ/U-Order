@@ -24,6 +24,148 @@ function asset_url($path)
     return "/U-Order/assets/" . $cleanPath;
 }
 
+// Handle AJAX validation request
+if (isset($_GET['action']) && $_GET['action'] === 'validate_checkout') {
+    header('Content-Type: application/json');
+    
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if (!isset($data['cartItemIds']) || !is_array($data['cartItemIds'])) {
+        echo json_encode(['success' => false, 'message' => 'Invalid data']);
+        exit;
+    }
+    
+    $cartItemIds = array_map('intval', $data['cartItemIds']);
+    
+    if (empty($cartItemIds)) {
+        echo json_encode(['success' => false, 'message' => 'No items selected']);
+        exit;
+    }
+    
+    // Fetch all selected items with detailed info
+    $placeholders = implode(',', array_fill(0, count($cartItemIds), '?'));
+    $sql = "
+    SELECT 
+        ci.CartItemId,
+        ci.Quantity,
+        ci.ProductId,
+        
+        p.ProductName,
+        p.UnitPrice,
+        p.IsUnlimitedStock,
+        p.Stock,
+        p.IsAvailable AS ProductIsAvailable,
+        p.StallId,
+        
+        s.StallName,
+        s.IsAvailable AS StallIsAvailable,
+        
+        c.UserId
+    FROM cartitems ci
+    JOIN carts c ON ci.CartId = c.CartId
+    JOIN products p ON ci.ProductId = p.ProductId
+    JOIN stalls s ON p.StallId = s.StallId
+    WHERE ci.CartItemId IN ($placeholders)
+      AND c.UserId = ?
+    ";
+    
+    $params = array_merge($cartItemIds, [$userId]);
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Check if all items belong to user
+    if (count($items) !== count($cartItemIds)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Some items not found in your cart'
+        ]);
+        exit;
+    }
+    
+    $errors = [];
+    
+    foreach ($items as $item) {
+        $cartItemId = $item['CartItemId'];
+        $productName = $item['ProductName'];
+        $stallName = $item['StallName'];
+        $quantity = (int)$item['Quantity'];
+        $isUnlimited = (int)$item['IsUnlimitedStock'] === 1;
+        $stock = (int)$item['Stock'];
+        $stallAvailable = (int)$item['StallIsAvailable'] === 1;
+        $productAvailable = (int)$item['ProductIsAvailable'] === 1;
+        
+        // Check 1: Stall is closed
+        if (!$stallAvailable) {
+            $errors[] = [
+                'cartItemId' => $cartItemId,
+                'type' => 'stall_closed',
+                'message' => "'{$productName}' is unavailable - {$stallName} is currently closed"
+            ];
+            continue;
+        }
+        
+        // Check 2: Product is unavailable
+        if (!$productAvailable) {
+            $errors[] = [
+                'cartItemId' => $cartItemId,
+                'type' => 'product_unavailable',
+                'message' => "'{$productName}' is currently unavailable"
+            ];
+            continue;
+        }
+        
+       // Check 3: Stock validation
+if (!$isUnlimited) {
+    if ($stock <= 0) {
+        $errors[] = [
+            'cartItemId' => $cartItemId,
+            'type' => 'out_of_stock',
+            'message' => "'{$productName}' is out of stock"
+        ];
+        continue;
+    }
+    
+    if ($quantity > $stock) {
+        $errors[] = [
+            'cartItemId' => $cartItemId,
+            'type' => 'insufficient_stock',
+            'message' => "'{$productName}' - Only {$stock} available, but you have {$quantity} in cart"
+        ];
+        continue;
+    }
+} else {
+    // ✅ ADD THIS: Even for unlimited items, ensure Stock is not 0
+    if ($stock <= 0) {
+        $errors[] = [
+            'cartItemId' => $cartItemId,
+            'type' => 'out_of_stock',
+            'message' => "'{$productName}' is currently out of stock"
+        ];
+        continue;
+    }
+}
+    }
+    
+    // If any errors found
+    if (!empty($errors)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Some items cannot be checked out',
+            'errors' => $errors
+        ]);
+        exit;
+    }
+    
+    // All validations passed
+    echo json_encode([
+        'success' => true,
+        'message' => 'All items validated successfully'
+    ]);
+    exit;
+}
+
 // Fetch Cart Data
 $sql = "
 SELECT 
@@ -89,7 +231,7 @@ foreach ($rows as $r) {
     } elseif ((int)$r->ProductIsAvailable !== 1) {
         $isUnavailable = true;
         $statusLabel   = 'Unavailable';
-    } elseif (!(int)$r->IsUnlimitedStock && (int)$r->Stock <= 0) {
+    } elseif ((int)$r->Stock <= 0) {
         $isUnavailable = true;
         $statusLabel   = 'Out of stock';
     }
@@ -322,4 +464,4 @@ include __DIR__ . '/../includes/header.php';
 <script src="../assets/js/cart.js"></script>
 </body>
 
-</html>
+</html> 
