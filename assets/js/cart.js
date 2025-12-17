@@ -383,13 +383,14 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDeleteSelected?.addEventListener("click", deleteSelectedItems);
 
   btnProceed?.addEventListener("click", (e) => {
-    e.preventDefault();
+   
     
     const selectedIds = Array.from(document.querySelectorAll(".order-item"))
         .filter(item => item.querySelector(".item-check")?.checked)
         .map(item => item.dataset.id);
 
     if (selectedIds.length === 0) {
+         e.preventDefault();
         showToast("Please select at least 1 item", true);
         return;
     }
