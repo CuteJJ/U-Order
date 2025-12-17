@@ -193,9 +193,10 @@ $(document).ready(function () {
         });
     }
 
-
-
     $(document).on("click", ".view-order-btn", function () {
+        lastCheckTime = Date.now();
+        localStorage.setItem("notif_last_seen", lastCheckTime);
+
         const orderId = $(this).closest(".notif-card").data("order-id");
         $(`.notif-card[data-order-id="${orderId}"]`).removeClass("new-notification");
     });

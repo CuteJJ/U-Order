@@ -85,13 +85,30 @@ function refreshProceedButtonState() {
 // ==================== Sync Qty to server ====================
 async function syncToServer(cartItemId, newQty) {
     try {
-        await fetch("../cart/cartquant.php", {
+        const res = await fetch("../cart/cartquant.php", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: `cartItemId=${encodeURIComponent(cartItemId)}&newQty=${encodeURIComponent(newQty)}`
         });
+
+        const data = await res.json();
+        
+        if (!data.success) {
+            showToast(data.message || "Failed to update quantity", true);
+            
+            // Reload to sync with server state
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
+            return false;
+        }
+        
+        return true;
     } catch (err) {
         console.error(err);
+        showToast("Error updating quantity", true);
+        return false;
     }
 }
 
@@ -196,12 +213,30 @@ async function deleteSelectedItems() {
     const ok = await showConfirm(`Delete ${selectedItems.length} item(s)?`);
     if (!ok) return;
 
-    selectedItems.forEach(item => {
+    for (const item of selectedItems) {
         const cartItemId = item.dataset.id;
-        removeItem(cartItemId, item, { silent: true });
-    });
+        await removeItem(cartItemId, item, { silent: true });
+    }
 
     showToast(`${selectedItems.length} item(s) removed`, false);
+}
+
+// ==================== Validate Checkout ====================
+async function validateCheckout(selectedIds) {
+    try {
+        // FIXED: Use correct relative path to cart.php
+        const res = await fetch("cart.php?action=validate_checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cartItemIds: selectedIds })
+        });
+        
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error("Validation error:", err);
+        return { success: false, message: "Validation failed. Please try again." };
+    }
 }
 
 // ==================== Smart Polling ====================
@@ -258,6 +293,22 @@ async function pollCartStatus() {
 
             if (stockChanged) {
                 item.dataset.stock = status.stock;
+                
+                // Check if current quantity exceeds new stock
+                const currentQty = parseInt(item.querySelector(".qty-value").textContent);
+                const isUnlimited = parseInt(item.dataset.unlimited) === 1;
+                
+                if (!isUnlimited && currentQty > status.stock) {
+                    // Auto-adjust to max stock
+                    item.querySelector(".qty-value").textContent = status.stock;
+                    const subValEl = item.querySelector(".sub-val");
+                    if (subValEl) {
+                        const unitPrice = parseFloat(item.dataset.unitPrice);
+                        subValEl.textContent = (status.stock * unitPrice).toFixed(2);
+                    }
+                    syncToServer(status.cartItemId, status.stock);
+                    showToast(`Quantity adjusted to available stock (${status.stock})`, true);
+                }
             }
 
             if (availabilityChanged) {
@@ -342,14 +393,27 @@ function handleCartClick(e) {
     }
 
     // Quantity change
-    if (item.dataset.unavailable === "1") return;
+    if (item.dataset.unavailable === "1") {
+        showToast("This item is unavailable", true);
+        return;
+    }
 
     let qty = parseInt(qtyElem.textContent, 10) || 0;
+    const isUnlimited = parseInt(item.dataset.unlimited) === 1;
+    const stock = parseInt(item.dataset.stock);
 
     if (plusBtn) {
+        // Check stock limit before increasing
+        if (!isUnlimited && qty >= stock) {
+            showToast(`Maximum stock available: ${stock}`, true);
+            return;
+        }
         qty++;
     } else if (minusBtn) {
-        if (qty <= 1) return;
+        if (qty <= 1) {
+            showToast("Minimum quantity is 1", true);
+            return;
+        }
         qty--;
     }
 
@@ -374,34 +438,75 @@ function handleCartChange(e) {
 document.addEventListener("DOMContentLoaded", () => {
     const orderMain = document.querySelector(".order-main");
     const btnDeleteSelected = document.getElementById("btnDeleteSelected");
-    const btnProceed = document.getElementById("btnProceed");
+    const checkoutForm = document.getElementById("checkoutForm");
 
-    // 事件代理：整块 order-main 只绑一次
+    // Event delegation
     orderMain?.addEventListener("click", handleCartClick);
     orderMain?.addEventListener("change", handleCartChange);
 
     btnDeleteSelected?.addEventListener("click", deleteSelectedItems);
 
-  btnProceed?.addEventListener("click", (e) => {
-    const selectedIds = Array.from(document.querySelectorAll(".order-item"))
-        .filter(item => item.querySelector(".item-check")?.checked)
-        .map(item => item.dataset.id);
+    // Checkout validation
+    checkoutForm?.addEventListener("submit", async (e) => {
+        e.preventDefault(); // Always prevent default to validate first
 
-    if (selectedIds.length === 0) {
-        showToast("Please select at least 1 item", true);
-        return;
-    }
+        const btnProceed = document.getElementById("btnProceed");
 
-    // redirect with selected cartItemIds
-    const params = selectedIds.join(",");
-    window.location.href = `../pages/payment.php?items=${params}`;
-});
+        // Get selected items
+        const selectedItems = Array.from(document.querySelectorAll(".order-item"))
+            .filter(item => item.querySelector(".item-check")?.checked);
 
-    // 初始计算
+        const selectedIds = selectedItems.map(item => item.dataset.id);
+
+        // Validation 1: Check if any items selected
+        if (selectedIds.length === 0) {
+            showToast("Please select at least 1 item", true);
+            return;
+        }
+
+        // Validation 2: Check for unavailable items in selection
+        const hasUnavailable = selectedItems.some(item => item.dataset.unavailable === "1");
+        if (hasUnavailable) {
+            showToast("Please remove unavailable items before checkout", true);
+            return;
+        }
+
+        // Validation 3: Server-side validation
+        btnProceed.disabled = true;
+        const originalText = btnProceed.textContent;
+        btnProceed.textContent = "Validating...";
+
+        const validation = await validateCheckout(selectedIds);
+
+        if (!validation.success) {
+            btnProceed.disabled = false;
+            btnProceed.textContent = originalText;
+
+            // Show specific error message
+            if (validation.errors && validation.errors.length > 0) {
+                const firstError = validation.errors[0];
+                showToast(firstError.message, true);
+
+                // Refresh page to update UI with latest data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showToast(validation.message || "Validation failed", true);
+            }
+            return;
+        }
+
+        // All validations passed - submit the form
+        btnProceed.textContent = "Processing...";
+        checkoutForm.submit();
+    });
+
+    // Initial calculations
     recalcSummary();
     refreshProceedButtonState();
 
-    // 启动轮询
+    // Start polling
     startPolling();
 
     document.addEventListener("visibilitychange", () => {

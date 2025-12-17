@@ -201,9 +201,6 @@ $recentOrders = $stmtRecent->fetchAll(PDO::FETCH_OBJ);
                 <span style="margin-right: 15px; font-weight: 600;">
                     Hi, <?= htmlspecialchars($_SESSION['name']); ?>
                 </span>
-                <a href="logout.php" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">
-                    Logout
-                </a>
             </div>
         </div>
 
@@ -230,7 +227,9 @@ $recentOrders = $stmtRecent->fetchAll(PDO::FETCH_OBJ);
 
             <div class="card" style="min-height: 340px;">
                 <h4 style="margin-bottom:16px;">Sales by Food Item</h4>
-                <canvas id="foodChart"></canvas>
+                <div style="height: 300px; display:flex; justify-content:center;">
+                    <canvas id="foodChart"></canvas>
+                </div>
             </div>
 
             <div class="card" style="display:flex; flex-direction:column; gap:12px;">
