@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Dec 16, 2025 at 08:53 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- 主机： 127.0.0.1
+-- 生成日期： 2025-12-18 07:29:22
+-- 服务器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `canteen`
+-- 数据库： `canteen`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `cartitems`
+-- 表的结构 `cartitems`
 --
 
 CREATE TABLE `cartitems` (
@@ -37,7 +37,7 @@ CREATE TABLE `cartitems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `cartitems`
+-- 转存表中的数据 `cartitems`
 --
 
 INSERT INTO `cartitems` (`CartItemId`, `CartId`, `ProductId`, `Quantity`, `Note`, `PickupTime`) VALUES
@@ -47,7 +47,7 @@ INSERT INTO `cartitems` (`CartItemId`, `CartId`, `ProductId`, `Quantity`, `Note`
 -- --------------------------------------------------------
 
 --
--- Table structure for table `carts`
+-- 表的结构 `carts`
 --
 
 CREATE TABLE `carts` (
@@ -56,7 +56,7 @@ CREATE TABLE `carts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `carts`
+-- 转存表中的数据 `carts`
 --
 
 INSERT INTO `carts` (`CartId`, `UserId`) VALUES
@@ -70,7 +70,7 @@ INSERT INTO `carts` (`CartId`, `UserId`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categories`
+-- 表的结构 `categories`
 --
 
 CREATE TABLE `categories` (
@@ -80,7 +80,7 @@ CREATE TABLE `categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `categories`
+-- 转存表中的数据 `categories`
 --
 
 INSERT INTO `categories` (`CategoryId`, `CategoryName`, `CategoryLogo`) VALUES
@@ -95,12 +95,13 @@ INSERT INTO `categories` (`CategoryId`, `CategoryName`, `CategoryLogo`) VALUES
 (10, 'Snack', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxnIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+CgkJPHBhdGggZD0ibTEyLjU5NCAyMy4yNThsLS4wMTIuMDAybC0uMDcxLjAzNWwtLjAyLjAwNGwtLjAxNC0uMDA0bC0uMDcxLS4wMzZxLS4wMTYtLjAwNC0uMDI0LjAwNmwtLjAwNC4wMWwtLjAxNy40MjhsLjAwNS4wMmwuMDEuMDEzbC4xMDQuMDc0bC4wMTUuMDA0bC4wMTItLjAwNGwuMTA0LS4wNzRsLjAxMi0uMDE2bC4wMDQtLjAxN2wtLjAxNy0uNDI3cS0uMDA0LS4wMTYtLjAxNi0uMDE4bS4yNjQtLjExM2wtLjAxNC4wMDJsLS4xODQuMDkzbC0uMDEuMDFsLS4wMDMuMDExbC4wMTguNDNsLjAwNS4wMTJsLjAwOC4wMDhsLjIwMS4wOTJxLjAxOS4wMDUuMDI5LS4wMDhsLjAwNC0uMDE0bC0uMDM0LS42MTRxLS4wMDUtLjAxOS0uMDItLjAyMm0tLjcxNS4wMDJhLjAyLjAyIDAgMCAwLS4wMjcuMDA2bC0uMDA2LjAxNGwtLjAzNC42MTRxLjAwMS4wMTguMDE3LjAyNGwuMDE1LS4wMDJsLjIwMS0uMDkzbC4wMS0uMDA4bC4wMDMtLjAxMWwuMDE4LS40M2wtLjAwMy0uMDEybC0uMDEtLjAxeiIgLz4KCQk8cGF0aCBmaWxsPSIjMDAwIiBkPSJNMTQgMmEyIDIgMCAwIDEgMiAyaDFhMiAyIDAgMCAxIDIgMnYzLjAwM2EyIDIgMCAwIDEgMS44ODUgMi4xOTZsLS43MSA3LjFBMyAzIDAgMCAxIDE3LjE5IDIxSDYuODFhMyAzIDAgMCAxLTIuOTg1LTIuNzAxbC0uNzEtNy4xQTIgMiAwIDAgMSA1IDkuMDAzVjVhMiAyIDAgMCAxIDItMmgxYTIgMiAwIDAgMSAyIDJoMVY0YTIgMiAwIDAgMSAyLTJ6bS03LjI0IDlINS4xMDVsLjcxIDcuMWwuMDE5LjExNWExIDEgMCAwIDAgLjg2Ljc3OEw2LjgxIDE5aDEwLjM4bC4xMTctLjAwN2ExIDEgMCAwIDAgLjg2LS43NzhsLjAxOC0uMTE2bC43MS03LjA5OUgxNy4yNGwtLjAxOS4wMWEuMy4zIDAgMCAwLS4wODEuMDg4QTYgNiAwIDAgMSAxMiAxNGE2IDYgMCAwIDEtNS4xNC0yLjkwMmEuMy4zIDAgMCAwLS4wOC0uMDg5ek0xNCA0aC0xdjcuODc0bC4yNjItLjA3N3EuMjYtLjA4Ni41MDEtLjIwNWwuMjM3LS4xMjd6bS0zIDNoLTF2NC40NjVsLjIzNy4xMjdxLjI0Mi4xMTkuNS4yMDVsLjI2My4wNzd6bTYtMWgtMXYzLjQyNWwuMTQ1LS4xMDFjLjE5OS0uMTI4LjQyMy0uMjI1LjY2OC0uMjc4TDE3IDkuMDE0ek04IDVIN3Y0LjAxNGMuMzE5LjAzOC42MDcuMTUuODU1LjMxTDggOS40MjV6IiAvPgoJPC9nPgo8L3N2Zz4='),
 (11, 'Salad', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjIiPgoJCTxwYXRoIGQ9Ik03IDIxaDEwbS01IDBhOSA5IDAgMCAwIDktOUgzYTkgOSAwIDAgMCA5IDkiIC8+CgkJPHBhdGggZD0iTTExLjM4IDEyYTIuNCAyLjQgMCAwIDEtLjQtNC43N2EyLjQgMi40IDAgMCAxIDMuMi0yLjc3YTIuNCAyLjQgMCAwIDEgMy40Ny0uNjNhMi40IDIuNCAwIDAgMSAzLjM3IDMuMzdhMi40IDIuNCAwIDAgMS0xLjEgMy43YTIuNSAyLjUgMCAwIDEgLjAzIDEuMU0xMyAxMmw0LTQiIC8+CgkJPHBhdGggZD0iTTEwLjkgNy4yNUEzLjk5IDMuOTkgMCAwIDAgNCAxMGMwIC43My4yIDEuNDEuNTQgMiIgLz4KCTwvZz4KPC9zdmc+'),
 (12, 'Western', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9IiMwMDAiIGQ9Ik0xMS4xNTEgNC40OTNBLjc1Ljc1IDAgMCAxIDExLjg1NiA0aDIuNDFhLjc1Ljc1IDAgMSAwIDAtMS41aC0yLjQxYTIuMjUgMi4yNSAwIDAgMC0yLjExNCAxLjQ4bC0uNzU5IDIuMDgzSDRhLjc1Ljc1IDAgMCAwLS43NDYuODIzbDEuMTY0IDExLjgzNmEyLjI1IDIuMjUgMCAwIDAgMi4yMzkgMi4wM2gyLjY0MWEyLjMgMi4zIDAgMCAxLS4xMjktLjc1NHYtLjc0Nkg2LjY1N2EuNzUuNzUgMCAwIDEtLjc0Ni0uNjc3TDQuODI3IDcuNTYzSDE0LjJsLS4zNTcgMy42MjVoMS41MDdsLjQyMy00LjMwMmEuNzUuNzUgMCAwIDAtLjc0Ni0uODI0SDEwLjU4eiIgLz4KCTxwYXRoIGZpbGw9IiMwMDAiIGQ9Ik0xMi45MTkgMTIuNjg5YTIuMjUgMi4yNSAwIDAgMC0yLjI1IDIuMjV2MS4wMzNhLjc1Ljc1IDAgMCAwIDAgMS40OTJ2Mi41MzVjMCAuNDE0LjMzNi43NS43NS43NWg3LjkxYS43NS43NSAwIDAgMCAuNzUtLjc1di0yLjUzNWEuNzUuNzUgMCAwIDAgMC0xLjQ5MlYxNC45NGEyLjI1IDIuMjUgMCAwIDAtMi4yNS0yLjI1em01LjY2IDMuMjc5aC02LjQxdi0xLjAzYS43NS43NSAwIDAgMSAuNzUtLjc1aDQuOTFhLjc1Ljc1IDAgMCAxIC43NS43NXptLTYuNDEgMS41aDEuMTg5bC43ODEuNzhhLjc1Ljc1IDAgMCAwIDEuMDYgMGwuNzgxLS43OGgyLjZ2MS43OGgtNi40MTF6IiAvPgo8L3N2Zz4='),
-(13, 'Japanese', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+CgkJPHBhdGggZD0iTTIwLjI1IDE0LjV2Mi43NWEzIDMgMCAwIDEtMyAzSDYuNzVhMyAzIDAgMCAxLTMtM1YxNC41IiAvPgoJCTxwYXRoIGQ9Ik0xMiAxMS4yNWExMS43NCAxMS43NCAwIDAgMSA4LjY0NyAzLjY1OGExLjUgMS41IDAgMCAwIDIuNi0xLjAxNHYtLjAxOUMyMy4yNSA4LjI4MyAxOC4yMTMgMy43NSAxMiAzLjc1Uy43NSA4LjI4My43NSAxMy44NzV2LjAxOWExLjUgMS41IDAgMCAwIDIuNiAxLjAxNEExMS43NCAxMS43NCAwIDAgMSAxMiAxMS4yNW0tNy4yOCAyLjQxMWw0LjAxLTkuNDc3bTMuMDEgNy4wNjZsMy4wNDItNy4xODhtMi43MjcgOC40ODZsMi40NjEtNS44MTkiIC8+Cgk8L2c+Cjwvc3ZnPg==');
+(13, 'Japanese', 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEuNSI+CgkJPHBhdGggZD0iTTIwLjI1IDE0LjV2Mi43NWEzIDMgMCAwIDEtMyAzSDYuNzVhMyAzIDAgMCAxLTMtM1YxNC41IiAvPgoJCTxwYXRoIGQ9Ik0xMiAxMS4yNWExMS43NCAxMS43NCAwIDAgMSA4LjY0NyAzLjY1OGExLjUgMS41IDAgMCAwIDIuNi0xLjAxNHYtLjAxOUMyMy4yNSA4LjI4MyAxOC4yMTMgMy43NSAxMiAzLjc1Uy43NSA4LjI4My43NSAxMy44NzV2LjAxOWExLjUgMS41IDAgMCAwIDIuNiAxLjAxNEExMS43NCAxMS43NCAwIDAgMSAxMiAxMS4yNW0tNy4yOCAyLjQxMWw0LjAxLTkuNDc3bTMuMDEgNy4wNjZsMy4wNDItNy4xODhtMi43MjcgOC40ODZsMi40NjEtNS44MTkiIC8+Cgk8L2c+Cjwvc3ZnPg=='),
+(14, 'Burger', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orderitems`
+-- 表的结构 `orderitems`
 --
 
 CREATE TABLE `orderitems` (
@@ -115,7 +116,7 @@ CREATE TABLE `orderitems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `orderitems`
+-- 转存表中的数据 `orderitems`
 --
 
 INSERT INTO `orderitems` (`OrderListId`, `OrderId`, `ProductId`, `Quantity`, `Subtotal`, `Note`, `PickupTime`, `Status`) VALUES
@@ -130,17 +131,34 @@ INSERT INTO `orderitems` (`OrderListId`, `OrderId`, `ProductId`, `Quantity`, `Su
 (57, 56, 2, 1, 3.50, '', '2025-12-14 22:05:00', 'complete'),
 (58, 57, 3, 1, 5.00, '', '2025-12-14 22:05:00', 'complete'),
 (59, 58, 2, 1, 3.50, '', '2025-12-15 00:40:00', 'complete'),
-(60, 59, 12, 1, 4.00, '', '2025-12-15 00:45:00', 'pending'),
-(61, 60, 1, 1, 6.00, '', '2025-12-15 01:15:00', 'pending'),
-(62, 61, 3, 1, 5.00, '', '2025-12-15 01:15:00', 'pending'),
-(63, 62, 3, 1, 5.00, '', '2025-12-15 01:20:00', 'pending'),
-(64, 63, 1, 1, 6.00, '', '2025-12-16 14:40:00', 'pending'),
-(65, 64, 2, 1, 3.50, '', '2025-12-16 14:40:00', 'pending');
+(60, 59, 12, 1, 4.00, '', '2025-12-15 00:45:00', 'ready'),
+(61, 60, 1, 1, 6.00, '', '2025-12-15 01:15:00', 'ready'),
+(62, 61, 3, 1, 5.00, '', '2025-12-15 01:15:00', 'ready'),
+(63, 62, 3, 1, 5.00, '', '2025-12-15 01:20:00', 'ready'),
+(64, 63, 1, 1, 6.00, '', '2025-12-16 14:40:00', 'ready'),
+(65, 64, 2, 1, 3.50, '', '2025-12-16 14:40:00', 'ready'),
+(66, 65, 16, 1, 8.00, '', '2025-12-16 16:25:00', 'complete'),
+(67, 66, 13, 1, 5.00, '', '2025-12-16 16:25:00', 'complete'),
+(68, 66, 15, 1, 4.20, '', '2025-12-16 16:25:00', 'complete'),
+(69, 67, 25, 1, 6.90, '', '2025-12-16 17:15:00', 'complete'),
+(70, 67, 21, 1, 12.50, '', '2025-12-16 17:15:00', 'complete'),
+(71, 68, 25, 1, 6.90, '', '2025-12-16 18:00:00', 'ready'),
+(72, 69, 1, 1, 6.00, '', '2025-12-16 18:00:00', 'pending'),
+(73, 70, 2, 1, 3.50, '', '2025-12-17 09:35:00', 'pending'),
+(74, 70, 3, 1, 5.00, '', '2025-12-17 09:35:00', 'pending'),
+(75, 71, 24, 1, 15.90, '', '2025-12-17 15:05:00', 'complete'),
+(76, 72, 25, 1, 6.90, '', '2025-12-17 15:05:00', 'pending'),
+(77, 73, 16, 1, 8.00, '', '2025-12-17 16:30:00', 'pending'),
+(78, 74, 12, 1, 4.00, '', '2025-12-17 15:55:00', 'pending'),
+(79, 75, 3, 1, 5.00, '', '2025-12-17 16:05:00', 'pending'),
+(80, 76, 3, 1, 5.00, '', '2025-12-17 16:05:00', 'pending'),
+(81, 77, 2, 1, 3.50, '', '2025-12-17 16:50:00', 'pending'),
+(82, 78, 26, 1, 6.90, '', '2025-12-17 17:10:00', 'pending');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orders`
+-- 表的结构 `orders`
 --
 
 CREATE TABLE `orders` (
@@ -154,7 +172,7 @@ CREATE TABLE `orders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `orders`
+-- 转存表中的数据 `orders`
 --
 
 INSERT INTO `orders` (`OrderId`, `PaymentId`, `UserId`, `StallId`, `Status`, `Notes`, `CreatedAt`) VALUES
@@ -170,14 +188,14 @@ INSERT INTO `orders` (`OrderId`, `PaymentId`, `UserId`, `StallId`, `Status`, `No
 (20, 15, 2407502, 1, 'pending', '', '2025-12-05 13:31:33'),
 (21, 16, 2407502, 2, '', '', '2025-12-05 13:37:18'),
 (22, 17, 2407502, 2, '', '', '2025-12-05 13:47:31'),
-(23, 18, 2407502, 2, 'ready', '', '2025-12-05 21:23:24'),
+(23, 18, 2407502, 2, 'complete', '', '2025-12-05 21:23:24'),
 (24, 19, 2407502, 1, 'pending', '', '2025-12-05 21:31:59'),
 (25, 20, 2407502, 1, 'pending', '', '2025-12-05 21:37:17'),
 (26, 20, 2407502, 2, 'ready', '', '2025-12-05 21:37:17'),
 (27, 21, 2407502, 1, 'pending', '', '2025-12-05 21:40:01'),
 (28, 22, 2407502, 1, 'pending', '', '2025-12-05 22:11:41'),
-(29, 22, 2407502, 2, 'ready', '', '2025-12-05 22:11:41'),
-(30, 23, 2407502, 2, 'ready', '', '2025-12-05 22:12:56'),
+(29, 22, 2407502, 2, 'complete', '', '2025-12-05 22:11:41'),
+(30, 23, 2407502, 2, 'complete', '', '2025-12-05 22:12:56'),
 (31, 24, 2407502, 2, 'complete', '', '2025-12-08 13:55:09'),
 (32, 25, 2407123, 1, 'pending', '', '2025-12-08 13:58:28'),
 (33, 25, 2407123, 2, 'ready', '', '2025-12-08 13:58:28'),
@@ -186,8 +204,8 @@ INSERT INTO `orders` (`OrderId`, `PaymentId`, `UserId`, `StallId`, `Status`, `No
 (36, 27, 2407502, 3, 'pending', '', '2025-12-08 18:39:02'),
 (37, 28, 2407502, 1, 'pending', '', '2025-12-08 18:45:15'),
 (38, 28, 2407502, 1, 'pending', '', '2025-12-08 18:45:15'),
-(39, 29, 2407502, 2, 'ready', '', '2025-12-08 18:46:57'),
-(40, 30, 2407502, 2, 'ready', '', '2025-12-08 18:51:30'),
+(39, 29, 2407502, 2, 'complete', '', '2025-12-08 18:46:57'),
+(40, 30, 2407502, 2, 'complete', '', '2025-12-08 18:51:30'),
 (41, 30, 2407502, 2, 'complete', '', '2025-12-08 18:51:30'),
 (42, 31, 2407502, 1, 'pending', '', '2025-12-10 09:41:34'),
 (43, 32, 2407502, 2, 'complete', '', '2025-12-10 09:44:31'),
@@ -206,17 +224,31 @@ INSERT INTO `orders` (`OrderId`, `PaymentId`, `UserId`, `StallId`, `Status`, `No
 (56, 44, 90807, 2, 'complete', '', '2025-12-14 21:47:19'),
 (57, 45, 90807, 2, 'complete', '', '2025-12-14 21:49:16'),
 (58, 46, 90807, 2, 'complete', '', '2025-12-15 00:22:02'),
-(59, 47, 90807, 2, 'pending', '', '2025-12-15 00:52:29'),
-(60, 48, 90807, 1, 'pending', '', '2025-12-15 00:57:39'),
-(61, 49, 90807, 2, 'pending', '', '2025-12-15 00:59:52'),
-(62, 50, 6, 2, 'pending', '', '2025-12-15 01:03:33'),
-(63, 51, 2410038, 1, 'pending', '', '2025-12-16 14:22:23'),
-(64, 52, 2410038, 2, 'pending', '', '2025-12-16 15:31:56');
+(59, 47, 90807, 2, 'ready', '', '2025-12-15 00:52:29'),
+(60, 48, 90807, 1, 'ready', '', '2025-12-15 00:57:39'),
+(61, 49, 90807, 2, 'ready', '', '2025-12-15 00:59:52'),
+(62, 50, 6, 2, 'ready', '', '2025-12-15 01:03:33'),
+(63, 51, 2410038, 1, 'ready', '', '2025-12-16 14:22:23'),
+(64, 52, 2410038, 2, 'ready', '', '2025-12-16 15:31:56'),
+(65, 53, 2407502, 3, 'complete', '', '2025-12-16 16:06:19'),
+(66, 54, 2407502, 2, 'complete', '', '2025-12-16 16:06:53'),
+(67, 55, 2407502, 5, 'complete', '', '2025-12-16 16:55:49'),
+(68, 56, 2407123, 5, 'ready', '', '2025-12-16 17:52:19'),
+(69, 56, 2407123, 1, 'pending', '', '2025-12-16 17:52:19'),
+(70, 57, 2407502, 2, 'pending', '', '2025-12-17 10:06:56'),
+(71, 58, 2407502, 5, 'complete', '', '2025-12-17 14:48:23'),
+(72, 59, 2407502, 5, 'pending', '', '2025-12-17 14:51:54'),
+(73, 60, 2407502, 3, 'pending', '', '2025-12-17 14:55:48'),
+(74, 61, 2407502, 2, 'pending', '', '2025-12-17 15:47:21'),
+(75, 62, 2407502, 2, 'pending', '', '2025-12-17 15:51:43'),
+(76, 63, 2407123, 2, 'pending', '', '2025-12-17 16:30:31'),
+(77, 64, 2407123, 2, 'pending', '', '2025-12-17 16:48:56'),
+(78, 65, 2407123, 5, 'pending', '', '2025-12-17 16:51:19');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `passwordresets`
+-- 表的结构 `passwordresets`
 --
 
 CREATE TABLE `passwordresets` (
@@ -227,7 +259,7 @@ CREATE TABLE `passwordresets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
--- Dumping data for table `passwordresets`
+-- 转存表中的数据 `passwordresets`
 --
 
 INSERT INTO `passwordresets` (`ResetId`, `UserId`, `Token`, `ExpiresAt`) VALUES
@@ -237,7 +269,7 @@ INSERT INTO `passwordresets` (`ResetId`, `UserId`, `Token`, `ExpiresAt`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `payments`
+-- 表的结构 `payments`
 --
 
 CREATE TABLE `payments` (
@@ -250,7 +282,7 @@ CREATE TABLE `payments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `payments`
+-- 转存表中的数据 `payments`
 --
 
 INSERT INTO `payments` (`PaymentId`, `UserId`, `TotalAmount`, `Status`, `PaymentMethod`, `CreatedAt`) VALUES
@@ -295,17 +327,30 @@ INSERT INTO `payments` (`PaymentId`, `UserId`, `TotalAmount`, `Status`, `Payment
 (44, 90807, 3.50, 'paid', 'cash', '2025-12-14 21:47:19'),
 (45, 90807, 5.00, 'paid', 'cash', '2025-12-14 21:49:16'),
 (46, 90807, 3.50, 'paid', 'cash', '2025-12-15 00:22:02'),
-(47, 90807, 4.00, 'pending', 'cash', '2025-12-15 00:52:29'),
-(48, 90807, 6.00, 'pending', 'cash', '2025-12-15 00:57:39'),
-(49, 90807, 5.00, 'pending', 'cash', '2025-12-15 00:59:52'),
-(50, 6, 5.00, 'pending', 'cash', '2025-12-15 01:03:33'),
-(51, 2410038, 6.00, 'pending', 'cash', '2025-12-16 14:22:23'),
-(52, 2410038, 3.50, 'paid', 'e-wallet', '2025-12-16 15:31:56');
+(47, 90807, 4.00, 'paid', 'cash', '2025-12-15 00:52:29'),
+(48, 90807, 6.00, 'paid', 'cash', '2025-12-15 00:57:39'),
+(49, 90807, 5.00, 'paid', 'cash', '2025-12-15 00:59:52'),
+(50, 6, 5.00, 'paid', 'cash', '2025-12-15 01:03:33'),
+(51, 2410038, 6.00, 'paid', 'cash', '2025-12-16 14:22:23'),
+(52, 2410038, 3.50, 'paid', 'e-wallet', '2025-12-16 15:31:56'),
+(53, 2407502, 8.00, 'paid', 'cash', '2025-12-16 16:06:19'),
+(54, 2407502, 9.20, 'paid', 'e-wallet', '2025-12-16 16:06:53'),
+(55, 2407502, 19.40, 'paid', 'card', '2025-12-16 16:55:49'),
+(56, 2407123, 12.90, 'paid', 'card', '2025-12-16 17:52:19'),
+(57, 2407502, 8.50, 'paid', 'card', '2025-12-17 10:06:56'),
+(58, 2407502, 15.90, 'paid', 'e-wallet', '2025-12-17 14:48:23'),
+(59, 2407502, 6.90, 'pending', 'cash', '2025-12-17 14:51:54'),
+(60, 2407502, 8.00, 'paid', 'card', '2025-12-17 14:55:48'),
+(61, 2407502, 4.00, 'paid', 'card', '2025-12-17 15:47:21'),
+(62, 2407502, 5.00, 'paid', 'card', '2025-12-17 15:51:43'),
+(63, 2407123, 5.00, 'paid', 'e-wallet', '2025-12-17 16:30:31'),
+(64, 2407123, 3.50, 'pending', 'cash', '2025-12-17 16:48:56'),
+(65, 2407123, 6.90, 'pending', 'cash', '2025-12-17 16:51:19');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `productimages`
+-- 表的结构 `productimages`
 --
 
 CREATE TABLE `productimages` (
@@ -315,7 +360,7 @@ CREATE TABLE `productimages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `productimages`
+-- 转存表中的数据 `productimages`
 --
 
 INSERT INTO `productimages` (`ImageId`, `ProductId`, `ImageURL`) VALUES
@@ -340,12 +385,58 @@ INSERT INTO `productimages` (`ImageId`, `ProductId`, `ImageURL`) VALUES
 (31, 7, '../assets/images/products/prod_1765725566_8953_0.jpg'),
 (32, 1, '../assets/images/products/chicken_rice_1.jpg'),
 (33, 1, '../assets/images/products/chicken_rice_2.jpg'),
-(34, 16, 'https://cf.shopee.com.my/file/33bf83ce5c3d8e0aff26982faa4e1421');
+(34, 16, 'https://cf.shopee.com.my/file/33bf83ce5c3d8e0aff26982faa4e1421'),
+(35, 19, '../assets/images/products/prod_1765871853_9292_0.webp'),
+(36, 20, '../assets/images/products/prod_1765873532_4421_0.png'),
+(39, 22, '../assets/images/products/prod_1765873945_1445_0.png'),
+(40, 21, '../assets/images/products/prod_1765874005_9800_0.png'),
+(41, 23, '../assets/images/products/prod_1765874056_6597_0.png'),
+(42, 24, '../assets/images/products/prod_1765874242_4568_0.png'),
+(43, 25, '../assets/images/products/prod_1765874453_4032_0.png'),
+(44, 26, '../assets/images/products/prod_1765874685_4437_0.png'),
+(45, 27, '../assets/images/products/prod_1765874707_6727_0.png'),
+(46, 28, '../assets/images/products/prod_1765874751_6013_0.png'),
+(48, 30, '../assets/images/products/prod_1765993764_6319_0.png'),
+(49, 31, '../assets/images/products/prod_1765993879_5132_0.png'),
+(50, 32, '../assets/images/products/prod_1765993953_5499_0.png'),
+(51, 33, '../assets/images/products/prod_1765994010_1443_0.png'),
+(52, 34, '../assets/images/products/prod_1765994048_3641_0.jpg'),
+(53, 35, '../assets/images/products/prod_1765994107_5310_0.png'),
+(54, 36, '../assets/images/products/prod_1765994169_7054_0.png'),
+(55, 37, '../assets/images/products/prod_1765994218_8350_0.png'),
+(56, 38, '../assets/images/products/prod_1765994267_4776_0.jpg'),
+(57, 39, '../assets/images/products/prod_1765994302_8742_0.png'),
+(58, 40, '../assets/images/products/prod_1765994336_9755_0.png'),
+(59, 41, '../assets/images/products/prod_1765994385_3131_0.png'),
+(60, 42, '../assets/images/products/prod_1765994512_6056_0.png'),
+(61, 43, '../assets/images/products/prod_1765994561_4373_0.png'),
+(62, 44, '../assets/images/products/prod_1765994987_4427_0.png'),
+(63, 45, '../assets/images/products/prod_1765995053_4735_0.png'),
+(64, 46, '../assets/images/products/prod_1765995493_6063_0.jpg'),
+(65, 47, '../assets/images/products/prod_1765995540_3894_0.jpg'),
+(66, 48, '../assets/images/products/prod_1765995580_5824_0.jpg'),
+(67, 49, '../assets/images/products/prod_1765995627_6233_0.jpg'),
+(68, 50, '../assets/images/products/prod_1765995680_1116_0.jpg'),
+(69, 51, '../assets/images/products/prod_1765995751_6281_0.jpg'),
+(70, 52, '../assets/images/products/prod_1765995836_7638_0.jpg'),
+(71, 53, '../assets/images/products/prod_1765995901_1710_0.jpg'),
+(72, 54, '../assets/images/products/prod_1765995982_9769_0.jpg'),
+(73, 55, '../assets/images/products/prod_1765996139_1362_0.png'),
+(74, 56, '../assets/images/products/prod_1765996269_8158_0.webp'),
+(75, 57, '../assets/images/products/prod_1765996492_9803_0.webp'),
+(76, 58, '../assets/images/products/prod_1765997012_2339_0.jpeg'),
+(77, 59, '../assets/images/products/prod_1765998185_3855_0.jpg'),
+(78, 60, '../assets/images/products/prod_1765998212_5365_0.jpg'),
+(79, 61, '../assets/images/products/prod_1765998259_3677_0.jpg'),
+(80, 62, '../assets/images/products/prod_1765998313_4713_0.jpg'),
+(81, 63, '../assets/images/products/prod_1765998381_5781_0.jpg'),
+(82, 64, '../assets/images/products/prod_1765998446_5539_0.jpg'),
+(83, 65, '../assets/images/products/prod_1765998531_1693_0.jpg');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `products`
+-- 表的结构 `products`
 --
 
 CREATE TABLE `products` (
@@ -361,13 +452,13 @@ CREATE TABLE `products` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `products`
+-- 转存表中的数据 `products`
 --
 
 INSERT INTO `products` (`ProductId`, `StallId`, `CategoryId`, `ProductName`, `Description`, `UnitPrice`, `IsAvailable`, `IsUnlimitedStock`, `Stock`) VALUES
-(1, 1, 1, 'Chicken Rice', 'Poached chicken with fragrant rice', 6.00, 1, 0, 42),
+(1, 1, 1, 'Chicken Rice', 'Poached chicken with fragrant rice', 6.00, 1, 0, 41),
 (2, 2, 2, 'Iced Tea', 'Chilled tea (no sugar by default)', 3.50, 1, 1, 50),
-(3, 2, 3, 'Waffle', 'Crispy waffle with maple syrup', 5.00, 1, 0, 3),
+(3, 2, 3, 'Waffle', 'Crispy waffle with maple syrup', 5.00, 1, 0, 0),
 (4, 2, 2, 'Lemon Tea', 'Freshly brewed lemon tea', 3.00, 0, 1, 0),
 (5, 2, 2, 'Hot Coffee', 'Classic hot coffee', 4.00, 0, 0, 20),
 (6, 2, 2, 'Cappuccino', 'Foamy cappuccino', 5.50, 1, 0, 1),
@@ -376,16 +467,62 @@ INSERT INTO `products` (`ProductId`, `StallId`, `CategoryId`, `ProductName`, `De
 (9, 2, 3, 'Strawberry Waffle', 'Waffle with strawberry toppings', 5.80, 1, 0, 8),
 (10, 2, 3, 'Butter Waffle', 'Classic butter waffle', 4.50, 1, 0, 26),
 (11, 2, 1, 'Nasi Lemak', 'Traditional Malaysian nasi lemak', 6.50, 1, 0, 25),
-(12, 2, 1, 'Chicken Porridge', 'Comforting chicken porridge', 4.00, 1, 0, 17),
-(13, 2, 1, 'Fried Rice', 'Homestyle fried rice', 5.00, 1, 0, 21),
+(12, 2, 1, 'Chicken Porridge', 'Comforting chicken porridge', 4.00, 1, 0, 16),
+(13, 2, 1, 'Fried Rice', 'Homestyle fried rice', 5.00, 1, 0, 20),
 (14, 2, 2, 'Iced Milo', 'Popular Malaysian drink', 3.80, 1, 0, 10),
-(15, 2, 2, 'Iced Chocolate', 'Sweet iced chocolate', 4.20, 1, 0, 12),
-(16, 3, 4, 'Chilli Pan Mee', 'delicious pan mee at here', 8.00, 1, 0, 18);
+(15, 2, 2, 'Iced Chocolate', 'Sweet iced chocolate', 4.20, 1, 0, 11),
+(16, 3, 4, 'Chilli Pan Mee (辣椒板面)', 'delicious pan mee at here', 8.00, 1, 0, 16),
+(19, 2, 2, 'Mocha', 'A rich, chocolate-flavoured coffee drink made with espresso, steamed milk, and chocolate, offering a sweet, balanced taste of bitter coffee and decadent cocoa, like a chocolatey latte.', 4.50, 1, 0, 20),
+(20, 5, 2, 'Vietnamese Spanish Latté Frappé', 'The Vietnamese Spanish Latté Frappé combines the depth of Vietnamese-style coffee with the sweet, creamy profile of our Spanish Latté, creating a bold, refreshing drink that’s full of character.', 14.50, 1, 0, 20),
+(21, 5, 2, 'Matcha Strawberry Latté', 'Imagine a creamy strawberry blend kissed by the finest Niko Neko matcha… That’s our Matcha Strawberry Latté! It’s the perfect pick-me-up that will have you floating on cloud nine, latté-rally!', 12.50, 1, 0, 19),
+(22, 5, 2, 'Thunder', 'Thunder was a special concoction when our Head Barista decided that he wanted to create a refreshing coffee for hot days. Being a fan of the Classic American Lemonade, he asked himself, “Why can’t I add Coffee into this?”', 9.90, 1, 0, 20),
+(23, 5, 2, 'Pink Black', 'Pink is the new Black! Our ZUS mixologist concoted this Lychee Lemonade with Espresso especially for its attractive contrast in colour and fabulous flavour combination. It’s a must try!', 9.90, 1, 0, 20),
+(24, 5, 2, 'Ro-Ro-Rosie Frappé', 'The ultimate sweet escape! This frappé blends milk, cham, and rose into a frosty, indulgent treat topped with a swirl of cream. It’s a playful is ox floral and creamy flavours, giving you a rose-tinted bliss in every sip.', 15.90, 1, 0, 19),
+(25, 5, 2, 'Lychee Strawberry Cooler', 'When highlands berries meet lowland tropical fruit, thus the Lychee Strawberry Cooler was born! A refreshing blend of local fruits makes for the perfect combination of sweetness that is sure to refresh your day!', 6.90, 1, 0, 17),
+(26, 5, 2, 'Creamy Mango', '', 6.90, 1, 0, 19),
+(27, 5, 2, 'Tarik Milk Tea', 'Tarik Milk Tea satu! Blend the old with the new ? rich black tea, creamy cham, and a velvety touch of sweetness.', 6.90, 1, 0, 20),
+(28, 5, 2, 'Tarik Cham Latté', 'Creamy milk meets bold black tea and robust coffee. This Malaysian-style drink, finished with smooth Velvet Cremé, gives you a luxurious twist on the classic Teh Tarik. Sekali sip, memang kaw!', 6.90, 1, 0, 20),
+(30, 7, 14, 'Big Mac', 'Two all-beef patties with lettuce, onions, pickles, cheese and special sauce in a toasted sesame seed bun.', 13.80, 1, 0, 20),
+(31, 7, 10, 'French Fries', 'We only use premium Russet Burbank variety potatoes for that fluffy inside, crispy outside taste of our world-famous fries.', 6.60, 1, 1, 0),
+(32, 7, 2, 'Hot Milo', 'Chocolate malt deliciousness.', 5.70, 1, 0, 50),
+(33, 7, 3, 'Sundae Cone', 'Sometimes, a McDonald\'s® Sundae Cone is enough to make your day.', 2.60, 1, 0, 100),
+(34, 7, 2, 'Ice Blended Mocha', 'Sip on a bittersweet blend of coffee, chocolate, and steamed milk, topped with whipped cream.', 13.20, 1, 0, 20),
+(35, 7, 14, 'GCB - Grilled Chicken Burger', 'A delicious grilled chicken thigh, topped with crunchy iceberg lettuce and smoky chargrilled sauce, served in a toasted sesame seed bun', 14.00, 1, 0, 30),
+(36, 7, 14, 'Filet-O-Fish', 'A classic favourite of a fish burger served with tartar sauce and cheddar cheese in a steamed bun.', 9.90, 1, 0, 20),
+(37, 7, 8, 'Ayam Goreng McD™ (mixed)', 'Juicy and tasty!', 14.20, 1, 0, 30),
+(38, 7, 1, 'Nasi Lemak McD', '', 6.90, 1, 0, 20),
+(39, 7, 14, 'Spicy Chicken McDeluxe™', 'Specially marinated whole chicken thigh meat with a delightfully crispy coat, layered with fresh lettuce and special sauce in a corn meal bun.', 14.20, 1, 0, 20),
+(40, 7, 10, '6pcs Chicken McNuggets®', 'Crispy, boneless chicken breast and thigh meat chunks. Just the right size for a quick bite.', 9.90, 1, 0, 100),
+(41, 7, 10, 'Hash Browns', 'Bite into our scrumptious golden Hash Browns made from quality potatoes for a hearty breakfast.', 1.00, 1, 0, 50),
+(42, 7, 2, 'Coca-Cola®', 'Adds a zing to any McDonald’s meal.', 5.00, 1, 1, 0),
+(43, 7, 2, 'Iced Lemon Tea', 'Citrusy and light flavours in every sip.', 4.30, 1, 1, 0),
+(44, 7, 2, 'Iced Milo®', 'Theres nothing like an icy drink full of chocolate and malt flavours.', 5.80, 1, 1, 0),
+(45, 7, 3, 'Oreo McFlurry™', 'Indulge in our famous Sundae, whirled with bits of Oreo.', 6.40, 1, 0, 50),
+(46, 3, 4, 'Scallion Oil Noodles (葱油拌面)', 'A classic dish from Shanghai, scallion oil noodles are among the simplest dishes to make. Though you’ll be surprised by how delicious they are!', 5.50, 1, 0, 20),
+(47, 3, 4, 'Zha Jiang Mian (炸酱面)', 'Chewy noodles served with an irresistible pork sauce and crunchy vegetable toppings, Zha Jiang Mian is a signature Beijing dish that’s perfect for weekday dinners.', 6.50, 1, 0, 30),
+(48, 3, 4, 'Lanzhou beef noodle soup (兰州牛肉面)', 'Super fragrant, tangy and comforting, Lanzhou beef noodle soup is a culinary legend from the city which it’s named after. Check out this simplified version!', 13.50, 1, 0, 15),
+(49, 3, 4, 'Singapore Mei Fun (星洲米粉)', 'A hearty all-in-one dish, Singapore Mei Fun (Rice Noodles) consists of tasty proteins, crunchy vegetables and flavourful seasonings.', 6.50, 1, 0, 20),
+(50, 3, 4, 'Tomato and Egg Noodle Soup (西红柿鸡蛋面)', 'Very easy to make and tastes wonderful, tomato and egg noodle soup requires minimum ingredients and preparation. A dish everyone should learn to cook.', 7.50, 1, 0, 20),
+(51, 3, 4, 'Beef Ho Fun (干炒牛河)', 'Succulent beef slices stir fried with soft, springy rice noodles then seasoned with soy sauce, Beef Chow Fun is a classic Cantonese delicacy not to miss.', 6.50, 1, 0, 20),
+(52, 3, 4, 'Wonton Noodle Soup (广式云吞面)', 'An authentic tasting Cantonese wonton noodle soup with juicy pork and shrimp wontons, thin chewy Hong Kong noodles, and fragrant homemade chicken stock.', 7.50, 1, 0, 20),
+(53, 3, 4, 'Wonton Char Siu Noodle Soup (叉烧云吞面)', 'This easy wonton char siu noodle soup features springy egg noodles and tender leafy greens served in a hearty chicken broth, topped with scrumptious char siu pork and juicy wontons.', 10.50, 1, 0, 20),
+(54, 3, 4, 'Hokkien Prawn Mee Noodle Soup (虾面)', 'ender yellow noodles in a rich savory-sweet red-orange broth served with juicy prawns, fish cakes, crunchy bean sprouts, and crispy fried shallots.', 8.50, 1, 0, 20),
+(55, 3, 4, 'Cantonese Fried Noodle (广府炸面线)', 'Cantonese Fried Noodle is another classic noodle dish that I grew up eating. It’s saucy, crispy, umami, and of course, easy to make.', 8.00, 1, 0, 20),
+(56, 3, 4, 'Malaysian Yin Yong (鸳鸯)', 'Yin Yong is a commonly found Malaysian Cantonese dish made from deep fried rice vermicelli and flat rice noodles, cooked with slices of pork, fish, squid, prawns, cabbage, and choy sum in an egg sauce.', 9.00, 1, 0, 20),
+(57, 3, 4, 'Cantonese Yee Mee (广府伊面)', 'This is a Yi Mein (yee mee / 伊面) recipe that is popular among the Chinese in Malaysia. Very flavorful, the deep-fried Yi Mein has a totally different dimension of flavor than other noodles.', 7.00, 1, 0, 20),
+(58, 3, 1, 'Cantonese Style Braised Rice (广府焖饭)', 'Not only this is a very simple dish to prepare, it is also a wonderful way of turning the bits and pieces in your fridge into something very delicious.', 6.00, 1, 0, 20),
+(59, 8, 1, 'Shrimp Fried Rice', 'Made with juicy shrimp, fluffy eggs, and perfectly seasoned rice, Chinese shrimp fried rice comes together in minutes and is so satisfying to enjoy!', 8.00, 1, 0, 15),
+(60, 8, 1, 'Chicken Fried Rice', 'Tender chicken cubes are tossed with springy rice and crunchy vegetables, all flavored with a soy sauce-based seasoning mixture.', 7.00, 1, 0, 20),
+(61, 8, 1, 'Yangzhou Fried Rice', 'An easy version of Yangzhou fried rice, a classic stir-fry dish combining a wide range of flavors and textures.', 6.50, 1, 1, 0),
+(62, 8, 1, 'Pork Fried Rice', 'Enjoy the mix of fluffy rice, tender pork and crunchy veggies coated with umami-filled seasoning.', 9.00, 1, 0, 15),
+(63, 8, 1, 'Soy Sauce Fried Rice', 'Soy Sauce Fried Rice refers to fried rice that’s distinctively flavored with soy sauce.', 5.50, 1, 1, 0),
+(64, 8, 1, 'Egg Fried Rice', 'Egg fried rice is an essential dish on typical Chinese restaurant menus outside China.', 5.00, 1, 1, 0),
+(65, 8, 1, 'Easy beef & pineapple fried rice', 'A quick one-bowl meal served in a pineapple shell. Try this easy pineapple fried rice with succulent beef cubes! It has a balanced flavour of savoury and sweet.', 7.50, 1, 0, 30);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `stalls`
+-- 表的结构 `stalls`
 --
 
 CREATE TABLE `stalls` (
@@ -399,19 +536,23 @@ CREATE TABLE `stalls` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `stalls`
+-- 转存表中的数据 `stalls`
 --
 
 INSERT INTO `stalls` (`StallId`, `StaffId`, `StallName`, `Description`, `IsAvailable`, `CreatedAt`, `LogoUrl`) VALUES
 (1, 2, 'Hainan Chicken Rice', 'Signature chicken rice & roasted options', 1, '2025-11-17 12:48:15', 'images/stalls/hainanchickenlogo.png'),
 (2, 6, 'Waffle & Coffee', 'Fresh waffles and drinks', 1, '2025-11-17 12:48:15', 'images/stalls/wafflencoffeelogo.png'),
-(3, 8, 'Best Nasi Lemak', '', 1, '2025-12-05 21:45:59', 'https://cf.shopee.com.my/file/33bf83ce5c3d8e0aff26982faa4e1421'),
-(4, 9, 'Zus Coffee', 'A Necessity Not A Luxury', 1, '2025-12-05 21:52:32', 'images/stalls/stall_1764942752.jpg');
+(3, 8, 'Heong Kee Noodles', 'Going to the Asian food store looking for noodles can be overwhelming.', 1, '2025-12-05 21:45:59', 'https://cf.shopee.com.my/file/33bf83ce5c3d8e0aff26982faa4e1421'),
+(4, 9, 'Cake Stall', '', 1, '2025-12-05 21:52:32', 'images/stalls/stall_1764942752.jpg'),
+(5, 11, 'Zus Coffee', 'A Necessity Not A Luxury', 1, '2025-12-16 16:17:06', 'images/stalls/stall_1765873026.png'),
+(6, 12, 'jah skcn', 'zxgbvvbcxv', 1, '2025-12-17 17:31:35', 'images/stalls/stall_1765963895.png'),
+(7, 13, 'McDonald', 'A quick bite or a satisfying meal, we’ve got you covered. Click on the product for Nutritional Facts. Discover our food now.', 1, '2025-12-18 01:45:40', 'images/stalls/stall_1765993540.png'),
+(8, 3, 'Fried Rice House', '', 1, '2025-12-18 02:48:56', 'images/stalls/stall.png');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- 表的结构 `users`
 --
 
 CREATE TABLE `users` (
@@ -425,31 +566,35 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `users`
+-- 转存表中的数据 `users`
 --
 
 INSERT INTO `users` (`UserId`, `Name`, `Email`, `HashedPassword`, `Role`, `PhoneNumber`, `CreatedAt`) VALUES
-(1, 'Admin', 'admin@canteen.test', '$2y$10$abcdefghijklmnopqrstuv', 'admin', '0123456789', '2025-11-17 12:48:15'),
-(2, 'Vendor A', 'vendorA@canteen.test', '$2y$10$abcdefghijklmnopqrstuv', 'vendor', '0111111111', '2025-11-17 12:48:15'),
-(3, 'Vendor B', 'vendorB@canteen.test', '$2y$10$abcdefghijklmnopqrstuv', 'vendor', '0222222222', '2025-11-17 12:48:15'),
-(4, 'Alice Student', 'alice@student.test', '$2y$10$abcdefghijklmnopqrstuv', 'customer', '0333333333', '2025-11-17 12:48:15'),
+(1, 'Admin', 'admin@canteen.test', '$2y$10$PUx346MJyq.ZwUW1vllK..8YB9OmxIXu1VvYwJ7xHIUGZyxH5iyuW', 'admin', '0123456789', '2025-11-17 12:48:15'),
+(2, 'Vendor A', 'vendorA@canteen.test', '$2y$10$zCwgIG232WW/PPuECmuVhuy0uLPGzW8WRu3oLgsO4sCn/bWjUVd2a', 'vendor', '0111111111', '2025-11-17 12:48:15'),
+(3, 'Vendor B', 'vendorB@canteen.test', '$2y$10$apRVZNZ7gaSV7m8Th5Xqaeo2dIw23iyokUC3a4kfoIH286qqtwP6i', 'vendor', '0111223344555', '2025-12-18 02:48:56'),
+(4, 'Alice Student', 'alice@student.test', '$2y$10$PUx346MJyq.ZwUW1vllK..8YB9OmxIXu1VvYwJ7xHIUGZyxH5iyuW', 'customer', '0333333333', '2025-11-17 12:48:15'),
 (5, 'chongkimseng', 'chongkimseng@gmail.com', '$2y$10$zCwgIG232WW/PPuECmuVhuy0uLPGzW8WRu3oLgsO4sCn/bWjUVd2a', 'customer', NULL, '2025-11-17 14:49:51'),
 (6, 'chongkimseng2', 'chongkimseng2@gmail.com', '$2y$10$zCwgIG232WW/PPuECmuVhuy0uLPGzW8WRu3oLgsO4sCn/bWjUVd2a', 'vendor', NULL, '2025-11-17 14:49:58'),
 (7, 'Admin', 'admin@gmail.com', '$2y$10$8QgWumGxt9aUAF524TSRH.r5aiMO3dBIWghqLNhDqr5nxo5CMfoHe', 'admin', '01116478687', '2025-12-05 13:20:45'),
 (8, 'Vendor C', 'vendorC@canteen.test', '$2y$10$zCwgIG232WW/PPuECmuVhuy0uLPGzW8WRu3oLgsO4sCn/bWjUVd2a', 'vendor', '0111223344555', '2025-12-05 21:45:59'),
 (9, 'Vendor D', 'vendorD@canteen.test', '$2y$10$K9IsHYNj16QY4KcUPHGNaOfep81TJxckLljouv4wE1MB9ijJbbZJm', 'vendor', '0111223344555', '2025-12-05 21:52:32'),
+(11, 'Zus Coffee', 'ZusCoffee@canteen.test', '$2y$10$lwbu0Ua0TXK3OEftfRh9Fep5RmDgQZux10GiAJLnH1Wx9JN78trTC', 'vendor', '0111223344555', '2025-12-16 16:17:06'),
+(12, 'Vendor E', 'vendorE@canteen.test', '$2y$10$kTYvkAnq6VhK.hx.QKCVhu2gazaH/61s3aSZ7vHZroYcUVWexHtC6', 'vendor', '0111223344555', '2025-12-17 17:31:35'),
+(13, 'McDonald', 'mcdonald@gmail.com', '$2y$10$usEi4GeXqap5kWftznWwLuGlW4/W6ci4pyqG/qX3Hwp/Z10SRslmi', 'vendor', '0111223344555', '2025-12-18 01:45:40'),
 (90807, 'Sum Ting Wong', 'alexwongfeihong@gmail.com', '$2y$10$x9pwG12w3MM1QGhtput5FumqY0OEZ39pqZADldR3Ij17Gleh3GEyu', 'customer', '', '2025-12-14 16:04:44'),
 (2407123, 'LEE ZHEN HONG', 'zhlee-wm24@student.tarc.edu.my', '$2y$10$p8vcPc7j7IYo4IIlwYNcKOUFIXpojZbDD6F.mNfbI9u8cg4cy0aSG', 'customer', '01116478687', '2025-12-08 13:57:32'),
 (2407479, 'Damien Goh Kun Xuan', 'damien@gmail.com', '$2y$10$fZbrsBxIUYq/euWmym3E3OnoAjZ6DwPmb2hpQvSd7ry1QeGej3xpe', 'customer', '0123456789', '2025-12-05 22:02:14'),
 (2407502, 'LEE ZHEN HONG', 'leezhenhong15@gmail.com', '$2y$10$zCwgIG232WW/PPuECmuVhuy0uLPGzW8WRu3oLgsO4sCn/bWjUVd2a', 'customer', '01116478687', '2025-12-05 13:21:39'),
+(2407522, 'Ng Yung Onn', 'ngyungoon@canteen.test', '$2y$10$PUx346MJyq.ZwUW1vllK..8YB9OmxIXu1VvYwJ7xHIUGZyxH5iyuW', 'customer', '0123456789', '2025-12-18 01:39:49'),
 (2410038, 'Chan Jian Feng', 'chanjf-wm24@student.tarc.edu.my', '$2y$10$6HZnqse.oYMPmTPYK61alOK3PluFmkZ24asAZlLZUjKxvskUB5HW.', 'customer', '01111280282', '2025-11-22 21:05:00');
 
 --
--- Indexes for dumped tables
+-- 转储表的索引
 --
 
 --
--- Indexes for table `cartitems`
+-- 表的索引 `cartitems`
 --
 ALTER TABLE `cartitems`
   ADD PRIMARY KEY (`CartItemId`),
@@ -458,20 +603,20 @@ ALTER TABLE `cartitems`
   ADD KEY `idx_cartitems_cartid` (`CartId`);
 
 --
--- Indexes for table `carts`
+-- 表的索引 `carts`
 --
 ALTER TABLE `carts`
   ADD PRIMARY KEY (`CartId`),
   ADD UNIQUE KEY `UserId` (`UserId`);
 
 --
--- Indexes for table `categories`
+-- 表的索引 `categories`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`CategoryId`);
 
 --
--- Indexes for table `orderitems`
+-- 表的索引 `orderitems`
 --
 ALTER TABLE `orderitems`
   ADD PRIMARY KEY (`OrderListId`),
@@ -482,7 +627,7 @@ ALTER TABLE `orderitems`
   ADD KEY `idx_orderlists_pickuptime` (`PickupTime`);
 
 --
--- Indexes for table `orders`
+-- 表的索引 `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`OrderId`),
@@ -491,28 +636,28 @@ ALTER TABLE `orders`
   ADD KEY `fk_orders_stalls` (`StallId`);
 
 --
--- Indexes for table `passwordresets`
+-- 表的索引 `passwordresets`
 --
 ALTER TABLE `passwordresets`
   ADD PRIMARY KEY (`ResetId`),
   ADD KEY `UserId` (`UserId`);
 
 --
--- Indexes for table `payments`
+-- 表的索引 `payments`
 --
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`PaymentId`),
   ADD KEY `fk_payments_users` (`UserId`);
 
 --
--- Indexes for table `productimages`
+-- 表的索引 `productimages`
 --
 ALTER TABLE `productimages`
   ADD PRIMARY KEY (`ImageId`),
   ADD KEY `fk_productimages_products` (`ProductId`);
 
 --
--- Indexes for table `products`
+-- 表的索引 `products`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`ProductId`),
@@ -520,115 +665,115 @@ ALTER TABLE `products`
   ADD KEY `fk_products_categories` (`CategoryId`);
 
 --
--- Indexes for table `stalls`
+-- 表的索引 `stalls`
 --
 ALTER TABLE `stalls`
   ADD PRIMARY KEY (`StallId`),
   ADD KEY `fk_stalls_users` (`StaffId`);
 
 --
--- Indexes for table `users`
+-- 表的索引 `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`UserId`),
   ADD UNIQUE KEY `Email` (`Email`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- 在导出的表使用AUTO_INCREMENT
 --
 
 --
--- AUTO_INCREMENT for table `cartitems`
+-- 使用表AUTO_INCREMENT `cartitems`
 --
 ALTER TABLE `cartitems`
-  MODIFY `CartItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
+  MODIFY `CartItemId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
--- AUTO_INCREMENT for table `carts`
+-- 使用表AUTO_INCREMENT `carts`
 --
 ALTER TABLE `carts`
   MODIFY `CartId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `categories`
+-- 使用表AUTO_INCREMENT `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `CategoryId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `CategoryId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT for table `orderitems`
+-- 使用表AUTO_INCREMENT `orderitems`
 --
 ALTER TABLE `orderitems`
-  MODIFY `OrderListId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `OrderListId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
--- AUTO_INCREMENT for table `orders`
+-- 使用表AUTO_INCREMENT `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `OrderId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
--- AUTO_INCREMENT for table `passwordresets`
+-- 使用表AUTO_INCREMENT `passwordresets`
 --
 ALTER TABLE `passwordresets`
   MODIFY `ResetId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT for table `payments`
+-- 使用表AUTO_INCREMENT `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `PaymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
--- AUTO_INCREMENT for table `productimages`
+-- 使用表AUTO_INCREMENT `productimages`
 --
 ALTER TABLE `productimages`
-  MODIFY `ImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `ImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
--- AUTO_INCREMENT for table `products`
+-- 使用表AUTO_INCREMENT `products`
 --
 ALTER TABLE `products`
-  MODIFY `ProductId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `ProductId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
--- AUTO_INCREMENT for table `stalls`
+-- 使用表AUTO_INCREMENT `stalls`
 --
 ALTER TABLE `stalls`
-  MODIFY `StallId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `StallId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT for table `users`
+-- 使用表AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
   MODIFY `UserId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2410039;
 
 --
--- Constraints for dumped tables
+-- 限制导出的表
 --
 
 --
--- Constraints for table `cartitems`
+-- 限制表 `cartitems`
 --
 ALTER TABLE `cartitems`
   ADD CONSTRAINT `fk_cartitems_carts` FOREIGN KEY (`CartId`) REFERENCES `carts` (`CartId`),
   ADD CONSTRAINT `fk_cartitems_products` FOREIGN KEY (`ProductId`) REFERENCES `products` (`ProductId`);
 
 --
--- Constraints for table `carts`
+-- 限制表 `carts`
 --
 ALTER TABLE `carts`
   ADD CONSTRAINT `fk_carts_users` FOREIGN KEY (`UserId`) REFERENCES `users` (`UserId`);
 
 --
--- Constraints for table `orderitems`
+-- 限制表 `orderitems`
 --
 ALTER TABLE `orderitems`
   ADD CONSTRAINT `fk_orderlists_orders` FOREIGN KEY (`OrderId`) REFERENCES `orders` (`OrderId`),
   ADD CONSTRAINT `fk_orderlists_products` FOREIGN KEY (`ProductId`) REFERENCES `products` (`ProductId`);
 
 --
--- Constraints for table `orders`
+-- 限制表 `orders`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `fk_orders_payments` FOREIGN KEY (`PaymentId`) REFERENCES `payments` (`PaymentId`),
@@ -636,32 +781,32 @@ ALTER TABLE `orders`
   ADD CONSTRAINT `fk_orders_users` FOREIGN KEY (`UserId`) REFERENCES `users` (`UserId`);
 
 --
--- Constraints for table `passwordresets`
+-- 限制表 `passwordresets`
 --
 ALTER TABLE `passwordresets`
   ADD CONSTRAINT `passwordresets_ibfk_1` FOREIGN KEY (`UserId`) REFERENCES `users` (`UserId`) ON DELETE CASCADE;
 
 --
--- Constraints for table `payments`
+-- 限制表 `payments`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_users` FOREIGN KEY (`UserId`) REFERENCES `users` (`UserId`);
 
 --
--- Constraints for table `productimages`
+-- 限制表 `productimages`
 --
 ALTER TABLE `productimages`
   ADD CONSTRAINT `fk_productimages_products` FOREIGN KEY (`ProductId`) REFERENCES `products` (`ProductId`);
 
 --
--- Constraints for table `products`
+-- 限制表 `products`
 --
 ALTER TABLE `products`
   ADD CONSTRAINT `fk_products_categories` FOREIGN KEY (`CategoryId`) REFERENCES `categories` (`CategoryId`),
   ADD CONSTRAINT `fk_products_stalls` FOREIGN KEY (`StallId`) REFERENCES `stalls` (`StallId`);
 
 --
--- Constraints for table `stalls`
+-- 限制表 `stalls`
 --
 ALTER TABLE `stalls`
   ADD CONSTRAINT `fk_stalls_users` FOREIGN KEY (`StaffId`) REFERENCES `users` (`UserId`);
