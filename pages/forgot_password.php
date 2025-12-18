@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($user) {
         $token = bin2hex(random_bytes(32));
-        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        $expiry = date('Y-m-d H:i:s', strtotime('+8 minutes')); // 8 minutes till link expire
 
         // Clean old tokens
         $delSql = "DELETE FROM passwordresets WHERE UserId = :uid";
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare($sql);
         $stmt->execute([':uid' => $user['UserId'], ':token' => $token, ':expiry' => $expiry]);
         
-        // Send Email (Assuming get_mail() is configured in functions.php)
+        // Send Email
         $resetLink = "http://localhost/U-Order/pages/reset_password.php?token=" . $token;
         
         try {
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $m->addAddress($email, $user['Name']);
             $m->isHTML(true);
             $m->Subject = "Reset Password Request";
-            $m->Body = "<h3>Password Reset</h3><p>Click the link below to reset your password:</p><p><a href='$resetLink'>$resetLink</a></p><p>This link expires in 1 hour.</p>";
+            $m->Body = "<h3>Password Reset</h3><p>Click the link below to reset your password:</p><p><a href='$resetLink'>$resetLink</a></p><p>This link expires in 8 minutes.</p>";
             $m->send();
             flash('success', 'Reset link sent to your email.');
         } catch (Exception $e) {
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } else {
-        // Security: Generic message to prevent email enumeration
+        // generic message sent to prevent email enumeration
         flash('notice', 'If an account exists with that email, a reset link has been sent.');
     }
 }

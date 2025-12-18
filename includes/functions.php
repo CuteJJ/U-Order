@@ -40,6 +40,10 @@ function flash($type = null, $message = null) {
             default: $class = 'flash-notice';
         }
         
+        // --- CONFIGURATION ---
+        $durationSeconds = 8; // Change this to 8 seconds
+        $durationMs = $durationSeconds * 1000;
+        
         // Generate unique ID for JS targeting
         $id = 'flash-' . uniqid();
         
@@ -50,7 +54,7 @@ function flash($type = null, $message = null) {
                 <span class="flash-close" onclick="closeFlash(\'' . $id . '\')">&times;</span>
             </div>
             <div class="flash-progress">
-                <div class="flash-progress-bar"></div>
+                <div class="flash-progress-bar" style="animation-duration: ' . $durationSeconds . 's;"></div>
             </div>
         </div>
         
@@ -58,7 +62,7 @@ function flash($type = null, $message = null) {
             // Auto-dismiss logic
             (function(){
                 const flashId = "' . $id . '";
-                const duration = 5000; // 5 seconds golden time
+                const duration = ' . $durationMs . '; // Synced with PHP variable
                 
                 // Set timeout to remove
                 setTimeout(function() {

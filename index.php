@@ -219,7 +219,7 @@ include 'includes/header.php';
             <div class="profile-pic-small">
                 <img src="https://ui-avatars.com/api/?name=<?php echo $userInitials; ?>&background=81A1C1&color=fff&size=128" alt="Profile">
             </div>
-            <h1>Good Morning,<br><span><?php echo $userName; ?>!</span></h1>
+            <h1>Feeling Hungry?<br><span>Good Day, <?php echo $userName; ?>.</span></h1>
         </div>
 
         <nav class="desktop-nav">

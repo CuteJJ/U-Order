@@ -3,6 +3,7 @@
 require_once "../configs/db.php";
 require_once "../includes/functions.php";
 
+// 1. 权限检查
 if (!isLoggedIn() || $_SESSION['role'] !== 'vendor') {
     header("Location: ../login.php");
     exit;
@@ -10,7 +11,7 @@ if (!isLoggedIn() || $_SESSION['role'] !== 'vendor') {
 
 $userId = $_SESSION['user_id'];
 
-// 讀取 vendor 資料
+// 2. 读取 Vendor 资料
 $sql = "SELECT u.UserId, u.Name, u.Email, u.PhoneNumber, u.Role, u.CreatedAt,
                s.StallName, s.Description
         FROM users u
@@ -34,8 +35,41 @@ $initials = strtoupper(substr($vendor['Name'], 0, 2));
     <meta charset="utf-8">
     <title>Vendor Profile</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <link rel="stylesheet" href="../assets/css/vendor_profile.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .vp-input-group {
+            position: relative; /* 定位基准 */
+            width: 100%;
+        }
+        
+        /* 让输入框右边留出空位，字才不会被图标挡住 */
+        .vp-input-group .vp-input {
+            width: 100%;
+            padding-right: 45px; 
+        }
+
+        /* 眼睛图标的样式 */
+        .vp-toggle-pass {
+            position: absolute;
+            right: 15px;         /* 靠右距离 */
+            top: 50%;            /* 垂直居中 */
+            transform: translateY(-50%);
+            color: #94a3b8;      /* 灰色，看起来比较高级 */
+            cursor: pointer;
+            font-size: 1rem;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        .vp-toggle-pass:hover {
+            color: #475569;      /* hover 时变深色 */
+        }
+    </style>
 </head>
 <body>
 
@@ -112,7 +146,7 @@ $initials = strtoupper(substr($vendor['Name'], 0, 2));
 
                                 <div class="vp-edit-mode">
                                     <label>Phone Number</label>
-                                    <input type="text" name="phone" class="vp-input" value="<?= htmlspecialchars($vendor['PhoneNumber']) ?>" placeholder="e.g. 0123456789">
+                                    <input type="text" name="phone" class="vp-input" value="<?= htmlspecialchars($vendor['PhoneNumber'] ?? '') ?>" placeholder="e.g. 0123456789">
                                     <div class="vp-action-btns">
                                         <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_phone">Save</button>
                                         <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
@@ -148,12 +182,20 @@ $initials = strtoupper(substr($vendor['Name'], 0, 2));
                                 <div class="vp-edit-mode">
                                     <div class="vp-form-group">
                                         <label>Current Password</label>
-                                        <input type="password" name="old_password" class="vp-input">
+                                        <div class="vp-input-group">
+                                            <input type="password" name="old_password" class="vp-input" placeholder="Enter current password">
+                                            <i class="fas fa-eye vp-toggle-pass"></i>
+                                        </div>
                                     </div>
+
                                     <div class="vp-form-group">
                                         <label>New Password</label>
-                                        <input type="password" name="new_password" class="vp-input" placeholder="Min. 6 chars">
+                                        <div class="vp-input-group">
+                                            <input type="password" name="new_password" class="vp-input" placeholder="Enter new password (8-16 chars)">
+                                            <i class="fas fa-eye vp-toggle-pass"></i>
+                                        </div>
                                     </div>
+
                                     <div class="vp-action-btns">
                                         <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_password">Update</button>
                                         <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
@@ -182,7 +224,8 @@ $initials = strtoupper(substr($vendor['Name'], 0, 2));
                                         </div>
                                         <div class="vp-value-text">
                                             <?php 
-                                                $desc = trim((string)$vendor['Description']);
+                                                // 处理 NULL 并 trim
+                                                $desc = trim((string)($vendor['Description'] ?? ''));
                                                 echo $desc ? nl2br(htmlspecialchars($desc)) : '<span class="vp-placeholder">No description yet.</span>';
                                             ?>
                                         </div>
@@ -191,7 +234,7 @@ $initials = strtoupper(substr($vendor['Name'], 0, 2));
 
                                 <div class="vp-edit-mode">
                                     <label>Description</label>
-                                    <textarea name="description" class="vp-textarea" rows="4"><?= htmlspecialchars($vendor['Description']) ?></textarea>
+                                    <textarea name="description" class="vp-textarea" rows="4"><?= htmlspecialchars($vendor['Description'] ?? '') ?></textarea>
                                     <div class="vp-action-btns">
                                         <button type="button" class="vp-btn vp-btn-primary vp-save-edit" data-action="update_description">Save</button>
                                         <button type="button" class="vp-btn vp-btn-ghost vp-cancel-edit">Cancel</button>
